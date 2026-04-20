@@ -17,15 +17,16 @@ const emit = defineEmits<{
 }>()
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const legends: string[] = []
   const series: Record<string, unknown>[] = []
   const setting = props.setting as Record<string, unknown>
-  const {
-    barColor: [startColor = '#8699FF', endColor = '#4B66FF'] = [],
-    yAxisLabel = {},
-    showXAxis = true,
-  } = setting as Record<string, unknown>
+  const barColorArr = Array.isArray(setting.barColor) ? setting.barColor : []
+  const startColor = (barColorArr[0] as string) || '#8699FF'
+  const endColor = (barColorArr[1] as string) || '#4B66FF'
+  const { yAxisLabel = {}, showXAxis = true } = setting as Record<string, unknown>
   const d = props.data as Record<string, unknown>
+  if (!d || !d.values || !d.keys) return
   ;(d.values as Array<{ name: string; data: unknown[] }>).forEach((item) => {
     legends.unshift(item.name)
     series.push({

@@ -18,6 +18,7 @@ function updateChart(chartInstance: EChartsType) {
   const setting = props.setting as Record<string, unknown>
   const { showLegend = true } = setting
   const d = props.data as Record<string, unknown>
+  if (!d || !d.values || !d.keys) return
   ;(d.values as Array<{ name: string; data: unknown[] }>).forEach((item) => {
     legends.push(item.name)
     series.push({

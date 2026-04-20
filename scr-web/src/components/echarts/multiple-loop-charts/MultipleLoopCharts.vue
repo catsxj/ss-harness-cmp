@@ -14,6 +14,7 @@ const props = defineProps({
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const seriesArr: Record<string, unknown>[] = []
   const d = props.data as Array<{ name: string; value: number }>
   const total = d.reduce((totals, item) => {

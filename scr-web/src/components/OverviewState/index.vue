@@ -58,7 +58,7 @@ defineProps({
   position: relative;
   height: 74px;
   width: 100%;
-  background: url('~assets/img/stat_bg.png');
+  background: url('@/assets/img/stat_bg.png');
   border-bottom: 1px solid #0391d8;
   border-top: 1px solid #0391d8;
   margin: 10px 0;

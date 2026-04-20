@@ -31,7 +31,7 @@ const { currentTime, operateScreen, logo, title } = useHeader(props.code)
   left: 0;
   width: 100%;
   height: 93px;
-  background: url('~assets/img/header.gif');
+  background: url('@/assets/img/header.gif');
   background-size: 100% 100%;
   display: flex;
   & > span {

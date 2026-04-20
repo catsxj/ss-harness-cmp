@@ -11,6 +11,7 @@ const props = defineProps({
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (props.data == null) return
   const setting = props.setting as Record<string, unknown>
   const series = [
     {

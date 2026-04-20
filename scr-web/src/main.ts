@@ -3,6 +3,7 @@ import type { App as VueApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import DataVVue3 from '@kjgl77/datav-vue3'
 import App from './App.vue'
 import router from './router'
 import { registerComponents } from './components'
@@ -15,6 +16,7 @@ function render(props: Record<string, unknown> = {}) {
   app.use(createPinia())
   app.use(router)
   app.use(ElementPlus, { size: 'small' })
+  app.use(DataVVue3)
   registerComponents(app)
 
   const mountEl = container

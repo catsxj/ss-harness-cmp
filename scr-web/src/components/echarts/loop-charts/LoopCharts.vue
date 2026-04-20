@@ -30,6 +30,7 @@ const isNoData = computed(() => {
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const { themeColor } = echartsReturn
   const legendColor = themeColor.value.legendColor
   const legends: string[] = []

@@ -1,5 +1,5 @@
 <template>
-  <vue-seamless-scroll :data="data" class="alarm-wrapper" :class-option="{step: 1}">
+  <Vue3SeamlessScroll :list="data" class="alarm-wrapper" :step="1">
     <div class="alarm-list">
       <div class="alarm-container">
         <div class="alarm-item" v-for="(item, index) in data" :key="index">
@@ -12,10 +12,10 @@
       </div>
     </div>
     <NoData v-if="!data.length" icon="el-icon-message-solid" text="暂无告警数据"></NoData>
-  </vue-seamless-scroll>
+  </Vue3SeamlessScroll>
 </template>
 <script setup lang="ts">
-import vueSeamlessScroll from 'vue-seamless-scroll'
+import { Vue3SeamlessScroll } from 'vue3-seamless-scroll'
 import NoData from 'components/NoData/index.vue'
 
 interface AlarmItem {

@@ -1,9 +1,25 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import type { Plugin } from 'vite'
+
+// 将 /scr-web/static/* 重写为 /static/*（开发模式下 public/ 映射到根路径）
+function scrWebStaticRewrite(): Plugin {
+  return {
+    name: 'scr-web-static-rewrite',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url?.startsWith('/scr-web/static/')) {
+          req.url = req.url.replace('/scr-web/static/', '/static/')
+        }
+        next()
+      })
+    }
+  }
+}
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), scrWebStaticRewrite()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

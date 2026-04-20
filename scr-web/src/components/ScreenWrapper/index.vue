@@ -56,7 +56,7 @@ const animateImg = animateImgUrl
   width: 100vw;
   height: 100vh;
   min-height: 700px;
-  background: url('~assets/img/screen_bg.png') no-repeat;
+  background: url('@/assets/img/screen_bg.png') no-repeat;
   background-size: 100% 100%;
   overflow: hidden;
   .header {

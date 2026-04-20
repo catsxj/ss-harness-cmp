@@ -32,8 +32,10 @@ function handleContextMenu() {
 }
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const setting = props.setting as Record<string, unknown>
   const d = props.data as Record<string, unknown>
+  if (!d.nodes || !d.links) return
   const options = {
     animationDuration: 100,
     animationDurationUpdate: 300,

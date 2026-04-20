@@ -5,17 +5,17 @@
         <span>{{item}}</span></div>
     </li>
     <div class="table-body">
-      <vue-seamless-scroll :data="data" :class-option="{singleHeight: 43, ...options}">
+      <Vue3SeamlessScroll :list="data" :single-height="43" v-bind="options">
         <li class="table-tr" v-for="(item, index) in data" :key="index">
           <slot :row="item"></slot>
         </li>
-      </vue-seamless-scroll>
+      </Vue3SeamlessScroll>
       <NoData v-if="!data.length" ></NoData>
     </div>
   </ul>
 </template>
 <script setup lang="ts">
-import VueSeamlessScroll from 'vue-seamless-scroll'
+import { Vue3SeamlessScroll } from 'vue3-seamless-scroll'
 import NoData from '../NoData/index.vue'
 
 const props = defineProps({

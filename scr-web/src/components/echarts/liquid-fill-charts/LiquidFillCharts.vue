@@ -12,6 +12,7 @@ const props = defineProps({
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (props.data == null) return
   const dataVal = props.data as number
   chartInstance.setOption({
     series: {

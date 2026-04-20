@@ -7,7 +7,7 @@ declare module '*.vue' {
   export default component
 }
 
-declare module '@jiaminghi/data-view' {
+declare module '@kjgl77/datav-vue3' {
   import type { Plugin } from 'vue'
   const plugin: Plugin
   export default plugin

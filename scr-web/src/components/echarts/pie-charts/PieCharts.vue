@@ -26,6 +26,7 @@ const isNoData = computed(() => {
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const setting = props.setting as Record<string, unknown>
   const { linerColor, colorMap = {} } = setting
   const legends: string[] = []

@@ -82,7 +82,7 @@ export function useEcharts(
   }
 
   function doUpdate() {
-    if (chart.value) {
+    if (chart.value && props.data) {
       updateChart(chart.value, echarts)
     }
   }

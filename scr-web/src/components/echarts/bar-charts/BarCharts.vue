@@ -29,6 +29,7 @@ const isNoData = computed(() => {
 })
 
 function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
   const legends: string[] = []
   const series: Record<string, unknown>[] = []
   const setting = props.setting as Record<string, unknown>
