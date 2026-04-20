@@ -1,0 +1,160 @@
+.common-detail {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  right: 0;
+  top: 0;
+  border: 1px solid #e6e6e6;
+  color: #333;
+  .svg-icon {
+    width: 47px;
+    height: 47px;
+    margin-left: 10px;
+  }
+  .content_header {
+    font-size: 12px;
+    margin-left: 10px;
+    width: calc(100% - 100px);
+  }
+  .vm-status-success {
+    margin-left: 10px;
+    color: #71b7ff;
+  }
+  .vm-status-error {
+    margin-left: 10px;
+    color: #ca1111;
+  }
+  .detail-header {
+    width: calc(100% - 40px);
+    height: 44px;
+    line-height: 44px;
+    padding: 0 20px;
+    border-bottom: 1px solid #e6e6e6;
+    .title {
+      display: inline-block;
+    }
+    .line {
+      position: relative;
+      top: 4px;
+      margin: 0 10px;
+      height: 20px;
+      width: 1px;
+      display: inline-block;
+      background-color: #b5b5b5;
+    }
+    .detail-back {
+      color: #46abf1;
+      cursor: pointer;
+    }
+  }
+  .detail-body {
+    height: 600px;
+    overflow: auto;
+    background: #fff !important;
+    .el-card__header {
+      border-bottom: 0px;
+    }
+    .detail-body-header {
+      margin: 20px 10px 0px 10px;
+      .imgBox {
+        margin: 0;
+        padding-top: 20px;
+        width: 80px;
+        float: left;
+        text-align: center;
+      }
+      .detailBox {
+        width: calc(100% - 81px);
+        border-left: 1px solid #e6e8ee;
+        float: left;
+        // padding: 10px 0;
+      }
+      .borders_top {
+        // padding-bottom: 5px;
+        border-bottom: 1px solid #e6e8ee;
+        margin: 0;
+        padding-left: 10px;
+        .valueBox {
+          float: left;
+          padding: 10px 0 10px 0;
+          overflow: hidden;
+          /*超出部分隐藏*/
+          white-space: nowrap;
+          /*不换行*/
+          text-overflow: ellipsis;
+          /*超出部分文字以...显示*/
+        }
+        .lines1 {
+          border-right: 1px solid #e6e8ee;
+        }
+      }
+      .borders_btm {
+        padding-left: 10px;
+        padding: 10px;
+      }
+    }
+    .detail-body-body {
+      .el-table--small td,
+      .el-table--small th {
+        padding: 5px;
+      }
+      .add-btn {
+        position: relative;
+      }
+      .textBox {
+        font-size: 12px !important;
+        width: 50%;
+        float: left;
+        .label_txt {
+          display: inline-block;
+          text-align: left;
+          width: 100px;
+          padding: 10px 20px;
+        }
+        .label_val {
+          display: inline-block;
+          width: calc(100% - 150px);
+          // 国新bug打开注释
+          overflow: hidden; /*超出部分隐藏*/
+          white-space: nowrap;
+          /*不换行*/
+          text-overflow: ellipsis;
+          /*超出部分文字以...显示*/
+        }
+        .label_input {
+          display: inline-block;
+          width: calc(100% - 190px);
+        }
+        .cursor {
+          cursor: pointer;
+        }
+        .hidden-txt {
+          display: inline-block;
+          width: calc(100% - 50px);
+          overflow: hidden;
+          /*超出部分隐藏*/
+          white-space: nowrap;
+          /*不换行*/
+          text-overflow: ellipsis;
+          /*超出部分文字以...显示*/
+        }
+        .pull-right {
+          width: 30px;
+        }
+      }
+    }
+  }
+  .detail-body::-webkit-scrollbar {
+    width: 4px;
+  }
+  .detail-body::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .detail-body::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.1);
+  }
+}

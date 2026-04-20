@@ -1,0 +1,49 @@
+.theme-container {
+  width: 280px;
+  padding: 0 !important;
+  top: 30px !important;
+  .popper__arrow {
+    display: none !important;
+  }
+  .el-card__header {
+    padding: 10px 20px;
+  }
+}
+.theme-setting {
+  .icon-huanfu {
+    font-size: 18px;
+    cursor: pointer;
+  }
+}
+.theme-cell {
+  height: 30px;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 5px;
+  span {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background-color: rgba(32, 43, 54, 0.5);
+    text-align: center;
+    display: inherit;
+    .icon-ok {
+      position: relative;
+      top: 6px;
+      display: inline-block;
+      font-weight: 400;
+      font-size: 17px;
+      line-height: 1;
+      color: #fff;
+    }
+  }
+  b {
+    display: inline-block;
+    float: left;
+    width: 50%;
+    height: 20px;
+  }
+  b.t-header {
+    height: 10px;
+  }
+}

@@ -1,0 +1,23 @@
+$font-size: 16px;
+$small-font-size: 14px;
+.font-big {
+    font-size: $font-size;
+    .el-menu-item,
+    .el-submenu__title,
+    ul.header-menu li,
+    .el-tabs__item {
+        font-size: $font-size;
+        .iconfont {
+            font-size: $font-size;
+        }
+    }
+    .el-table--mini,
+    .el-table--small,
+    .el-table__expand-icon,
+    .app-levelbar,
+    .el-button--small,
+    .el-dropdown-link,
+    .common-detail .detail-body .basic-info .attr {
+        font-size: $font-size;
+    }
+}

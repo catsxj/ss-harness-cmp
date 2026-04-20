@@ -1,0 +1,19 @@
+{
+    "configs": [{
+            "name": "cmp-web"
+        },
+        {
+            "name": "cos-web",
+            "activeRule": ["/cos", "/soa", "/screen", "/personal"]
+        },
+        {
+            "name": "cms-web"
+        },
+        {
+            "name": "sms-web"
+        },
+        {
+            "name": "cop-web"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+.item-card {
+  background: #fff;
+  border: 1px solid #ebebeb;
+  margin-bottom: 10px;
+  .item-title {
+    font-size: 13px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .item-body {
+    padding: 20px;
+  }
+}
+
+.item-wrapper {
+  display: flex;
+  .color-select {
+    margin-left: 20px;
+    display: flex;
+  }
+  .desc-text {
+    margin: 0 10px 0 5px;
+    color: #999;
+  }
+}

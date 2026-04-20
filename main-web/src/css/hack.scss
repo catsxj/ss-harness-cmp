@@ -1,0 +1,10 @@
+@media screen and(-ms-high-contrast:active),
+(-ms-high-contrast:none) {
+    .el-table__header,
+    .el-table__body {
+        width: 100% !important;
+    }
+    /* .basic-form-item{
+    height: 32.76px;
+  } */
+}

@@ -1,0 +1,2 @@
+@Library('jgpl') _
+webPipeline()

@@ -1,0 +1,28 @@
+*,
+*::before,
+*::after {
+    box-sizing: content-box;
+}
+
+.ant-modal-header {
+    .ant-modal-title,
+    .ant-modal-close {
+        color: #010033;
+        font-size: 14px;
+        font-weight: bold;
+    }
+}
+
+.ant-notification-notice-message {
+    word-break: break-all;
+}
+
+// .ant-modal-close {
+//     color: #fff;
+//     &:hover {
+//         color: #fff;
+//     }
+// }
+// .ant-modal-footer {
+//     background: #f0f3fa;
+// }

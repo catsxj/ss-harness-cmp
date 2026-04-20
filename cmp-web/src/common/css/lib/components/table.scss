@@ -1,0 +1,22 @@
+.table-container {
+  .custom-header {
+    background: #f5f7fa !important;
+    color: #333;
+    border-bottom: 1px solid #dcdfe6 !important;
+  }
+  .el-table--enable-row-hover .el-table__body tr:hover > td {
+    background-color: #eaf3fd;
+  }
+  .gutter {
+    background: #f5f7fa !important;
+    color: #333;
+    border-bottom: 1px solid #dcdfe6 !important;
+  }
+  .pagination-container {
+    margin-top: 10px;
+    text-align: right;
+    .el-pagination__jump {
+      margin-left: 0;
+    }
+  }
+}

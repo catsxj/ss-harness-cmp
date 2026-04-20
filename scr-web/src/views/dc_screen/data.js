@@ -1,0 +1,49 @@
+export const overviewConfigs = [{
+  title: '总体情况',
+  icon: 'el-icon-monitor',
+  type: 'COUNT',
+  data: [{
+    title: '物理机总数',
+    className: 'lgreen',
+    unit: '台',
+    value: 0
+  }, {
+    title: '云主机总数',
+    className: 'green',
+    unit: '台',
+    value: 0
+  }, {
+    title: '云主机在线',
+    className: 'purple',
+    unit: '台',
+    value: 0
+  }, {
+    title: '链路总数',
+    className: 'yellow',
+    unit: '',
+    value: 0
+  }]
+}, {
+  title: '使用情况',
+  icon: 'el-icon-data-line',
+  type: 'PROGRESS',
+  data: [{
+    title: 'CPU总量/剩余量',
+    unit: '核',
+    color: '#3AE13A',
+    used: 0,
+    total: 0
+  }, {
+    title: '内存总量/剩余量',
+    unit: 'G',
+    color: '#FFC400',
+    used: 0,
+    total: 0
+  }, {
+    title: '存储总量/剩余量',
+    unit: 'T',
+    color: '#33A1FF',
+    used: 0,
+    total: 0
+  }]
+}]

@@ -1,0 +1,40 @@
+::v-deep .options-list {
+  display: flex;
+  // justify-content: center;
+  align-items: center;
+  padding: 5px;
+  & > span {
+    width: 100px;
+    padding-right: 10px;
+    text-align: right;
+    color: hsla(0,0%,100%,.75);
+  }
+  & > div {
+    max-height: calc(100% - 150px);
+    text-align: right;
+    position: relative;
+    #fileUpload {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100px;
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+  }
+  .el-radio {
+    margin-right: 10px;
+    color: hsla(0,0%,100%,.75);
+  }
+  .el-input, .el-select {
+    width: 200px;
+  }
+}
+::v-deep .form-search {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden !important;
+}

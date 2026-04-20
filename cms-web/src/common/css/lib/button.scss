@@ -1,0 +1,29 @@
+.el-button--text {
+  padding: 0 !important;
+}
+
+.el-button.el-button--text [class*='el-icon-'] + span {
+  margin-left: 2px;
+}
+
+.el-button--ghost {
+  color: #666;
+  background-color: #fff;
+  border-color: #d9d9d9;
+}
+
+.el-button--ghost:focus,
+.el-button--ghost:hover {
+  color: #2b85e4;
+  background-color: transparent;
+  border-color: #2b85e4;
+}
+
+.el-button--ghost.is-disabled,
+.el-button--ghost.is-disabled:active,
+.el-button--ghost.is-disabled:focus,
+.el-button--ghost.is-disabled:hover {
+  color: #bbb;
+  background-color: #f7f7f7;
+  border-color: #d9d9d9;
+}

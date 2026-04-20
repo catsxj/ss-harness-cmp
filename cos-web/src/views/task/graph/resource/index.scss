@@ -1,0 +1,78 @@
+.card {
+  background: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  &.fix-height {
+    box-sizing: border-box;
+    height: calc(100vh - 130px);
+    overflow: auto;
+  }
+  .card-title {
+    color: #000;
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+}
+
+::v-deep .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  color: #409eff;
+  background-color: #d5e8fc;
+  border-color: #409eff;
+}
+
+::v-deep .el-radio-button__inner {
+  min-width: 80px;
+}
+
+.input-desc-text {
+  margin-left: 5px;
+  font-size: 12px;
+  color: #a7a7a0;
+}
+
+.w-xxl {
+  width: 360px !important;
+}
+
+.w-xxs {
+  width: 60px !important;
+}
+
+.m-b-lg {
+  margin-bottom: 30px !important;
+}
+
+.total-money {
+  font-weight: 400;
+  font-size: 26px;
+  color: #ff6600;
+}
+
+.preview-card {
+  position: fixed;
+  top: 120px;
+  z-index: 1;
+  width: 300px !important;
+  right: 50px;
+  padding: 15px;
+  background: #f4f7fa;
+  max-height: calc(100vh - 160px);
+  box-sizing: border-box;
+  overflow: auto;
+  .title {
+    font-size: 16px;
+  }
+  .divider {
+    margin: 10px 0;
+  }
+  & ::v-deep {
+    .el-form-item {
+      margin-bottom: 10px !important;
+    }
+    .el-form-item__label,
+    .el-form-item__content {
+      font-size: 12px;
+      line-height: 20px;
+    }
+  }
+}

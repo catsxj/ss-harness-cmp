@@ -1,0 +1,175 @@
+<template>
+  <div>
+    <AdvanceTable ref="databaseTable" title="" :search-configs="searchConfigs" :data="list" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading" @select="handleSelectItem" @select-all="handleSelectAll">
+      <template #name="val, record">
+        <span v-if="record.status === 'BUILDING'">{{ val }}</span>
+        <span v-else class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
+      </template>
+      <template #status="status">
+        <status-icon :type="vmStatusColorFilter(status)">{{ databaseFilter(status) }} </status-icon>
+      </template>
+      <template #expiredTime="expiredTime">
+        <span>{{ expiredTime ? expiredTime : '无期限' }}</span>
+      </template>
+      <template #operate="val, record">
+        <el-button type="text" @click="alarmDetail(record)">告警详情</el-button>
+        <div class="action-divider"></div>
+        <el-dropdown trigger="click">
+          <span class="el-dropdown-link"> 更多<i class="el-icon-arrow-down el-icon--right"></i> </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="handleLink(record.id)"> 关联规则 </el-dropdown-item>
+            <el-dropdown-item @click.native="handlePolicy(record)">
+              {{ `${record.alarmEnable ? '屏蔽' : '开启'}告警` }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </template>
+    </AdvanceTable>
+    <add-policy v-if="addFlag" :resourceType="resourceType" @cancle="cancle" :add-link-flag="addFlag" :resourceId="resourceId" :ruleGroupIds="ruleGroupIds"></add-policy>
+  </div>
+</template>
+
+<script>
+import { vmStatusColorFilter, databaseFilter } from '@/filters/index'
+import { getRuleGroupBind } from 'services/monitor'
+import { getRds } from 'services/monitor/database'
+import { columns, handleStart } from '../data'
+import addPolicy from 'views/components/linkPolicy.vue'
+const searchConfigs = [
+  { type: 'Input', label: '名称', value: 'name' },
+  { type: 'Const', value: 'type', initValue: 'postgresql' },
+  { type: 'Const', value: 'status', initValue: 'BUILDING', sign: 'UEQ' }
+]
+export default {
+  data() {
+    return {
+      vmStatusColorFilter,
+      databaseFilter,
+      handleStart,
+      columns,
+      searchConfigs,
+      list: null,
+      total: null,
+      params: {
+        page: 1,
+        rows: 10,
+        catalog: 'MONITOR_RDS_POSTGRESQL'
+      },
+      idList: [],
+      selectList: [],
+      loading: false,
+      addFlag: false,
+      resourceId: 0,
+      ruleGroupIds: [],
+      resourceType: 'MONITOR_RDS_POSTGRESQL'
+    }
+  },
+  components: { addPolicy },
+  created() {},
+  methods: {
+    getList() {
+      this.loading = true
+      this.refreshId()
+      getRds(this.params).then((data) => {
+        this.loading = false
+        if (data.success) {
+          this.list = data.data.rows
+          this.total = data.data.total
+          this.list.forEach((item) => {
+            const self = this
+            setTimeout(function () {
+              if (self.idList.indexOf(item.id) > -1) self.$refs.databaseTable.toggleRowSelection(item, true)
+            })
+          })
+        }
+      })
+    },
+    // 查询
+    handleSearch(params) {
+      this.params.page = 1
+      this.params.params = params
+      this.getList()
+    },
+    handleSelectItem(selection, row) {
+      this.refreshId()
+      if (this.idList.indexOf(row.id) > -1) {
+        for (let j = 0; j < this.selectList.length; j++) {
+          const item = this.selectList[j]
+          if (item.id == row.id) {
+            this.selectList.splice(j, 1)
+            break
+          }
+        }
+      } else {
+        this.selectList.push(row)
+      }
+    },
+    handleSelectAll(selection) {
+      this.refreshId()
+      if (selection.length) {
+        // 全选情况下
+        this.list.forEach((item) => {
+          if (this.idList.indexOf(item.id) == -1) {
+            this.selectList.push(item)
+          }
+        })
+      } else {
+        // 全不选情况下
+        this.list.forEach((item) => {
+          if (this.idList.indexOf(item.id) > -1) {
+            for (let j = 0; j < this.selectList.length; j++) {
+              const row = this.selectList[j]
+              if (item.id == row.id) {
+                this.selectList.splice(j, 1)
+                break
+              }
+            }
+          }
+        })
+      }
+    },
+    refreshId() {
+      this.idList = []
+      this.selectList.forEach((item) => {
+        this.idList.push(item.id)
+      })
+    },
+    alarmDetail(row) {
+      this.$router.push({
+        name: 'monitorDatabaseDetail',
+        query: { id: row.id, name: row.name, type: this.resourceType }
+      })
+    },
+    handleLink(id) {
+      this.ruleGroupIds = []
+      this.resourceId = id
+      getRuleGroupBind(id).then((data) => {
+        if (data.success) {
+          this.ruleGroupIds = data.data
+          this.addFlag = true
+        }
+      })
+    },
+    cancle() {
+      this.addFlag = false
+      this.getList()
+    },
+    handlePolicy(data) {
+      this.handleStart(this, data, this.resourceType)
+    },
+    getDetail(id) {
+      this.$router.push({ name: 'RdbmsPostgresqlDetail', query: { id: id } })
+    }
+  }
+}
+</script>
+<style scoped>
+.search-item {
+  width: 12%;
+}
+.rule-box {
+  padding: 10px;
+  padding-top: 0px;
+  border: 1px solid #dcdfe6;
+}
+</style>
