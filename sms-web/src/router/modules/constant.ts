@@ -1,8 +1,6 @@
-/**
- * Created by HaijunZhang on 2018/11/12.
- */
+import type { RouteRecordRaw } from 'vue-router'
 
-const main = [
+const main: RouteRecordRaw[] = [
   {
     name: 'Login',
     path: '/login',
@@ -21,10 +19,7 @@ const main = [
     path: '/',
     component: () => import('@/layouts/home.vue'),
     redirect: '/auth/tenants',
-    meta: {
-      title: '主页',
-      noTag: true
-    },
+    meta: { title: '主页', noTag: true },
     name: 'Home',
     children: [
       {
@@ -37,28 +32,20 @@ const main = [
   },
   {
     path: '/resource_dashboard',
-    meta: {
-      title: '资源概览',
-      noTag: true
-    },
+    meta: { title: '资源概览', noTag: true },
     component: () => import('views/configs/setting_dashboard/index.vue')
   },
   {
     path: '/404',
     name: '404',
-    meta: {
-      title: '404',
-      noTag: true
-    },
+    meta: { title: '404', noTag: true },
     component: () => import('@/views/errorPage/404.vue')
   },
   {
     path: '/401',
-    meta: {
-      title: '401',
-      noTag: true
-    },
+    meta: { title: '401', noTag: true },
     component: () => import('@/views/errorPage/401.vue')
   }
 ]
+
 export default main

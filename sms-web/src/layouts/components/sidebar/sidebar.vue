@@ -3,88 +3,84 @@
     <el-scrollbar class="scrollbar-wrapper">
       <BaseMenu v-bind="menuProps" :collapse="isCollapsed" class="sidebar-menu" @select="selectItem" :page-configs="pageConfigs" :is-collapsed="isCollapsed"></BaseMenu>
     </el-scrollbar>
-    <OperateBtn class="operate" @click.native="toggleCollapsed">
-      <i class="el-icon-arrow-down"></i>
+    <OperateBtn class="operate" @click="toggleCollapsed">
+      <el-icon><ArrowDown /></el-icon>
     </OperateBtn>
   </el-aside>
 </template>
 
-<script>
-import { computed, provide, ref } from '@vue/composition-api'
+<script setup lang="ts">
+import { computed, provide, ref } from 'vue'
+import { ArrowDown } from '@element-plus/icons-vue'
+import { useAppStore } from '@/stores'
 import BaseMenu from './baseMenu.vue'
 import OperateBtn from './OperateBtn.vue'
 
-export default {
-  props: {
-    theme: {
-      type: Object
-    },
-    mode: {
-      type: String,
-      default: 'vertical'
-    },
-    menuData: {
-      type: Array
-    },
-    isLimitLevel: {
-      type: Boolean,
-      default: false
-    },
-    basePath: {
-      type: String,
-      default: '/'
-    },
-    matchPath: {
-      type: String,
-      default: ''
-    },
-    selectItem: {
-      type: Function,
-      default: function () {
-        return () => {}
-      }
-    }
-  },
-  components: { BaseMenu, OperateBtn },
-  setup(props, context) {
-    const pageConfigs = computed(() => context.root.$store.getters.pageConfig)
-    const isCollapsed = ref(false)
-    const menuProps = computed(() => {
-      const { mode, menuData, isLimitLevel, basePath, matchPath } = props
-      const { menuBgColour, menuFontColour, menuFontSelectColour, menuSelectColour } = pageConfigs.value
-      return {
-        mode,
-        menuData,
-        isLimitLevel,
-        basePath,
-        matchPath,
-        backgroundColor: menuBgColour,
-        textColor: menuFontColour,
-        activeTextColor: menuFontSelectColour,
-        uniqueOpened: true
-      }
-    })
-    const style = computed(() => {
-      return {
-        backgroundColor: pageConfigs.value.menuBgColour,
-        color: pageConfigs.value.menuFontColour
-      }
-    })
-    provide(
-      'backgroundActiveColor',
-      computed(() => pageConfigs.value.menuSelectColour)
-    )
-    const toggleCollapsed = () => {
-      isCollapsed.value = !isCollapsed.value
-    }
-    return {
-      style,
-      menuProps,
-      pageConfigs,
-      isCollapsed,
-      toggleCollapsed
-    }
+interface PageConfig {
+  menuBgColour?: string
+  menuFontColour?: string
+  menuFontSelectColour?: string
+  menuSelectColour?: string
+  [key: string]: unknown
+}
+
+interface Theme {
+  [key: string]: unknown
+}
+
+interface MenuItemData {
+  [key: string]: unknown
+}
+
+const props = withDefaults(
+  defineProps<{
+    theme?: Theme
+    mode?: string
+    menuData?: MenuItemData[]
+    isLimitLevel?: boolean
+    basePath?: string
+    matchPath?: string
+    selectItem?: (index: string) => void
+  }>(),
+  {
+    mode: 'vertical',
+    isLimitLevel: false,
+    basePath: '/',
+    matchPath: '',
+    selectItem: () => () => {}
   }
+)
+
+const appStore = useAppStore()
+const pageConfigs = computed<PageConfig>(() => appStore.pageConfig || {})
+const isCollapsed = ref(false)
+const menuProps = computed(() => {
+  const { mode, menuData, isLimitLevel, basePath, matchPath } = props
+  const { menuBgColour, menuFontColour, menuFontSelectColour } = pageConfigs.value
+  return {
+    mode,
+    menuData,
+    isLimitLevel,
+    basePath,
+    matchPath,
+    backgroundColor: menuBgColour,
+    textColor: menuFontColour,
+    activeTextColor: menuFontSelectColour,
+    uniqueOpened: true
+  }
+})
+const style = computed(() => {
+  return {
+    backgroundColor: pageConfigs.value.menuBgColour,
+    color: pageConfigs.value.menuFontColour
+  }
+})
+provide(
+  'backgroundActiveColor',
+  computed(() => pageConfigs.value.menuSelectColour)
+)
+const toggleCollapsed = () => {
+  isCollapsed.value = !isCollapsed.value
 }
 </script>
 <style lang="scss" scoped>
@@ -105,10 +101,10 @@ export default {
       transform: rotate(90deg);
       transition: left 0.1s;
     }
-    ::v-deep .el-menu--collapse {
-      .el-submenu {
+    ::v-deep(.el-menu--collapse) {
+      .el-sub-menu {
         overflow: hidden;
-        & > .el-submenu__title {
+        & > .el-sub-menu__title {
           & > span {
             height: 0;
             width: 0;
@@ -116,7 +112,7 @@ export default {
             visibility: hidden;
             display: inline-block;
           }
-          .el-submenu__icon-arrow {
+          .el-sub-menu__icon-arrow {
             display: none;
           }
         }
@@ -125,7 +121,7 @@ export default {
   }
   .scrollbar-wrapper {
     height: 100%;
-    ::v-deep .el-scrollbar__wrap {
+    ::v-deep(.el-scrollbar__wrap) {
       overflow-x: hidden;
     }
   }
@@ -143,18 +139,16 @@ export default {
     transition: left 0.1s;
   }
   @import './theme';
-  ::v-deep {
-    .el-submenu .el-menu-item {
-      padding: 0 30px !important;
-      min-width: initial;
-    }
-    .el-submenu__title > .icon,
-    .el-menu-item > .icon {
-      margin-right: 6px;
-    }
-    .el-menu-item.is-active {
-      background-color: #ecf5ff;
-    }
+  ::v-deep(.el-sub-menu) .el-menu-item {
+    padding: 0 30px !important;
+    min-width: initial;
+  }
+  ::v-deep(.el-sub-menu__title) > .icon,
+  ::v-deep(.el-menu-item) > .icon {
+    margin-right: 6px;
+  }
+  ::v-deep(.el-menu-item.is-active) {
+    background-color: #ecf5ff;
   }
 }
 </style>

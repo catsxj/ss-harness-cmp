@@ -3,22 +3,33 @@
     <el-dropdown trigger="click">
       <div class="user-content">
         <el-tooltip>
-          <div slot="content">
+          <template #content>
             <div class="info-cell">用户账号：{{ userData.account }}</div>
             <div class="info-cell">用户姓名：{{ userData.name }}</div>
             <div class="info-cell">用户邮箱：{{ userData.email }}</div>
-          </div>
+          </template>
           <img :src="userData.portrait" class="head-portrait" />
         </el-tooltip>
       </div>
-      <el-dropdown-menu slot="dropdown" class="user-dropdown">
-        <el-dropdown-item @click.native="openInfoDialog"><i class="el-icon-user"></i> 个人信息</el-dropdown-item>
-        <el-dropdown-item @click.native="openPwdDialog"><i class="el-icon-lock"></i> 修改密码</el-dropdown-item>
-        <el-dropdown-item @click.native="logout()"><i class="el-icon-back"></i> 退出系统</el-dropdown-item>
-      </el-dropdown-menu>
+      <template #dropdown>
+        <el-dropdown-menu class="user-dropdown">
+          <el-dropdown-item @click="openInfoDialog">
+            <el-icon><User /></el-icon>
+            个人信息
+          </el-dropdown-item>
+          <el-dropdown-item @click="openPwdDialog">
+            <el-icon><Lock /></el-icon>
+            修改密码
+          </el-dropdown-item>
+          <el-dropdown-item @click="logoutHandler()">
+            <el-icon><Back /></el-icon>
+            退出系统
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
     </el-dropdown>
-    <el-dialog title="修改密码" :close-on-click-modal="false" width="30%" v-if="pwdDialogVisible" :visible.sync="pwdDialogVisible" append-to-body>
-      <basic-form :model="pwdData" ref="pwdData">
+    <el-dialog title="修改密码" :close-on-click-modal="false" width="30%" v-if="pwdDialogVisible" v-model="pwdDialogVisible" append-to-body>
+      <basic-form :model="pwdData" ref="pwdFormRef">
         <basic-form-item label="原密码：" prop="oldPassword" validate="required">
           <el-input v-model="pwdData.oldPassword" type="password" auto-complete="off"></el-input>
         </basic-form-item>
@@ -29,106 +40,118 @@
           <el-input type="password" v-model="pwdData.confirmPassword" auto-complete="off"></el-input>
         </basic-form-item>
       </basic-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="pwdDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="modifySubmit">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="pwdDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="modifySubmit">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <InfoDialog ref="infoDialog" :data="userData"></InfoDialog>
   </div>
 </template>
-<script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+<script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { User, Lock, Back } from '@element-plus/icons-vue'
 import crypto from 'utils/crypto.js'
 import { changePassword } from 'services/system/manager'
 import { logout } from 'services/system'
+import { useAppStore, usePermissionStore } from '@/stores'
+import router, { resetRouter } from '@/router'
 import InfoDialog from './InfoDialog.vue'
 
-@Component({
-  components: { InfoDialog }
+interface PwdData {
+  oldPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
+// TODO: type - basic-form 组件实例无公开类型
+const pwdFormRef = ref<any>(null)
+// TODO: type - InfoDialog 通过 defineExpose 暴露 open
+const infoDialog = ref<InstanceType<typeof InfoDialog> | null>(null)
+
+const pwdData = reactive<PwdData>({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
-export default class Personal extends Vue {
-  private pwdData: any = {
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  }
 
-  private infoDialogVisible: boolean = false
+const pwdDialogVisible = ref(false)
 
-  private pwdDialogVisible: boolean = false
-  get userData() {
-    return this.$store.getters.userData || {}
-  }
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
 
-  get pwdRule() {
-    return this.$store.state.app.systemConfig.pwdStrength
-  }
+const userData = computed<Record<string, any>>(() => (appStore.userData as Record<string, any>) || {})
+const pwdRule = computed(() => (appStore.systemConfig as any)?.pwdStrength)
 
-  private checkPassword() {
-    if (this.pwdData.newPassword === this.pwdData.oldPassword) {
-      this.$message({
-        message: '新密码不能与原密码相同',
-        type: 'error'
-      })
-      return false
-    }
-    if (this.pwdData.confirmPassword !== this.pwdData.newPassword) {
-      this.$message({
-        message: '确认密码与新密码不一致',
-        type: 'error'
-      })
-      return false
-    }
-
-    return true
-  }
-
-  private logout() {
-    this.$confirm('您确定要退出该系统吗?', '提示', {
-      type: 'warning'
-    }).then(() => {
-      logout().then((data: any) => {
-        if (data.success) {
-          this.$store.dispatch('permission/ResetRoutes')
-        }
-      })
+const checkPassword = () => {
+  if (pwdData.newPassword === pwdData.oldPassword) {
+    ElMessage({
+      message: '新密码不能与原密码相同',
+      type: 'error'
     })
+    return false
+  }
+  if (pwdData.confirmPassword !== pwdData.newPassword) {
+    ElMessage({
+      message: '确认密码与新密码不一致',
+      type: 'error'
+    })
+    return false
   }
 
-  private openPwdDialog() {
-    this.pwdDialogVisible = true
-    this.pwdData = {}
-  }
+  return true
+}
 
-  private modifySubmit() {
-    ;(this.$refs.pwdData as any).validate((valid: boolean) => {
-      if (valid && this.checkPassword()) {
-        changePassword(this.userData.id, {
-          password: crypto.encrypt(this.pwdData.newPassword),
-          oldPassword: crypto.encrypt(this.pwdData.oldPassword)
-        }).then((data: any) => {
-          if (data.success) {
-            this.pwdDialogVisible = false
-            this.$message({
-              message: data.message,
-              type: 'success'
-            })
-            this.$store.dispatch('permission/ResetRoutes')
-          }
-        })
+const logoutHandler = () => {
+  ElMessageBox.confirm('您确定要退出该系统吗?', '提示', {
+    type: 'warning'
+  }).then(() => {
+    logout().then((data: any) => {
+      if (data.success) {
+        permissionStore.resetRoutes(router, resetRouter, true)
       }
     })
-  }
+  })
+}
 
-  private switchLayout() {
-    const layput = this.$store.state.app.layout
-    this.$store.commit('SET_LAYOUT', layput === 'sidemenu' ? 'topmenu' : 'sidemenu')
-  }
+const openPwdDialog = () => {
+  pwdDialogVisible.value = true
+  pwdData.oldPassword = ''
+  pwdData.newPassword = ''
+  pwdData.confirmPassword = ''
+}
 
-  private openInfoDialog() {
-    ;(this.$refs.infoDialog as any).open()
-  }
+const modifySubmit = () => {
+  pwdFormRef.value?.validate((valid: boolean) => {
+    if (valid && checkPassword()) {
+      changePassword(userData.value.id, {
+        password: crypto.encrypt(pwdData.newPassword),
+        oldPassword: crypto.encrypt(pwdData.oldPassword)
+      }).then((data: any) => {
+        if (data.success) {
+          pwdDialogVisible.value = false
+          ElMessage({
+            message: data.message,
+            type: 'success'
+          })
+          permissionStore.resetRoutes(router, resetRouter, true)
+        }
+      })
+    }
+  })
+}
+
+// TODO: 未使用的 switchLayout 保留兼容（原 Options 版本）
+const _switchLayout = () => {
+  const current = appStore.layout
+  appStore.setLayout(current === 'sidemenu' ? 'topmenu' : 'sidemenu')
+}
+
+const openInfoDialog = () => {
+  ;(infoDialog.value as any)?.open()
 }
 </script>
 <style lang="scss" scoped>
@@ -159,16 +182,14 @@ export default class Personal extends Vue {
 .user-dropdown {
   background: #2c2e3b;
   border-color: #2c2e3b;
-  ::v-deep {
-    .popper__arrow {
-      display: none;
-    }
-    .el-dropdown-menu__item {
-      color: #ccc;
-      &:hover {
-        background: #2d8cf0;
-        color: #fff;
-      }
+  ::v-deep(.popper__arrow) {
+    display: none;
+  }
+  ::v-deep(.el-dropdown-menu__item) {
+    color: #ccc;
+    &:hover {
+      background: #2d8cf0;
+      color: #fff;
     }
   }
 }

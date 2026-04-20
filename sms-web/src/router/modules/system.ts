@@ -1,4 +1,6 @@
-const system = {
+type LazyComponent = () => Promise<unknown>
+
+const system: Record<string, LazyComponent> = {
   SystemDepart: () => import('views/permisson/department.vue'),
   SystemManager: () => import('views/permisson/manager/index.vue'),
   TenantManager: () => import('views/permisson/tenant/index.vue'),
@@ -25,4 +27,5 @@ const system = {
   PluginManagerConfig: () => import('views/permisson/plugins/configIndex.vue'),
   SettingMonitor: () => import('views/configs/setting/monitor/index.vue')
 }
+
 export default system

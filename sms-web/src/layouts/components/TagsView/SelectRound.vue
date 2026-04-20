@@ -3,9 +3,7 @@
     <div class="content"></div>
   </div>
 </template>
-<script>
-export default {}
-</script>
+<script setup lang="ts"></script>
 <style lang="scss" scoped>
 .select-round {
   width: 10px;

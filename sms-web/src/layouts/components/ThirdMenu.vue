@@ -1,44 +1,63 @@
 <template>
   <el-aside width="130px" class="third-menu-container" :class="{ collapsed: isCollapsed }">
-    <div class="menu-title">{{ menuData.meta.title }}</div>
-    <el-menu :default-active="$route.path" router @select="selectItem" class="el-menu-vertical-demo third-menu">
+    <div class="menu-title">{{ menuData.meta && menuData.meta.title }}</div>
+    <el-menu
+      :default-active="route.path"
+      router
+      class="el-menu-vertical-demo third-menu"
+      @select="selectItem"
+    >
       <el-scrollbar class="scrollbar-wrapper">
-        <el-menu-item :index="item.path" v-for="item in menuData.children" :key="item.id">
-          <span slot="title" v-if="!item.hidden">{{ item.meta.title }}</span>
+        <el-menu-item
+          v-for="item in menuData.children"
+          :key="item.id"
+          :index="item.path"
+        >
+          <template #title>
+            <span v-if="!item.hidden">{{ item.meta && item.meta.title }}</span>
+          </template>
         </el-menu-item>
       </el-scrollbar>
     </el-menu>
     <a href="javascript:;" class="subMenuToggle" @click="toggle"></a>
   </el-aside>
 </template>
-<script>
-export default {
-  props: {
-    menuData: {
-      type: Object
-    }
-  },
-  data() {
-    return {
-      isCollapsed: false
-    }
-  },
-  computed: {},
-  created() {},
-  methods: {
-    toggle() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    selectItem(path) {
-      if (this.$route.path.indexOf(path) > -1) {
-        setTimeout(() => {
-          this.$router.push({ name: 'Redirect', query: { path: this.$route.path } })
-        })
-      }
-    }
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+interface ThirdMenuChild {
+  id?: string | number
+  path: string
+  hidden?: boolean
+  meta?: { title?: string; [key: string]: unknown }
+}
+
+interface ThirdMenuData {
+  meta?: { title?: string; [key: string]: unknown }
+  children?: ThirdMenuChild[]
+}
+
+defineProps<{ menuData: ThirdMenuData }>()
+
+const route = useRoute()
+const router = useRouter()
+const isCollapsed = ref<boolean>(false)
+
+function toggle(): void {
+  isCollapsed.value = !isCollapsed.value
+}
+
+function selectItem(path: string): void {
+  if (route.path.indexOf(path) > -1) {
+    setTimeout(() => {
+      router.push({ name: 'Redirect', query: { path: route.path } })
+    })
   }
 }
 </script>
+
 <style lang="scss" scoped>
 .expire-top .third-menu {
   height: calc(100vh - 180px) !important;
@@ -63,7 +82,7 @@ export default {
   border-right: 1px solid #ebebeb;
   .scrollbar-wrapper {
     height: 100%;
-    ::v-deep .el-scrollbar__wrap {
+    :deep(.el-scrollbar__wrap) {
       overflow-x: hidden !important;
     }
   }

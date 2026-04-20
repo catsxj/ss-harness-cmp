@@ -1,70 +1,72 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import './public-path'
-import Vue from 'vue'
-import router from './router/index'
-import store from './store'
-import startPermission from './permission'
-import './errorLog'
-import './common/components/index'
-import ElementUI from 'element-ui'
-import '@/common/css/element-variables.scss'
-// @ts-ignore
+import { createApp, type App as VueApp } from 'vue'
+import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import * as ElIcons from '@element-plus/icons-vue'
+
 import App from './App.vue'
-import 'vue2-animate/dist/vue2-animate.min.css'
-import CmpEcharts from 'cmp-echarts'
-import 'cmp-echarts/lib/cmp-echarts.css'
-import './common/directive'
-// import i18n from './lang' // internationalization
-import CmpElement from 'cmp-element'
-import 'cmp-element/lib/cmp-element.css'
-import './icons'
-import VueCompositionAPI from '@vue/composition-api'
-import rules from '@/validate/index'
+import router, { asyncRouterMap } from './router'
+import setupPermissionGuard from './permission'
+import { registerErrorHandlers } from './errorLog'
+import { registerDirectives } from './common/directive'
+import { registerGlobalComponents } from './common/components'
+import { useAppStore, usePermissionStore } from './stores'
 import actions from './shared/action'
+import './icons'
+import '@/common/css/element-variables.scss'
 
-Vue.use(ElementUI, { size: 'small' })
-Vue.use(VueCompositionAPI)
-Vue.use(CmpElement, { rules })
-Vue.use(CmpEcharts)
-Vue.config.productionTip = false
+// TODO: cmp-element / cmp-echarts / cmp-socket - 自研包不兼容 Vue 3
+// 原 Vue.use(CmpElement, { rules }) 已移除；组件层在 Stage 2 直接使用 Element Plus
+// rules 由 @/validate/index.ts 直接 import 使用
 
-let instance: any = null
-function render(props: any = {}) {
-  const { mainRouter = router, container, appPath = '' } = props
-  instance = new Vue({
-    data: {
-      mainRouter
-    },
-    router,
-    store,
-    render: (h) => h(App)
-  }).$mount(container ? container.querySelector('#app') : '#app')
-  store.commit('SET_APP_PATH', appPath)
+let instance: VueApp | null = null
+const pinia = createPinia()
+
+function render(props: Record<string, any> = {}): void {
+  const { container, appPath = '' } = props
+  instance = createApp(App)
+  instance.use(pinia)
+  instance.use(router)
+  instance.use(ElementPlus, { size: 'small' })
+  Object.entries(ElIcons).forEach(([name, comp]) => {
+    instance!.component(`ElIcon${name}`, comp as any)
+  })
+  registerDirectives(instance)
+  registerGlobalComponents(instance)
+  registerErrorHandlers(instance)
+  setupPermissionGuard(router)
+
+  const mountEl = container ? container.querySelector('#app') : '#app'
+  instance.mount(mountEl)
+
+  useAppStore().setAppPath(appPath)
 }
+
 if (!(window as any).__POWERED_BY_QIANKUN__) {
   console.log('独立运行子应用')
-  startPermission()
   render()
 }
-export async function bootstrap() {
-  console.log('sms app bootstraped')
+
+export async function bootstrap(): Promise<void> {
+  console.log('sms app bootstrapped')
 }
 
-export async function mount(props: any) {
+export async function mount(props: any): Promise<void> {
   console.log('sms app mounted')
   render(props)
   actions.init(props, (state: any) => {
     const { permissions, userData } = state
-    userData && store.commit('SET_USERDATA', userData)
-    if (!store.getters.addRoutes && permissions) {
-      store.dispatch('permission/GenerateRoutes')
+    const appStore = useAppStore()
+    const permissionStore = usePermissionStore()
+    if (userData) appStore.setUserData(userData)
+    if (!permissionStore.addRoutes && permissions) {
+      permissionStore.generateRoutes(asyncRouterMap, router, permissions)
     }
   })
 }
 
-export async function unmount() {
-  instance.$destroy()
-  instance.$el.innerHTML = ''
+export async function unmount(): Promise<void> {
+  instance?.unmount()
   instance = null
 }

@@ -1,42 +1,37 @@
-/** * Created by HaijunZhang on 2019/12/18. */
 <template>
   <el-header class="common-header" :style="style">
     <div class="header-logo">
       <img :src="pageConfigs.headerLogo" alt="" class="pull-left" />
     </div>
-    <el-divider class="split-line" direction="vertical"></el-divider>
+    <el-divider class="split-line" direction="vertical" />
     <router-link to="/resource_dashboard">
-      <i class="el-icon-s-home home-icon m-r"></i>
+      <el-icon class="home-icon m-r"><HomeFilled /></el-icon>
     </router-link>
-    <HeaderMenu :page-configs="pageConfigs"></HeaderMenu>
+    <HeaderMenu :page-configs="pageConfigs" />
     <RightContent />
   </el-header>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { HomeFilled } from '@element-plus/icons-vue'
 import RightContent from './rightContent.vue'
 import HeaderMenu from './headerMenu.vue'
-import { computed } from '@vue/composition-api'
+import { useAppStore } from '@/stores'
 
-export default {
-  components: {
-    RightContent,
-    HeaderMenu
-  },
-  setup(props, context) {
-    const pageConfigs = computed(() => context.root.$store.getters.pageConfig)
-    const style = computed(() => {
-      return {
-        backgroundColor: pageConfigs.value.headerBgColour,
-        color: pageConfigs.value.headerFontColour
-      }
-    })
-    return {
-      pageConfigs,
-      style
-    }
-  }
+interface PageConfig {
+  headerLogo?: string
+  headerBgColour?: string
+  headerFontColour?: string
+  [key: string]: unknown
 }
+
+const appStore = useAppStore()
+const pageConfigs = computed<PageConfig>(() => appStore.pageConfig as PageConfig)
+const style = computed(() => ({
+  backgroundColor: pageConfigs.value.headerBgColour,
+  color: pageConfigs.value.headerFontColour
+}))
 </script>
 
 <style lang="scss" scoped>
@@ -54,7 +49,7 @@ export default {
   overflow: hidden;
   background: #2c2e3b;
   color: #b9b9ba;
-  & ::v-deep .el-dropdown {
+  & :deep(.el-dropdown) {
     color: inherit !important;
   }
   .header-logo {
@@ -74,6 +69,10 @@ export default {
     line-height: 43px;
     cursor: pointer;
     margin-left: 15px;
+  }
+  .home-icon {
+    font-size: 20px;
+    vertical-align: middle;
   }
 }
 </style>

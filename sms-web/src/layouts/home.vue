@@ -1,18 +1,28 @@
 <template>
-  <el-container class="app-wrapper" :class="[{ hideSidebar: isCollapsed }, { 'font-big': isFontBig }, { 'expire-top': expire }]">
+  <el-container
+    class="app-wrapper"
+    :class="[{ hideSidebar: isCollapsed }, { 'font-big': isFontBig }, { 'expire-top': expire }]"
+  >
     <SystemTip />
-    <Header :match-path="matchPath" :is-top="isTop" @selectItem="selectItem"></Header>
-    <TagsView></TagsView>
+    <Header :match-path="matchPath" :is-top="isTop" @selectItem="selectItem" />
+    <TagsView />
     <el-container style="overflow: hidden">
-      <Sidebar v-if="menuData.length" :theme="theme" :isCollapsed="isCollapsed" :menuData="menuData" :isLimitLevel="true" :matchPath="matchPath" :basePath="basePath" :select-item="selectItem"></Sidebar>
+      <Sidebar
+        v-if="menuData.length"
+        :theme="theme"
+        :is-collapsed="isCollapsed"
+        :menu-data="menuData"
+        :is-limit-level="true"
+        :match-path="matchPath"
+        :base-path="basePath"
+        :select-item="selectItem"
+      />
       <el-container class="main-container">
-        <!-- <ThirdMenu :menuData="thirdMenuData" v-if="thirdMenuData.children"></ThirdMenu> -->
         <el-main class="main-body">
           <el-scrollbar class="custom-scrollbar" style="flex: 1">
             <transition enter-active-class="fadeInUp" mode="out-in">
-              <App />
+              <AppShell />
             </transition>
-            <!-- <el-backtop target=".custom-scrollbar .el-scrollbar__wrap" :right="5"></el-backtop> -->
           </el-scrollbar>
         </el-main>
       </el-container>
@@ -20,110 +30,100 @@
   </el-container>
 </template>
 
-<script>
-import { mapState } from 'vuex'
+<script setup lang="ts">
+import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { trimStart, cloneDeep } from 'lodash-es'
 import Sidebar from './components/sidebar/sidebar.vue'
-// import ThirdMenu from './components/ThirdMenu.vue'
 import Header from './components/Header.vue'
 import TagsView from './components/TagsView/index.vue'
 import SystemTip from './components/SystemTip.vue'
-import App from './app.vue'
-export default {
-  components: {
-    Header,
-    SystemTip,
-    Sidebar,
-    // ThirdMenu,
-    TagsView,
-    App
-  },
-  data() {
-    return {
-      thirdMenuData: {},
-      matchPath: '',
-      desktop_layout: false
-    }
-  },
-  computed: {
-    ...mapState({
-      theme: (state) => state.app.theme,
-      isCollapsed: (state) => state.app.isCollapsed,
-      menuData: (state) => state.app.sideMenuData,
-      addRoutes: (state) => state.permission.addRoutes,
-      basePath: (state) => state.app.basePath,
-      layout: (state) => state.app.layout,
-      expire: (state) => state.app.expire,
-      isFontBig: (state) => state.app.pageConfig.contentFontSize === 'big'
-    }),
-    isTop() {
-      return this.layout === 'topmenu'
-    }
-  },
-  watch: {
-    $route() {
-      this.handlePath()
-    }
-  },
-  created() {
-    this.handlePath()
-    this.$store.commit('permission/SET_BUTTONS')
-    this.$store.dispatch('GetSystemConfigs')
-    this.desktop_layout = window.parent.DESKTOP_LAYOUT
-  },
-  methods: {
-    // 获取三级菜单数据
-    getThirdMenu(data, matchPath) {
-      for (const items of data) {
-        if (matchPath.includes(items.path) && items.children) {
-          if (matchPath === items.path) {
-            const thirdMenuData = cloneDeep(items)
-            // 对三级菜单隐藏的数据做剔除
-            const children = []
-            items.children = items.children || []
-            items.children.forEach((_) => {
-              if (!_.hidden) children.push(_)
-            })
-            this.thirdMenuData = Object.assign(thirdMenuData, { children: children.length ? children : null })
-          } else {
-            this.getThirdMenu(items.children, matchPath)
-          }
-          break
-        }
+import AppShell from './app.vue'
+import { useAppStore, usePermissionStore } from '@/stores'
+
+interface MenuNode {
+  path: string
+  hidden?: boolean
+  children?: MenuNode[]
+  [key: string]: unknown
+}
+
+const route = useRoute()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
+
+const theme = computed(() => appStore.theme)
+const isCollapsed = computed(() => appStore.isCollapsed)
+const menuData = computed(() => appStore.sideMenuData as MenuNode[])
+const basePath = computed(() => appStore.basePath)
+const layout = computed(() => appStore.layout)
+const expire = computed(() => appStore.expire)
+const isFontBig = computed(() => (appStore.pageConfig as { contentFontSize?: string }).contentFontSize === 'big')
+const addRoutes = computed(() => (permissionStore.addRoutes ?? []) as MenuNode[])
+const isTop = computed(() => layout.value === 'topmenu')
+
+const thirdMenuData = ref<Record<string, unknown>>({})
+const matchPath = ref<string>('')
+const desktopLayout = ref<boolean>(false)
+
+function getLevelPath(level: number): string {
+  return `/${trimStart(route.path, '/').split('/', level).join('/')}`
+}
+
+function getThirdMenu(data: MenuNode[], target: string): void {
+  for (const items of data) {
+    if (target.includes(items.path) && items.children) {
+      if (target === items.path) {
+        const cloned = cloneDeep(items)
+        const children: MenuNode[] = []
+        const list = items.children || []
+        list.forEach((item) => {
+          if (!item.hidden) children.push(item)
+        })
+        thirdMenuData.value = Object.assign(cloned, { children: children.length ? children : null })
+      } else {
+        getThirdMenu(items.children, target)
       }
-    },
-    // 截取当前路径
-    getLevelPath(level) {
-      return `/${trimStart(this.$route.path, '/').split('/', level).join('/')}`
-    },
-    // 处理路径，获取匹配的路由以及获取第三级菜单的数据
-    handlePath() {
-      this.matchPath = this.getLevelPath(3)
-      // 确保刷新先更新menuData再去获取三级菜单数据
-      setTimeout(() => {
-        const pathLen = this.$route.path.split('/').length
-        this.thirdMenuData = {}
-        if (pathLen >= 6) {
-          // 寻找四级菜单
-          this.getThirdMenu(this.addRoutes, this.getLevelPath(4))
-        } else if (pathLen >= 5) {
-          // 寻找三级菜单
-          this.getThirdMenu(this.addRoutes, this.matchPath)
-        }
-      })
-    },
-    // 选择菜单处理，主要处理当前菜单二次点击
-    selectItem(path) {
-      // const matchPath = [path, `${path}/list`]
-      // if (matchPath.includes(this.$route.path)) {
-      //   setTimeout(() => {
-      //     this.$router.push({ name: 'Redirect', query: { path: path } })
-      //   })
-      // }
+      break
     }
   }
 }
+
+function handlePath(): void {
+  matchPath.value = getLevelPath(3)
+  setTimeout(() => {
+    const pathLen = route.path.split('/').length
+    thirdMenuData.value = {}
+    if (pathLen >= 6) {
+      getThirdMenu(addRoutes.value, getLevelPath(4))
+    } else if (pathLen >= 5) {
+      getThirdMenu(addRoutes.value, matchPath.value)
+    }
+  })
+}
+
+function selectItem(_path: string): void {
+  // 保留接口，原逻辑注释，不做二次点击跳转处理
+}
+
+watch(
+  () => route.path,
+  () => {
+    handlePath()
+  }
+)
+
+handlePath()
+permissionStore.setButtons()
+appStore.getSystemConfigs()
+
+onMounted(() => {
+  desktopLayout.value = Boolean((window.parent as unknown as { DESKTOP_LAYOUT?: boolean }).DESKTOP_LAYOUT)
+})
+
+defineExpose({ selectItem, thirdMenuData, desktopLayout })
 </script>
+
 <style lang="scss" scoped>
 .app-wrapper {
   background: #e7f4ff;

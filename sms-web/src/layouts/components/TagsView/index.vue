@@ -1,13 +1,15 @@
 <template>
   <div id="tags-view-container" class="tags-view" v-show="isShow()">
     <ScrollPanel ref="scrollRef">
-      <router-link v-for="(tag, index) in visitedViews" :key="tag.path" :to="tag" class="tags-item" :class="isActive(tag) && 'active'" @contextmenu.prevent.stop.native="openMenu(tag, index, $event)">
-        <span class="line"></span>
-        <span class="">{{ tag.title }}</span>
-        <i class="el-icon-close" v-if="!tag.meta.fix" @click.prevent.stop="closeSelectedTag(tag, index)"></i>
-        <span v-if="isActive(tag)">
-          <SelectRound class="left"></SelectRound>
-          <SelectRound></SelectRound>
+      <router-link v-for="(tag, index) in visitedViews" :key="tag.path" :to="tag" custom v-slot="{ navigate }">
+        <span class="tags-item" :class="isActive(tag) && 'active'" @click="navigate" @contextmenu.prevent.stop="openMenu(tag, index, $event)">
+          <span class="line"></span>
+          <span class="">{{ tag.title }}</span>
+          <el-icon v-if="!tag.meta.fix" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag, index)"><Close /></el-icon>
+          <span v-if="isActive(tag)">
+            <SelectRound class="left"></SelectRound>
+            <SelectRound></SelectRound>
+          </span>
         </span>
       </router-link>
     </ScrollPanel>
@@ -22,187 +24,193 @@
   </div>
 </template>
 
-<script>
-import { onMounted, reactive, toRefs, watch, ref, computed, onUnmounted } from '@vue/composition-api'
+<script setup lang="ts">
+import { onMounted, reactive, watch, ref, computed, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Close } from '@element-plus/icons-vue'
 import ScrollPanel from './ScrollPanel.vue'
 import SelectRound from './SelectRound.vue'
 import { resolvePath } from 'utils/resolvePath'
 import { nth } from 'lodash-es'
-export default {
-  components: { ScrollPanel, SelectRound },
-  setup(props, context) {
-    const state = reactive({
-      visible: false,
-      top: 0,
-      left: 0,
-      selectedTag: {},
-      fixTags: [],
-      selectIndex: 0
-    })
-    const scrollRef = ref(null)
-    const { $store, $router } = context.root
-    const visitedViews = computed(() => context.root.$store.state.tagsView.visitedViews)
-    onMounted(() => {
-      addFixTags()
-      addTags()
-      document.body.addEventListener('click', closeMenu)
-    })
-    onUnmounted(() => {
-      document.body.removeEventListener('click', closeMenu)
-    })
-    watch(
-      () => context.root.$route.path,
-      () => {
-        addTags()
-      }
-    )
-    // 是否为激活状态
-    const isActive = (route) => {
-      const {
-        meta: { parentTag }
-      } = context.root.$route
-      let { path } = context.root.$route
-      if (parentTag) {
-        path = resolvePath(path, '..')
-      }
-      return route.path === path
-    }
-    // 是否隐藏
-    const isShow = () => {
-      return !['/resource_dashboard', 'ScreenList', '/test'].includes(context.root.$route.path)
-    }
-    const getFixTags = (routes) => {
-      const tags = []
-      routes.forEach((item) => {
-        const { meta, name, path, params, children } = item
-        if (meta && meta.fix) {
-          tags.push({
-            meta,
-            name,
-            path,
-            params,
-            children
-          })
-        }
-        if (children && children.length) {
-          tags.push(...getFixTags(children))
-        }
-      })
-      return tags
-    }
-    const routes = computed(() => context.root.$store.getters.addRoutes)
-    const addFixTags = () => {
-      const fixTags = getFixTags(routes.value)
-      fixTags.forEach((tag) => {
-        context.root.$store.dispatch('tagsView/addView', tag)
-      })
-    }
-    const addTags = () => {
-      const {
-        $route: {
-          meta: { parentTag },
-          matched
-        }
-      } = context.root
-      let { $route: route } = context.root
-      // 三级菜单展示父级tag
-      if (parentTag) {
-        route = nth(matched, -2)
-      }
-      const { path } = route
-      if (path) {
-        state.activeName = path
-        context.root.$store.dispatch('tagsView/addView', route)
-      }
-      setTimeout(() => {
-        scrollRef.value.scrollToactive()
-      })
-      return false
-    }
-    // 关闭标签
-    const closeSelectedTag = (view, index = state.selectIndex) => {
-      state.selectIndex = index
-      $store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {
-        if (isActive(view)) {
-          toNextView(visitedViews)
-        }
-      })
-    }
-    // 关闭其他标签
-    const closeOthersTags = () => {
-      if (!isActive(state.selectedTag)) $router.push(state.selectedTag)
-      $store.dispatch('tagsView/delOthersViews', state.selectedTag)
-    }
-    // 关闭所有标签
-    const closeAllTags = (view) => {
-      $store.dispatch('tagsView/delAllViews').then(({ visitedViews }) => {})
-    }
-    // 关闭左侧标签
-    const closeLeftTags = (view) => {
-      const left = visitedViews.value.slice(0, state.selectIndex)
-      scrollToCurrent(left, view)
-      $store.dispatch('tagsView/delLeftViews', { view, index: state.selectIndex })
-    }
-    // 关闭左右标签后 当前页出来
-    const scrollToCurrent = (views, view) => {
-      const {
-        $route: { path }
-      } = context.root
-      if (views.some((v) => v.path === path)) {
-        $router.push(view.path)
-      }
-    }
-    // 关闭右侧标签
-    const closeRightTags = (view) => {
-      const right = visitedViews.value.slice(state.selectIndex + 1)
-      scrollToCurrent(right, view)
-      $store.dispatch('tagsView/delRightViews', { view, index: state.selectIndex })
-    }
-    // 移动下一个标签
-    const toNextView = (visitedViews) => {
-      // 获取关闭页签的上一个坐标
-      const index = state.selectIndex - 1 > 0 ? state.selectIndex - 1 : 0
-      const latestView = visitedViews[index]
-      if (latestView) {
-        $router.push(latestView.fullPath)
-      } else {
-        $router.push('/')
-      }
-    }
-    // 打开操作菜单
-    const openMenu = (tag, index, e) => {
-      const menuMinWidth = 105
-      const maxLeft = window.innerWidth - menuMinWidth // left boundary
-      const left = e.clientX + 15 // 15: margin right
-      if (left > maxLeft) {
-        state.left = maxLeft
-      } else {
-        state.left = left
-      }
-      state.top = e.clientY + 10
-      state.visible = true
-      state.selectedTag = tag
-      state.selectIndex = index
-    }
-    // 关闭菜单
-    function closeMenu() {
-      state.visible = false
-    }
-    return {
-      ...toRefs(state),
-      scrollRef,
-      isActive,
-      isShow,
-      visitedViews,
-      closeSelectedTag,
-      closeOthersTags,
-      closeAllTags,
-      closeLeftTags,
-      closeRightTags,
-      closeMenu,
-      openMenu
-    }
+import { usePermissionStore, useTagsViewStore } from '@/stores'
+import type { TagView } from '@/stores/tagsView'
+
+interface RouteLike {
+  path: string
+  name?: string
+  params?: Record<string, unknown>
+  meta?: Record<string, unknown>
+  children?: RouteLike[]
+  fullPath?: string
+}
+
+// TODO: type - ScrollPanel 子组件通过 ref 暴露 scrollToactive
+const scrollRef = ref<any>(null)
+const route = useRoute()
+const router = useRouter()
+const permissionStore = usePermissionStore()
+const tagsViewStore = useTagsViewStore()
+
+const state = reactive<{
+  visible: boolean
+  top: number
+  left: number
+  selectedTag: Partial<TagView> & { meta?: Record<string, unknown> }
+  fixTags: TagView[]
+  selectIndex: number
+}>({
+  visible: false,
+  top: 0,
+  left: 0,
+  selectedTag: {},
+  fixTags: [],
+  selectIndex: 0
+})
+
+const visible = computed(() => state.visible)
+const top = computed(() => state.top)
+const left = computed(() => state.left)
+const selectedTag = computed(() => state.selectedTag)
+const selectIndex = computed(() => state.selectIndex)
+
+const visitedViews = computed(() => tagsViewStore.visitedViews)
+
+onMounted(() => {
+  addFixTags()
+  addTags()
+  document.body.addEventListener('click', closeMenu)
+})
+onUnmounted(() => {
+  document.body.removeEventListener('click', closeMenu)
+})
+watch(
+  () => route.path,
+  () => {
+    addTags()
   }
+)
+// 是否为激活状态
+const isActive = (tag: TagView) => {
+  const parentTag = (route.meta as any)?.parentTag
+  let path = route.path
+  if (parentTag) {
+    path = resolvePath(path, '..')
+  }
+  return tag.path === path
+}
+// 是否隐藏
+const isShow = () => {
+  return !['/resource_dashboard', 'ScreenList', '/test'].includes(route.path)
+}
+const getFixTags = (routes: RouteLike[]): TagView[] => {
+  const tags: TagView[] = []
+  routes.forEach((item) => {
+    const { meta, name, path, params, children } = item
+    if (meta && (meta as any).fix) {
+      tags.push({
+        meta: meta as TagView['meta'],
+        name: name as string,
+        path,
+        params,
+        children
+      } as TagView)
+    }
+    if (children && children.length) {
+      tags.push(...getFixTags(children))
+    }
+  })
+  return tags
+}
+const routes = computed<RouteLike[]>(() => (permissionStore.addRoutes as unknown as RouteLike[]) || [])
+const addFixTags = () => {
+  const fixTags = getFixTags(routes.value)
+  fixTags.forEach((tag) => {
+    tagsViewStore.addView(tag)
+  })
+}
+const addTags = () => {
+  const parentTag = (route.meta as any)?.parentTag
+  const matched = route.matched
+  let target: any = route
+  // 三级菜单展示父级tag
+  if (parentTag) {
+    target = nth(matched as any[], -2)
+  }
+  const path = target?.path
+  if (path) {
+    tagsViewStore.addView(target as TagView)
+  }
+  setTimeout(() => {
+    scrollRef.value?.scrollToactive()
+  })
+  return false
+}
+// 关闭标签
+const closeSelectedTag = (view: TagView, index = state.selectIndex) => {
+  state.selectIndex = index
+  tagsViewStore.delView(view).then(({ visitedViews }) => {
+    if (isActive(view)) {
+      toNextView(visitedViews)
+    }
+  })
+}
+// 关闭其他标签
+const closeOthersTags = () => {
+  if (!isActive(state.selectedTag as TagView)) router.push(state.selectedTag as any)
+  tagsViewStore.delOthersViews(state.selectedTag as TagView)
+}
+// 关闭所有标签
+const closeAllTags = (_view: TagView) => {
+  tagsViewStore.delAllViews()
+}
+// 关闭左侧标签
+const closeLeftTags = (view: TagView) => {
+  const left = visitedViews.value.slice(0, state.selectIndex)
+  scrollToCurrent(left, view)
+  tagsViewStore.delLeftViews({ view, index: state.selectIndex })
+}
+// 关闭左右标签后 当前页出来
+const scrollToCurrent = (views: TagView[], view: TagView) => {
+  const path = route.path
+  if (views.some((v) => v.path === path)) {
+    router.push(view.path)
+  }
+}
+// 关闭右侧标签
+const closeRightTags = (view: TagView) => {
+  const right = visitedViews.value.slice(state.selectIndex + 1)
+  scrollToCurrent(right, view)
+  tagsViewStore.delRightViews({ view, index: state.selectIndex })
+}
+// 移动下一个标签
+const toNextView = (views: TagView[]) => {
+  // 获取关闭页签的上一个坐标
+  const index = state.selectIndex - 1 > 0 ? state.selectIndex - 1 : 0
+  const latestView = views[index]
+  if (latestView) {
+    router.push((latestView as any).fullPath || latestView.path)
+  } else {
+    router.push('/')
+  }
+}
+// 打开操作菜单
+const openMenu = (tag: TagView, index: number, e: MouseEvent) => {
+  const menuMinWidth = 105
+  const maxLeft = window.innerWidth - menuMinWidth // left boundary
+  const leftPos = e.clientX + 15 // 15: margin right
+  if (leftPos > maxLeft) {
+    state.left = maxLeft
+  } else {
+    state.left = leftPos
+  }
+  state.top = e.clientY + 10
+  state.visible = true
+  state.selectedTag = tag
+  state.selectIndex = index
+}
+// 关闭菜单
+function closeMenu() {
+  state.visible = false
 }
 </script>
 

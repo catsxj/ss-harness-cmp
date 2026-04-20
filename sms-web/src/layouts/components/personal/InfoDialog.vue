@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="个人信息" ref="dialog" :close-on-click-modal="false" :visible.sync="visible">
+  <el-dialog title="个人信息" :close-on-click-modal="false" v-model="visible">
     <basic-form :model="userData" ref="formRef">
       <el-row :gutter="5">
         <el-col :span="10">
@@ -45,73 +45,86 @@
             <img :src="userData.portrait" alt="" />
           </div>
           <div class="info-btn">
-            <el-button icon="el-icon-upload2" @click="imageCropperShow = true">更换头像</el-button>
+            <el-button @click="imageCropperShow = true">
+              <el-icon><Upload /></el-icon>
+              更换头像
+            </el-button>
           </div>
         </el-col>
       </el-row>
     </basic-form>
     <image-cropper field="files" @crop-success="imageCropSuccess" v-if="imageCropperShow" v-model="imageCropperShow" :width="size" :height="size" img-format="png"></image-cropper>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="editSubmit">更新信息</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="editSubmit">更新信息</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
-<script>
-import { Message } from 'element-ui'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Upload } from '@element-plus/icons-vue'
 import { cloneDeep } from 'lodash-es'
 import ImageCropper from 'components/image-cropper/index.vue'
 import { modifyUser } from 'services/system/manager'
-import { reactive, toRefs, ref } from '@vue/composition-api'
-export default {
-  props: {
-    data: {
-      type: Object
-    }
-  },
-  components: {
-    ImageCropper
-  },
-  setup(props, context) {
-    const state = reactive({
-      imageCropperShow: false,
-      size: 65,
-      visible: false,
-      userData: {}
-    })
-    function open() {
-      state.userData = cloneDeep(props.data)
-      state.visible = true
-    }
-    function imageCropSuccess(imageDataUrl) {
-      state.userData.portrait = imageDataUrl
-    }
-    const formRef = ref(null)
-    function editSubmit() {
-      formRef.value.validate((valid) => {
-        if (valid) {
-          modifyUser(state.userData).then((data) => {
-            if (data.success) {
-              Message({
-                message: data.message,
-                type: 'success'
-              })
-              state.visible = false
-              context.root.$store.dispatch('GetUserInfo')
-            }
+import { useAppStore } from '@/stores'
+
+interface UserInfo {
+  id?: string | number
+  account?: string
+  name?: string
+  email?: string
+  mobile?: string
+  company?: string
+  departName?: string
+  portrait?: string
+  [key: string]: unknown
+}
+
+const props = defineProps<{
+  data?: UserInfo
+}>()
+
+const imageCropperShow = ref(false)
+const size = ref(65)
+const visible = ref(false)
+const userData = ref<UserInfo>({})
+
+// TODO: type - basic-form 实例无公开类型
+const formRef = ref<any>(null)
+
+const appStore = useAppStore()
+
+function open() {
+  userData.value = cloneDeep(props.data || {})
+  visible.value = true
+}
+
+function imageCropSuccess(imageDataUrl: string) {
+  userData.value.portrait = imageDataUrl
+}
+
+function editSubmit() {
+  formRef.value?.validate((valid: boolean) => {
+    if (valid) {
+      modifyUser(userData.value).then((data: any) => {
+        if (data.success) {
+          ElMessage({
+            message: data.message,
+            type: 'success'
           })
+          visible.value = false
+          appStore.getUserInfo()
         }
       })
     }
-    return {
-      ...toRefs(state),
-      formRef,
-      open,
-      editSubmit,
-      imageCropSuccess
-    }
-  },
-  methods: {}
+  })
 }
+
+defineExpose({
+  open
+})
 </script>
 <style lang="scss" scoped>
 .info-header-title {
