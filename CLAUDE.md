@@ -18,7 +18,7 @@
 | 4 | [.claude/memory/feedback_keep_build_tool.md](.claude/memory/feedback_keep_build_tool.md) | **构建工具约束：不要把 Vue CLI 换成 Vite** | 迁移前必读 |
 | 5 | [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) | 10 条踩坑记录（ECharts 空值、seamless-scroll、CSS ~前缀等） | 迁移前必读 |
 | 6 | [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) | 文档索引：upgrade-plan、agent 方案、迁移总结等文档位置 | 需要时查阅 |
-| 7 | [.claude/skills/vue2-to-vue3-migration/SKILL.md](.claude/skills/vue2-to-vue3-migration/SKILL.md) | 迁移技能：4 阶段流程、代码改写模板、替换对照表 | 执行迁移时加载 |
+| 7 | [.claude/skills/vue2-to-vue3-migration/SKILL.md](.claude/skills/vue2-to-vue3-migration/SKILL.md) | 迁移技能：5 阶段流程、代码改写模板、替换对照表 | 执行迁移时加载 |
 | 8 | [docs/migration-notes/](docs/migration-notes/) | 各子应用迁移总结（按子应用名命名） | 迁移前参考已完成的子应用 |
 | 9 | [docs/rollback-plan.md](docs/rollback-plan.md) | 回滚方案：Git 回滚 + Qiankun 运行时切换 | 迁移上线前确认 |
 | 10 | [docs/coexistence-testing.md](docs/coexistence-testing.md) | Vue 2 + Vue 3 新旧共存联调测试清单 | 每个子应用迁完后跑 |
@@ -29,6 +29,10 @@
 | 15 | [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) | Pre-commit Hook（husky + lint-staged 自动拦截） | 项目初始化时配置 |
 | 16 | [docs/architecture-lint-rules.md](docs/architecture-lint-rules.md) | 分层依赖 ESLint 规则（自动拦截违规 import） | 项目初始化时配置 |
 | 17 | [docs/tech-debt-tracking.md](docs/tech-debt-tracking.md) | 技术债追踪（TODO 规范、扫描命令、偿还策略） | 每个子应用迁完后更新 |
+| 18 | [agent-parallel-plan.md](agent-parallel-plan.md) | Agent 并行总方案（各阶段并行度、worktree 工作流） | 需要并行迁移时参考 |
+| 19 | [agent-parallel-all-apps.md](agent-parallel-all-apps.md) | 各子应用并行拆分方案（cmp/cms/cos） | 迁移具体子应用时参考 |
+| 20 | [agent-parallel-sms-web.md](agent-parallel-sms-web.md) | sms-web 三路并行细化方案 | 迁移 sms-web 时参考 |
+| 21 | [agent-auto-parallel.md](agent-auto-parallel.md) | 全自动无人工 Review 并行方案 | 试点验证后使用 |
 
 ---
 
@@ -155,6 +159,58 @@ Vue.prototype.xxx / filters / mixins / Options API
 - 全局通信用 initGlobalState
 - 卸载时清理所有副作用
 ```
+
+---
+
+## 单个子应用迁移完整生命周期
+
+### Phase A：迁移前准备
+
+```
+[ ] 1. 读完 CLAUDE.md + .claude/memory/ 下所有文件
+[ ] 2. 读完 docs/migration-notes/ 中已完成子应用的踩坑记录
+[ ] 3. 确认浏览器兼容性（docs/browser-compatibility.md）
+[ ] 4. 给旧版本打 tag：git tag v2-{app-name}
+[ ] 5. 从 develop 切出分支：git checkout -b feature/migrate-{app-name}
+[ ] 6. 记录迁移前的性能基线（docs/performance-baseline.md）
+```
+
+### Phase B：执行迁移
+
+```
+按 .claude/skills/vue2-to-vue3-migration/SKILL.md 的 5 个 Stage 执行：
+  Stage 1: 串行基础层（main.ts / store / router / utils / services）
+  Stage 2: 并行迁移 .vue 文件
+  Stage 3: Lint + /simplify 代码质量审查
+  Stage 4: 构建验证（vue-cli-service build）
+  Stage 5: 浏览器功能验证
+```
+
+### Phase C：提交与合并
+
+```
+[ ] 1. eslint 0 errors
+[ ] 2. /simplify 审查通过
+[ ] 3. 构建通过
+[ ] 4. 浏览器验证通过
+[ ] 5. git commit（feature 分支）
+[ ] 6. git checkout develop && git merge feature/migrate-{app-name} --no-ff
+[ ] 7. git push origin develop
+```
+
+### Phase D：迁移后收尾
+
+```
+[ ] 1. 更新 CLAUDE.md 的"迁移顺序与状态"（⬜ → ✅）
+[ ] 2. 在 docs/migration-notes/{app-name}.md 写迁移总结
+[ ] 3. 更新 docs/tech-debt-tracking.md 的技术债记录表
+[ ] 4. 记录迁移后的性能数据（docs/performance-baseline.md）
+[ ] 5. 跑 Vue 2 + Vue 3 新旧共存联调测试（docs/coexistence-testing.md）
+[ ] 6. 将新踩坑记录补充到 CLAUDE.md 失败案例 + .claude/memory/project_cmp_pitfalls.md
+[ ] 7. 确认回滚方案就绪（docs/rollback-plan.md）
+```
+
+**每迁完一个子应用，Phase D 的 7 步必须全部完成后再开始下一个子应用。**
 
 ---
 
