@@ -20,6 +20,12 @@
 | 6 | [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) | 文档索引：upgrade-plan、agent 方案、迁移总结等文档位置 | 需要时查阅 |
 | 7 | [.claude/skills/vue2-to-vue3-migration/SKILL.md](.claude/skills/vue2-to-vue3-migration/SKILL.md) | 迁移技能：4 阶段流程、代码改写模板、替换对照表 | 执行迁移时加载 |
 | 8 | [docs/migration-notes/](docs/migration-notes/) | 各子应用迁移总结（按子应用名命名） | 迁移前参考已完成的子应用 |
+| 9 | [docs/rollback-plan.md](docs/rollback-plan.md) | 回滚方案：Git 回滚 + Qiankun 运行时切换 | 迁移上线前确认 |
+| 10 | [docs/coexistence-testing.md](docs/coexistence-testing.md) | Vue 2 + Vue 3 新旧共存联调测试清单 | 每个子应用迁完后跑 |
+| 11 | [docs/production-deploy.md](docs/production-deploy.md) | 生产构建与部署验证清单 | 上线前检查 |
+| 12 | [docs/performance-baseline.md](docs/performance-baseline.md) | 性能基线对比（包体积、加载时间、内存） | 迁移前后记录对比 |
+| 13 | [docs/browser-compatibility.md](docs/browser-compatibility.md) | 浏览器兼容性（Vue 3 不支持 IE11） | 迁移前确认 |
+| 14 | [docs/developer-guide.md](docs/developer-guide.md) | 开发者迁移指南（人读版，代码风格变化） | 新成员入手 |
 
 ---
 
