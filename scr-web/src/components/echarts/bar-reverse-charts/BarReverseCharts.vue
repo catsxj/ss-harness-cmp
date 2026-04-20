@@ -2,113 +2,125 @@
   <div :class="className" :id="id" :style="{height:height,width:width}"></div>
 </template>
 
-<script>
-import mixins, { getLinerColor } from '../mixins'
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useEcharts, getLinerColor, defaultEchartsProps } from '../useEcharts'
 import { yAxis, xAxis, grid } from '../defaultSetting'
+import type { EChartsType } from 'echarts'
 
-export default {
-  mixins: [mixins],
-  data () {
-    return {}
-  },
-  mounted () {
-    this.eveSet()
-  },
-  methods: {
-    // 对画布绑定事件
-    eveSet () {
-      this.chart.on('click', (params) => {
-        const event = params.event.event
-        event.stopPropagation()
-        this.$emit('goToPage', params)
-      })
+const props = defineProps({
+  ...defaultEchartsProps,
+})
+
+const emit = defineEmits<{
+  (e: 'goToPage', params: Record<string, unknown>): void
+}>()
+
+function updateChart(chartInstance: EChartsType) {
+  const legends: string[] = []
+  const series: Record<string, unknown>[] = []
+  const setting = props.setting as Record<string, unknown>
+  const {
+    barColor: [startColor = '#8699FF', endColor = '#4B66FF'] = [],
+    yAxisLabel = {},
+    showXAxis = true,
+  } = setting as Record<string, unknown>
+  const d = props.data as Record<string, unknown>
+  ;(d.values as Array<{ name: string; data: unknown[] }>).forEach((item) => {
+    legends.unshift(item.name)
+    series.push({
+      name: item.name,
+      type: 'bar',
+      smooth: true,
+      stack: 'all',
+      barMaxWidth: 11,
+      itemStyle: {
+        normal: {
+          areaStyle: { type: 'default' },
+          color: getLinerColor(startColor as string, endColor as string),
+        },
+      },
+      data: [...item.data].reverse(),
+      zlevel: 11,
+    })
+  })
+  const options = {
+    color: setting.color,
+    title: {
+      text: d.title,
     },
-    updateChart () {
-      const legends = []
-      const series = []
-      const { barColor: [startColor = '#8699FF', endColor = '#4B66FF'] = [], yAxisLabel = {}, showXAxis = true } = this.setting;
-      this.data.values.forEach(item => {
-        legends.unshift(item.name)
-        series.push({
-          name: item.name,
-          type: 'bar',
-          smooth: true,
-          stack: 'all',
-          barMaxWidth: 11,
-          itemStyle: {
-            normal: {
-              // barBorderRadius: 5,
-              areaStyle: { type: 'default' },
-              color: getLinerColor(startColor, endColor)
-            }
-          },
-          data: item.data.reverse(),
-          zlevel: 11
-        })
-      })
-      const options = {
-        color: this.setting.color,
-        title: {
-          text: this.data.title
+    tooltip: {
+      trigger: 'axis',
+    },
+    toolbox: setting.toolbox,
+    grid: {
+      ...grid,
+      top: 10,
+      left: '1%',
+      right: '5%',
+    },
+    xAxis: [
+      {
+        show: showXAxis,
+        ...xAxis,
+        type: 'value',
+        name: props.unit,
+        splitLine: {
+          show: false,
         },
-        tooltip: {
-          trigger: 'axis'
+        axisTick: {
+          show: false,
         },
-        toolbox: this.setting.toolbox,
-        grid: {
-          ...grid,
-          top: 10,
-          left: '1%',
-          right: '5%'
+        splitArea: {
+          show: false,
+          areaStyle: {
+            color: ['rgba(255,255,255,1)', 'rgba(248,251,255,1)'],
+          },
         },
-        xAxis: [{
-          show: showXAxis,
-          ...xAxis,
-          type: 'value',
-          name: this.unit,
-          splitLine: {
-            show: false
+        axisLabel: {
+          color: '#fff',
+        },
+      },
+    ],
+    yAxis: [
+      {
+        ...yAxis,
+        type: 'category',
+        data: (d.keys as string[]).map((item) => {
+          return item.replace(' ', '\n')
+        }),
+        axisLine: {
+          show: false,
+        },
+        splitLine: {
+          show: false,
+        },
+        axisLabel: {
+          color: '#ffffff',
+          ...(yAxisLabel as Record<string, unknown>),
+        },
+        splitArea: {
+          show: true,
+          areaStyle: {
+            color: ['rgba(0,0,0,0.0)', 'rgba(250,250,250,0.05)'],
           },
-          axisTick: {
-            show: false
-          },
-          splitArea: {
-            show: false,
-            areaStyle: {
-              color: ['rgba(255,255,255,1)', 'rgba(248,251,255,1)']
-            }
-          },
-          axisLabel: {
-            color: '#fff'
-          }
-        }],
-        yAxis: [{
-          ...yAxis,
-          type: 'category',
-          data: this.data.keys.map(item => {
-            return item.replace(' ', '\n')
-          }),
-          axisLine: {
-            show: false
-          },
-          splitLine: {
-            show: false
-          },
-          axisLabel: {
-            color: '#ffffff',
-            ...yAxisLabel
-          },
-          splitArea: {
-            show: true,
-            areaStyle: {
-              color: ['rgba(0,0,0,0.0)', 'rgba(250,250,250,0.05)']
-            }
-          }
-        }],
-        series: series
-      }
-      this.chart.setOption(options, true)
-    }
+        },
+      },
+    ],
+    series: series,
   }
+  chartInstance.setOption(options, true)
 }
+
+const { chart } = useEcharts(props, updateChart)
+
+onMounted(() => {
+  if (chart.value) {
+    chart.value.on('click', (params: Record<string, unknown>) => {
+      const event = (params.event as Record<string, unknown>)?.event as Event
+      event?.stopPropagation()
+      emit('goToPage', params)
+    })
+  }
+})
 </script>

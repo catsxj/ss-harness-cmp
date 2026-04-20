@@ -27,9 +27,9 @@
 | cmp-web | 子应用 | Vue 2.6 | Vue CLI 4.4 + Vite 2.4 | **521** | 高 | cmp-socket, cmp-echarts, cmp-element |
 | cms-web | 子应用 | Vue 2.6 | Vue CLI 4.4 + Vite 2.4 | **521** | 高 | WangEditor, vue-i18n, vue-class-component |
 | cos-web | 子应用 | Vue 2.6 | Vue CLI 4.4 + Vite 2.4 | **567** | 极高 | cmp-graph, cmp-topology, CodeMirror, ECharts |
-| csc-web | 子应用 | Vue 2.6 | Vue CLI 4.4 + Vite 2.4 | **1,211** | 极高 | cmp-graph, cmp-graph-editor, cmp-echarts, cmp-element, cmp-socket, mavon-editor, CMDB/计费/资源管理 |
+| csc-web | 子应用 | Vue 2.6 | Vue CLI 4.4 + Vite 2.4 | **1,211** | 极高 | **不迁移** — 保持 Vue 2 现状 |
 
-**总计：3,046 个 .vue 文件需迁移（基座已完成）**
+**总计：1,835 个 .vue 文件需迁移（基座已完成，csc-web 不迁移）**
 
 ### 关键发现
 
@@ -50,11 +50,11 @@
 Phase 0  基础设施准备 — monorepo 搭建、CI、模板
 Phase 1  共享层抽离 — 从各子应用提取公共代码
 Phase 2  试点迁移 scr-web — 最小最简单（68 个 .vue）
-Phase 3  批量迁移 sms → cmp → cms → cos → csc
+Phase 3  批量迁移 sms → cmp → cms → cos
 Phase 4  基座优化 + 清理收尾
 ```
 
-**核心变化：基座已经是 Vue 3，不需要迁移基座，重心全在 6 个子应用。csc-web（1,211 .vue）放最后。**
+**核心变化：基座已是 Vue 3，csc-web 不迁移（保持 Vue 2），重心在 5 个子应用。**
 
 ---
 
@@ -468,11 +468,22 @@ Step 7: 回归测试
 ### 2.5 Phase 2 验收标准
 
 ```
-[ ] scr-web（Vue3）在基座中正常运行
+编译级验证（Agent 自动完成）：
+[ ] vue-tsc --noEmit 通过
+[ ] eslint 通过
+[ ] vite build 成功
+
+浏览器级验证（人工在浏览器中逐页确认）：
+[ ] scr-web 在基座中正常加载，无白屏
 [ ] 所有 68 个页面/组件功能与旧版一致
-[ ] 可视化功能正常（Three.js / G6 / Leaflet / ECharts）
-[ ] TypeScript 编译无报错
-[ ] CI 全部通过
+[ ] 可视化功能正常（Three.js 3D 渲染 / G6 图 / Leaflet 地图 / ECharts 图表）
+[ ] 页面间路由切换正常
+[ ] 与基座的全局状态通信正常
+[ ] 样式还原无偏差（对比新旧版截图）
+
+迁移完成 = 浏览器中所有功能正常运行，不只是编译通过。
+发现问题后告诉我，我来修复，直到全部功能正常。
+
 [ ] 迁移过程中的坑已更新到 CLAUDE.md
 ```
 
@@ -491,10 +502,9 @@ sms-web（中等）            ████████░░░░           12
 cmp-web（高）              ██████░░░░░░           521 .vue    ~5-6 周
 cms-web（高+i18n）         █████░░░░░░░           521 .vue    ~5-6 周
 cos-web（极高+graph）      ████░░░░░░░░           567 .vue    ~6-8 周
-csc-web（极高+最大体量）   ██░░░░░░░░░░          1,211 .vue   ~8-12 周
+csc-web                    ────────────           不迁移（保持 Vue 2）
 
 原则：一个迁完上线后，再开下一个。
-csc-web 放最后——体量最大（1,211 .vue），此时团队已有充分经验和 Codemod 工具。
 ```
 
 ### 3.2 各子应用特殊注意事项
@@ -566,54 +576,12 @@ Qiankun lifecycle：已有 ✓
 Qiankun lifecycle：已有 ✓
 ```
 
-#### csc-web（1,211 .vue，~8-12 周）— 最大子应用
+#### csc-web — 不迁移
 
 ```
-项目定位：企业级管理平台
-  - 计费管理（bill/）
-  - CMDB 配置管理数据库（cmdb/）
-  - 仪表盘（dashboard/）
-  - 数据库管理（datebase/）
-  - 资源申请（resource-apply/）
-  - 运维操作（ops/）
-  - 监控（monitor/）
-  - 系统管理（system/）
-
-特殊依赖：
-- cmp-graph + cmp-graph-editor → 不可升级，用 compat 层 wrapper
-- cmp-echarts → 不可升级，用 compat 层或直接引用
-- cmp-element → 不可升级且不兼容，使用 @ss-harness/compat/cmp-element 替代
-- cmp-socket → 不可升级，用 compat 层或直接引用
-- mavon-editor 2.9.1 → 替换 Vue3 markdown 编辑器
-- vuedraggable 2.15 → 替换 vuedraggable@next
-- vue-grid-layout 2.1.9 → 替换 Vue3 版本
-- v-viewer / viewerjs → 替换 Vue3 版本
-- vue-waterfall2 → 评估替代方案
-- vue-count-to → 替换或用 CSS 动画
-- vue-fullscreen 2.x → 替换 Vue3 版本
-- vue-core-image-upload → 替换或自行实现
-- vue2-animate → 替换为 animate.css 或 Vue3 transition
-- jquery.json-viewer → 替换为纯 Vue3 组件
-
-代码特征：
-- 使用 Vue filters（common.js, monitor.js）→ 需全部改为函数调用
-- 使用 mixins → 改为 Composables
-- 使用 require.context() 动态加载 store 模块 → 改为 import.meta.glob
-- 有 hooks/ 目录已使用 Composition API（useWebsocket、useTable 等）→ 可直接迁移
-- 有 Jenkinsfile → CI/CD 需同步更新
-
-最大风险：
-1. 1,211 个组件的纯体量——是 cos-web 的 2 倍多
-2. 业务模块多（计费/CMDB/监控/资源），迁移验证工作量巨大
-3. 第三方 Vue2 专用库多达 7-8 个需替换
-4. 无 Qiankun lifecycle（需先补加）
-
-Qiankun lifecycle：❌ 缺失，需先添加
-
-建议：
-- 按业务模块分批，每次迁移一个模块（如先 dashboard → system → monitor → ...）
-- 利用已有 hooks/（useWebsocket、useTable）作为 Composables 的基础
-- Agent 并行拆分至少 4-6 路，按 views/ 子目录分工
+决策：csc-web 保持 Vue 2 现状，不纳入本次迁移范围。
+原因：体量过大（1,211 .vue），投入产出比低。
+Qiankun 天然支持 Vue 2 + Vue 3 子应用共存，csc-web 可继续正常运行。
 ```
 
 ### 3.3 加速手段
@@ -653,14 +621,25 @@ pnpm 命令：
 ### 3.4 每个子应用迁移后的检查清单
 
 ```
-[ ] 所有页面功能正常
+编译级验证（Agent 自动完成）：
+[ ] vue-tsc --noEmit 通过
+[ ] eslint 通过
+[ ] vite build 成功
+[ ] 无 any 类型（或已标注 TODO）
+
+浏览器级验证（人工逐页确认，迁移完成的最终标准）：
+[ ] 子应用在基座中正常加载，无白屏
+[ ] 所有页面功能与旧版一致——逐页操作验证
+[ ] 表单提交、列表查询、弹窗交互等核心功能正常
 [ ] 与基座 main-web 通信正常（actions.init、全局状态）
 [ ] 与其他子应用联动正常
-[ ] Element Plus 样式在沙箱下正常
-[ ] 无 any 类型（或已标注 TODO）
+[ ] Element Plus 样式在沙箱下正常（无泄漏、无错位）
 [ ] 路由切换无白屏
 [ ] 子应用独立运行正常（脱离基座可单独访问）
-[ ] CI 全部通过
+
+迁移完成 = 浏览器中所有功能正常运行。
+编译通过只是前置门槛，不是完成标准。
+
 [ ] 坑和经验已更新到 CLAUDE.md
 ```
 
@@ -706,7 +685,7 @@ pnpm 命令：
 ### 4.3 Phase 4 验收标准
 
 ```
-[ ] 基座 + 6 个子应用全部 Vue 3 + Element Plus + TS
+[ ] 基座 + 5 个子应用 Vue 3 + Element Plus + TS（csc-web 保持 Vue 2）
 [ ] 所有路由切换正常
 [ ] 全局状态通信正常
 [ ] 登录/权限/菜单正常
@@ -766,18 +745,17 @@ Phase 3：
   ├── sms-web（126 .vue）              3 周
   ├── cmp-web（521 .vue）              5-6 周
   ├── cms-web（521 .vue）              5-6 周
-  ├── cos-web（567 .vue）              6-8 周
-  └── csc-web（1,211 .vue）            8-12 周
+  └── cos-web（567 .vue）              6-8 周
 Phase 4：基座优化 + 清理                1-2 周
                                       ──────────
-总计                                   27-41 周（约 7-10 个月）
+总计                                   19-30 周（约 5-7 个月）
 
 注：
+- csc-web 不迁移，保持 Vue 2（Qiankun 支持新旧共存）
 - 基于 2-3 人团队 + Agent 辅助
-- cmp-element 重写可能额外增加 1-2 周
-- cmp-graph/topology 如需重写可能额外增加 2-4 周
-- csc-web 的 Vue2 专用第三方库替换可能额外增加 1-2 周
-- 以上为串行估算，Agent 并行可压缩 20-30%（约 19-29 周）
+- cmp-element 替换可能额外增加 1-2 周
+- cmp-graph/topology 如需 compat wrapper 可能额外增加 2-4 周
+- 以上为串行估算，Agent 并行可压缩 20-30%（约 13-21 周）
 ```
 
 ---

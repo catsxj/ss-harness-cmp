@@ -9,59 +9,56 @@
     <div v-else class="text">{{`${total}/${usedRes}${unit}`}}</div>
   </div>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-export default {
-  props: {
-    color: {
-      type: String,
-      default: '#FFC400'
-    },
-    type: {
-      type: String,
-      default: ''
-    },
-    used: {
-      type: Number,
-      default: 0
-    },
-    total: {
-      type: Number,
-      default: 0
-    },
-    totalLabel: {
-      default: '可交付'
-    },
-    usedLabel: {
-      default: '已交付'
-    },
-    unUsed: {
-      type: Number,
-      default: 0
-    },
-    unit: {
-      type: String,
-      default: ''
-    }
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const props = defineProps({
+  color: {
+    type: String,
+    default: '#FFC400',
   },
-  setup(props) {
-    const usedRes = computed(() => {
-      if (props.used < 0) return 0;
-      return props.used
-    })
-    const percent = computed(() => {
-      if (props.total) {
-        const res = usedRes.value / props.total * 100;
-        return res > 100 ? '100%' : `${res}%`
-      }
-      return '0%'
-    })
-    return {
-      percent,
-      usedRes
-    }
+  type: {
+    type: String,
+    default: '',
+  },
+  used: {
+    type: Number,
+    default: 0,
+  },
+  total: {
+    type: Number,
+    default: 0,
+  },
+  totalLabel: {
+    type: String,
+    default: '可交付',
+  },
+  usedLabel: {
+    type: String,
+    default: '已交付',
+  },
+  unUsed: {
+    type: Number,
+    default: 0,
+  },
+  unit: {
+    type: String,
+    default: '',
+  },
+})
+
+const usedRes = computed(() => {
+  if (props.used < 0) return 0
+  return props.used
+})
+
+const percent = computed(() => {
+  if (props.total) {
+    const res = (usedRes.value / props.total) * 100
+    return res > 100 ? '100%' : `${res}%`
   }
-}
+  return '0%'
+})
 </script>
 <style lang="scss" scoped>
 .progress {

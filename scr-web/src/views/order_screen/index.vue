@@ -73,89 +73,88 @@
   </ScreenWrapper>
 </template>
 
-<script>
-import { reactive, toRefs, ref, onUnmounted } from '@vue/composition-api'
-import CountItem from './CountItem'
-import ScreenWrapper from 'components/ScreenWrapper'
+<script setup lang="ts">
+import { reactive, toRefs, ref, onUnmounted } from 'vue'
+import CountItem from './CountItem.vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
 import { getDashboard, getTenantsOrder, getVendorTypeOrder, getVendorOrder } from 'services/screen/order'
-export default {
-  components: {
-    ScreenWrapper,
-    CountItem
-  },
-  setup() {
-    const overview = ref({
-      totalNum: {},
-      dayNum: {},
-      dayRate: { value: 0 },
-      weekRate: { value: 0 }
-    });
-    const getData = async () => {
-      const data = await getDashboard()
-      if (data.success) {
-        overview.value = data.data
-      }
-    }
-    // top5
-    const top5Data = ref({});
-    async function getTop5(params) {
-      const data = await getTenantsOrder({ condition: 'getTop5' })
-      if (data.success) {
-        top5Data.value = data.data
-      }
-    }
-    // 租户订单增长趋势
-    const trendData = ref({});
-    async function getTrend() {
-      const data = await getTenantsOrder({ condition: 'getTrend' })
-      if (data.success) {
-        trendData.value = data.data
-      }
-    }
-    // 云平台类型
-    const typeCount = ref({});
-    async function getVendorCount () {
-      const data = await getVendorTypeOrder({ condition: 'countByVendor' });
-      if (data.success) {
-        typeCount.value = data.data;
-      }
-    }
-    // 云平台订单增长趋势
-    const vendorTrend = ref({});
-    async function getVendorTrend () {
-      const data = await getVendorOrder({ condition: 'getTrend' });
-      if (data.success) {
-        vendorTrend.value = data.data;
-      }
-    }
-    const state = reactive({
-      loading: true
-    })
-    const timer = setInterval(() => {
-      change()
-    }, 1000 * 20)
-    onUnmounted(() => {
-      clearInterval(timer)
-    })
-    const change = async () => {
-      try {
-        await Promise.all([getData(), getTop5(), getTrend(), getVendorCount(), getVendorTrend()]);
-      } catch (error) {
 
-      }
-      state.loading = false;
-    }
-    change();
-    return {
-      overview,
-      top5Data,
-      trendData,
-      typeCount,
-      vendorTrend,
-      ...toRefs(state)
-    }
+interface OverviewData {
+  totalNum: { value: number }
+  dayNum: { value: number; time?: string }
+  dayRate: { value: number; time?: string }
+  weekRate: { value: number; time?: string }
+  statusOrders?: unknown[]
+  typeOrders?: unknown[]
+}
+
+const overview = ref<OverviewData>({
+  totalNum: { value: 0 },
+  dayNum: { value: 0 },
+  dayRate: { value: 0 },
+  weekRate: { value: 0 }
+})
+
+const getData = async () => {
+  const data = await getDashboard()
+  if (data.success) {
+    overview.value = data.data
   }
 }
+
+// top5
+const top5Data = ref<Record<string, unknown>>({})
+async function getTop5() {
+  const data = await getTenantsOrder({ condition: 'getTop5' })
+  if (data.success) {
+    top5Data.value = data.data
+  }
+}
+
+// 租户订单增长趋势
+const trendData = ref<Record<string, unknown>>({})
+async function getTrend() {
+  const data = await getTenantsOrder({ condition: 'getTrend' })
+  if (data.success) {
+    trendData.value = data.data
+  }
+}
+
+// 云平台类型
+const typeCount = ref<Record<string, unknown>>({})
+async function getVendorCount() {
+  const data = await getVendorTypeOrder({ condition: 'countByVendor' })
+  if (data.success) {
+    typeCount.value = data.data
+  }
+}
+
+// 云平台订单增长趋势
+const vendorTrend = ref<Record<string, unknown>>({})
+async function getVendorTrend() {
+  const data = await getVendorOrder({ condition: 'getTrend' })
+  if (data.success) {
+    vendorTrend.value = data.data
+  }
+}
+
+const loading = ref(true)
+
+const timer = setInterval(() => {
+  change()
+}, 1000 * 20)
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
+
+const change = async () => {
+  try {
+    await Promise.all([getData(), getTop5(), getTrend(), getVendorCount(), getVendorTrend()])
+  } catch (error) { /* ignore */ }
+  loading.value = false
+}
+change()
 </script>
 <style lang="scss" scoped>
 .card-count-slot {

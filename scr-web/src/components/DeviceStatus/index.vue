@@ -9,23 +9,22 @@
     </div>
   </div>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-export default {
-  props: {
-    icon: {
-      type: String,
-      default: '/scr-web/static/img/business_network/switch.png'
-    },
-    data: {
-      type: Array
-    }
-  },
-  setup(props) {
-    return {
-    }
-  }
+<script setup lang="ts">
+interface StatusItem {
+  color: string
+  text: string
 }
+
+defineProps({
+  icon: {
+    type: String,
+    default: '/scr-web/static/img/business_network/switch.png',
+  },
+  data: {
+    type: Array as () => StatusItem[],
+    default: () => [],
+  },
+})
 </script>
 <style lang="scss" scoped>
 .cell {

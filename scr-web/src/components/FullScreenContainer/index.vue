@@ -7,60 +7,63 @@
   </div>
 </template>
 
-<script>
-import { computed, onMounted, onUnmounted, reactive, toRefs } from '@vue/composition-api'
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, reactive } from 'vue'
 import { debounce } from 'lodash-es'
-// import 'utils/rem'
-export default {
-  props: {
-    width: {
-      type: Number,
-      default: 1920
-    },
-    height: {
-      type: Number,
-      default: 1080
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    }
+
+const props = defineProps({
+  width: {
+    type: Number,
+    default: 1920,
   },
-  setup(props, context) {
-    const state = reactive({
-      scale: null
-    });
-    const style = computed(() => {
-      return {
-        width: `${props.width}px`,
-        height: `${props.height}px`,
-        transform: `scale(${state.scale})`
-      }
-    });
-    function getScale() {
-      const { width, height } = props
-      const wRatio = window.innerWidth / width
-      const hRatio = window.innerHeight / height;
-      // return 1;
-      return wRatio < hRatio ? wRatio : hRatio
-    }
-    function setScale() {
-      state.scale = getScale();
-      context.emit('getScale', state.scale)
-    }
-    const onResize = debounce(setScale, 10)
-    onMounted(() => {
-      setScale()
-      window.addEventListener('resize', onResize)
-    });
-    onUnmounted(() => {
-      window.removeEventListener('resize', onResize)
-    });
-    return {
-      style
-    }
+  height: {
+    type: Number,
+    default: 1080,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const emit = defineEmits<{
+  (e: 'getScale', scale: number): void
+}>()
+
+const state = reactive({
+  scale: 1 as number,
+})
+
+const style = computed(() => {
+  return {
+    width: `${props.width}px`,
+    height: `${props.height}px`,
+    transform: `scale(${state.scale})`,
   }
+})
+
+function getScale() {
+  const { width, height } = props
+  const wRatio = window.innerWidth / width
+  const hRatio = window.innerHeight / height
+  return wRatio < hRatio ? wRatio : hRatio
 }
+
+function setScale() {
+  state.scale = getScale()
+  emit('getScale', state.scale)
+}
+
+const onResize = debounce(setScale, 10)
+
+onMounted(() => {
+  setScale()
+  window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+})
 </script>
 
 <style lang="scss" scoped >

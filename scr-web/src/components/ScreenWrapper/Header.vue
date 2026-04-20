@@ -12,25 +12,17 @@
   </div>
 </template>
 
-<script>
-import useHeader from 'components/ScreenWrapper/useHeader'
-export default {
-  props: {
-    code: {
-      type: String,
-      required: true
-    }
+<script setup lang="ts">
+import useHeader from './useHeader'
+
+const props = defineProps({
+  code: {
+    type: String,
+    required: true,
   },
-  setup(props, context) {
-    const { currentTime, operateScreen, logo, title } = useHeader(context.root.$store, props.code)
-    return {
-      currentTime,
-      logo,
-      title,
-      operateScreen
-    }
-  }
-}
+})
+
+const { currentTime, operateScreen, logo, title } = useHeader(props.code)
 </script>
 <style lang="scss" scoped>
 .outside-header {

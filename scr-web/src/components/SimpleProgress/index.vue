@@ -4,30 +4,26 @@
     <div class="text">{{percent.toFixed(2)}}%</div>
   </div>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-export default {
-  props: {
-    percent: {
-      type: Number
-    }
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const props = defineProps({
+  percent: {
+    type: Number,
+    default: 0,
   },
-  setup(props) {
-    const color = computed(() => {
-      if (props.percent > 90) {
-        return '#F84540'
-      } else if (props.percent > 75) {
-        return '#FF9900'
-      } else if (props.percent > 50) {
-        return '#2D8CF0'
-      }
-      return '#19BE6B'
-    })
-    return {
-      color
-    }
+})
+
+const color = computed(() => {
+  if (props.percent > 90) {
+    return '#F84540'
+  } else if (props.percent > 75) {
+    return '#FF9900'
+  } else if (props.percent > 50) {
+    return '#2D8CF0'
   }
-}
+  return '#19BE6B'
+})
 </script>
 <style lang="scss" scoped>
 .progress {

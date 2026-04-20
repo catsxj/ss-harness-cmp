@@ -247,13 +247,15 @@ git diff --name-only main...agent-a-branch | grep -v "^sms-web/src/views/monitor
 7. 自动合并三个分支
 8. 跑 vue-tsc + eslint + vite build
 9. 如有错误 → 自动修复循环（最多 3 轮）
-10. 全部通过 → 报告：
-    "sms-web 迁移完成。125 个 .vue 已迁移为 Vue3 + TS + Element Plus。
+10. 全部通过 → 启动 dev server，报告：
+    "sms-web 代码迁移完成。125 个 .vue 已迁移为 Vue3 + TS + Element Plus。
      vue-tsc / eslint / vite build 全部通过。
-     请做最终功能验收。"
+     dev server 已启动在 localhost:xxxx。
+     请在浏览器中逐页验证所有功能是否正常运行。
+     发现问题直接告诉我，我来修。"
 ```
 
-**你的参与：只在最后打开浏览器看一眼功能是否正常。**
+**你的参与：最后在浏览器中逐页验证所有功能是否正常运行。这一步不可省略——编译通过 ≠ 功能正确。**
 
 ---
 
@@ -266,5 +268,7 @@ git diff --name-only main...agent-a-branch | grep -v "^sms-web/src/views/monitor
 | 速度 | 受 Review 带宽限制 | 全速 |
 | 风险 | 低（人兜底） | 中（依赖 CI 覆盖度） |
 | 适合场景 | 核心业务、首次迁移 | 模式已验证、重复性迁移 |
+
+**重要：无论哪种方案，迁移完成的定义是"浏览器中所有功能正常运行"，不是"编译通过"。CI 验证只是前置门槛，最终必须在浏览器中验收。发现问题后进入修复循环直到所有功能正常。**
 
 **建议：scr-web（试点）用人工 Review 方案积累经验，之后的 sms/cmp/cms/cos/csc 用全自动方案。**

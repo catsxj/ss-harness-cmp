@@ -5,14 +5,21 @@
   </div>
 </template>
 
-<script>
-const levelMap = {
+<script setup lang="ts">
+interface Props {
+  level: string
+}
+
+defineProps<Props>()
+
+const levelMap: Record<string, string> = {
   REMIND: '提示告警',
   PRIMARY: '重要告警',
   SECONDARY: '次要告警',
   URGENT: '紧急告警'
 }
-const colorMap = {
+
+const colorMap: Record<string, { bg: string; bc: string }> = {
   REMIND: {
     bg: '#4EAFF5',
     bc: '#CFFCFC'
@@ -33,20 +40,7 @@ const colorMap = {
     bg: '#54C54E',
     bc: '#D5F1D3'
   }
-};
-export default {
-  props: {
-    level: {
-      type: String
-    }
-  },
-  setup(props) {
-    return {
-      levelMap,
-      colorMap
-    }
-  }
-};
+}
 </script>
 <style lang="scss" scoped>
   .icon-wrapper {

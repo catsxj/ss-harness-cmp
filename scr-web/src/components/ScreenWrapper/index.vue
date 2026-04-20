@@ -1,5 +1,5 @@
 <template>
-  <full-screen-container class="container" :loading="loading" @getScale="scale => $emit('getScale', scale)">
+  <full-screen-container class="container" :loading="loading" @getScale="(scale: number) => $emit('getScale', scale)">
     <div class="header">
       <span>
         <router-link to="/screen/list" v-if="logo">
@@ -19,32 +19,27 @@
   </full-screen-container>
 </template>
 
-<script>
+<script setup lang="ts">
 import useHeader from './useHeader'
-import Header from './Header'
-export default {
-  components: { Header },
-  props: {
-    code: {
-      type: String,
-      required: true
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    }
+import animateImgUrl from 'assets/img/animate.gif'
+
+const props = defineProps({
+  code: {
+    type: String,
+    required: true,
   },
-  setup(props, context) {
-    const { currentTime, operateScreen, logo, title } = useHeader(context.root.$store, props.code)
-    return {
-      currentTime,
-      logo,
-      animateImg: require('assets/img/animate.gif'),
-      title,
-      operateScreen
-    }
-  }
-}
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+defineEmits<{
+  (e: 'getScale', scale: number): void
+}>()
+
+const { currentTime, operateScreen, logo, title } = useHeader(props.code)
+const animateImg = animateImgUrl
 </script>
 <style lang="scss" scoped>
 .left-animate {

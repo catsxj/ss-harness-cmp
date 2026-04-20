@@ -2,7 +2,7 @@
   <dv-border-box-10 class="container" title="大屏列表">
     <el-row :gutter="20" class="card-container">
       <el-col  :lg="12" :sm="24"  v-for="(item, index) in list" :key="index">
-        <el-card class="card" :body-style="{ padding: '0px' }" @click.native="goPage(item.path)">
+        <el-card class="card" :body-style="{ padding: '0px' }" @click="goPage(item.path)">
           <img :src="item.bg" class="image">
           <div class="footer-title">
             <span>{{screenConfigs[item.code]}}</span>
@@ -13,45 +13,53 @@
   </dv-border-box-10>
 </template>
 
-<script>
-import { computed, reactive, toRefs } from '@vue/composition-api'
-export default {
-  setup(props, context) {
-    const state = reactive({
-      list: [
-        {
-          code: 'RESOURCE_SCREEN',
-          bg: require('assets/img/list/resource.png'),
-          path: '/screen/resource'
-        },
-        {
-          code: 'COUNT_SCREEN',
-          bg: require('assets/img/list/count.png'),
-          path: '/screen/count'
-        },
-        {
-          code: 'OPERATION_SCREEN',
-          bg: require('assets/img/list/operation.png'),
-          path: '/screen/operation'
-        },
-        {
-          code: 'ORDER_SCREEN',
-          bg: require('assets/img/list/order.png'),
-          path: '/screen/order'
-        }
-      ]
-    })
-    function goPage(path) {
-      context.root.$router.push(path)
-    }
-    const screenConfigs = computed(() => context.root.$store.getters.screenConfigs)
-    return {
-      ...toRefs(state),
-      goPage,
-      screenConfigs
-    }
-  }
+<script setup lang="ts">
+import { computed, reactive, toRefs } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
+
+import resourceImg from 'assets/img/list/resource.png'
+import countImg from 'assets/img/list/count.png'
+import operationImg from 'assets/img/list/operation.png'
+import orderImg from 'assets/img/list/order.png'
+
+const router = useRouter()
+const appStore = useAppStore()
+
+interface ListItem {
+  code: string
+  bg: string
+  path: string
 }
+
+const list = reactive<ListItem[]>([
+  {
+    code: 'RESOURCE_SCREEN',
+    bg: resourceImg,
+    path: '/screen/resource'
+  },
+  {
+    code: 'COUNT_SCREEN',
+    bg: countImg,
+    path: '/screen/count'
+  },
+  {
+    code: 'OPERATION_SCREEN',
+    bg: operationImg,
+    path: '/screen/operation'
+  },
+  {
+    code: 'ORDER_SCREEN',
+    bg: orderImg,
+    path: '/screen/order'
+  }
+])
+
+function goPage(path: string) {
+  router.push(path)
+}
+
+const screenConfigs = computed(() => appStore.screenConfigs)
 </script>
 <style lang="scss">
 .container {

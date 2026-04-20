@@ -12,53 +12,58 @@
     </div>
   </div>
 </template>
-<script>
-import { onUnmounted, reactive, toRefs } from '@vue/composition-api'
+<script setup lang="ts">
+import { onUnmounted, reactive, toRefs } from 'vue'
 import { generateKeyframes } from './utils'
 import { getVendorTypes } from 'services/screen/resource'
 
-export default {
-  props: {
-    logo: {
-      type: String,
-      default: '/scr-web/static/img/resource/sip.png'
-    },
-    used: {
-      type: Number,
-      default: 50
-    },
-    total: {
-      type: Number,
-      default: 100
-    },
-    unit: {
-      type: String
-    }
-  },
-  setup(props, context) {
-    const state = reactive({
-      list: []
-    })
-    let style;
-    const getVendorsList = async () => {
-      const res = await getVendorTypes();
-      if (res.success) {
-        state.list = res.data
-      }
-      style = generateKeyframes(state.list.length)
-    }
-    onUnmounted(() => {
-      style && style.remove()
-    });
-    getVendorsList()
-    function selectPlatform(type) {
-      context.emit('changePlatform', type)
-    }
-    return {
-      ...toRefs(state),
-      selectPlatform
-    }
+interface Props {
+  logo?: string
+  used?: number
+  total?: number
+  unit?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  logo: '/scr-web/static/img/resource/sip.png',
+  used: 50,
+  total: 100
+})
+
+const emit = defineEmits<{
+  changePlatform: [type: string]
+}>()
+
+interface VendorItem {
+  name: string
+  value: string
+  icon: string
+}
+
+const state = reactive({
+  list: [] as VendorItem[]
+})
+
+const { list } = toRefs(state)
+
+let style: HTMLStyleElement | null = null
+
+const getVendorsList = async () => {
+  const res = await getVendorTypes()
+  if (res.success) {
+    state.list = res.data
   }
+  style = generateKeyframes(state.list.length)
+}
+
+onUnmounted(() => {
+  style && style.remove()
+})
+
+getVendorsList()
+
+function selectPlatform(type: string) {
+  emit('changePlatform', type)
 }
 </script>
 <style lang="scss" scoped>
@@ -85,21 +90,6 @@ export default {
       box-shadow: 0 0 0 transparent;
     }
   }
-  // $translateX: 200px;
-  // $rotateY: -57deg;
-  // @for $i from 1 through 5 {
-  //   $unit: 360/5 * ($i - 1) * 1deg;
-  //   @keyframes move#{$i} {
-  //     from {
-  //       transform: rotateZ(-$unit) translateX($translateX) rotateZ($unit)
-  //         rotateY($rotateY);
-  //     }
-  //     to {
-  //       transform: rotateZ(360deg - $unit) translateX($translateX)
-  //         rotateZ($unit - 360deg) rotateY($rotateY);
-  //     }
-  //   }
-  // }
   .item-wrapper {
     width: 440px;
     height: 440px;
@@ -107,7 +97,6 @@ export default {
     position: absolute;
     top: 32px;
     left: 160px;
-    // border: 2px #fff solid;
     transform-style: preserve-3d;
     transform: rotateZ(62deg) rotateY(57deg);
     .item {
@@ -148,11 +137,6 @@ export default {
         border-radius: 50%;
         animation: item-animate 1s infinite linear;
       }
-      // @for $i from 1 through 5 {
-      //   &:nth-child(#{$i}) {
-      //     animation: move#{$i} 20s infinite linear;
-      //   }
-      // }
     }
   }
 }

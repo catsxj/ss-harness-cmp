@@ -22,31 +22,28 @@
     </el-col>
   </el-row>
 </template>
-<script>
-export default {
-  props: {
-    item: {},
-    used: {
-      type: Number,
-      default: 50
-    },
-    total: {
-      type: Number,
-      default: 100
-    },
-    unit: {
-      type: String
-    }
-  },
-  setup(props) {
-  }
+<script setup lang="ts">
+interface CardItem {
+  serverNum: number
+  cpu: number
+  mem: number
+  disk: number
 }
+
+interface Props {
+  item: CardItem
+  used?: number
+  total?: number
+  unit?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  used: 50,
+  total: 100
+})
 </script>
 <style lang="scss" scoped>
 .count-card {
-  // background: rgba(0, 11, 94, 0);
-  // box-shadow: 0px 0px 3px 0px rgba(0, 137, 255, 0.6);
-  // opacity: 0.68;
   padding: 20px;
   margin-bottom: 10px;
   .text-center {

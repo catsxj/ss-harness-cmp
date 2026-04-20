@@ -54,12 +54,12 @@
     </el-row>
   </ScreenWrapper>
 </template>
-<script>
-import { reactive, toRefs, computed, onUnmounted } from '@vue/composition-api'
-import ScreenWrapper from 'components/ScreenWrapper'
-import DeviceStatus from 'components/DeviceStatus'
-import AlarmList from './AlarmList'
-import NetworkTable from './NetworkTable/index'
+<script setup lang="ts">
+import { reactive, toRefs, onUnmounted } from 'vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
+import DeviceStatus from 'components/DeviceStatus/index.vue'
+import AlarmList from './AlarmList.vue'
+import NetworkTable from './NetworkTable/index.vue'
 import {
   getHealthStatus,
   getMemTop10,
@@ -68,84 +68,94 @@ import {
   getNetworkDevice,
   getAlarmList
 } from 'services/screen/business_network'
-export default {
-  components: { ScreenWrapper, DeviceStatus, AlarmList, NetworkTable },
-  setup() {
-    const state = reactive({
-      healthCount: [],
-      memTop10: {},
-      cpuTop10: {},
-      portTop10: {},
-      networkList: [],
-      alarmList: [],
-      loading: true
-    })
-    const timer = setInterval(() => {
-      change()
-    }, 1000 * 20)
-    onUnmounted(() => {
-      clearInterval(timer)
-    })
-    // 健康状态
-    const getHealth = async () => {
-      const res = await getHealthStatus()
-      if (res.success) {
-        state.healthCount = res.data
-      }
-    }
-    // 内存top
-    const getMem = async () => {
-      const res = await getMemTop10()
-      if (res.success) {
-        state.memTop10 = res.data
-      }
-    }
-    // CPU top
-    const getCpu = async () => {
-      const res = await getCpuTop10()
-      if (res.success) {
-        state.cpuTop10 = res.data
-      }
-    }
-    // 端口 top
-    const getPort = async () => {
-      const res = await getPortTop10()
-      if (res.success) {
-        state.portTop10 = res.data
-      }
-    }
-    // 告警
-    const getAlarm = async () => {
-      const res = await getAlarmList()
-      if (res.success) {
-        state.alarmList = res.data
-      }
-    }
-    // 网络设备
-    const getNetwork = async () => {
-      const res = await getNetworkDevice()
-      if (res.success) {
-        state.networkList = res.data
-      }
-    }
-    const change = async () => {
-      await Promise.all([
-        getMem(),
-        getCpu(),
-        getPort(),
-        getAlarm(),
-        getNetwork(),
-        getHealth(),
-        getAlarm()
-      ])
-      state.loading = false
-    }
-    change()
-    return {
-      ...toRefs(state)
-    }
+
+interface HealthItem {
+  name: string
+  onNum: number
+  offNum: number
+}
+
+const state = reactive({
+  healthCount: [] as HealthItem[],
+  memTop10: {} as Record<string, unknown>,
+  cpuTop10: {} as Record<string, unknown>,
+  portTop10: {} as Record<string, unknown>,
+  networkList: [] as Record<string, unknown>[],
+  alarmList: [] as Record<string, unknown>[],
+  loading: true
+})
+
+const { healthCount, memTop10, cpuTop10, portTop10, networkList, alarmList, loading } = toRefs(state)
+
+const timer = setInterval(() => {
+  change()
+}, 1000 * 20)
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
+
+// 健康状态
+const getHealth = async () => {
+  const res = await getHealthStatus()
+  if (res.success) {
+    state.healthCount = res.data
   }
 }
+
+// 内存top
+const getMem = async () => {
+  const res = await getMemTop10()
+  if (res.success) {
+    state.memTop10 = res.data
+  }
+}
+
+// CPU top
+const getCpu = async () => {
+  const res = await getCpuTop10()
+  if (res.success) {
+    state.cpuTop10 = res.data
+  }
+}
+
+// 端口 top
+const getPort = async () => {
+  const res = await getPortTop10()
+  if (res.success) {
+    state.portTop10 = res.data
+  }
+}
+
+// 告警
+const getAlarm = async () => {
+  const res = await getAlarmList()
+  if (res.success) {
+    state.alarmList = res.data
+  }
+}
+
+// 网络设备
+const getNetwork = async () => {
+  const res = await getNetworkDevice()
+  if (res.success) {
+    state.networkList = res.data
+  }
+}
+
+const change = async () => {
+  await Promise.all([
+    getMem(),
+    getCpu(),
+    getPort(),
+    getAlarm(),
+    getNetwork(),
+    getHealth(),
+    getAlarm()
+  ])
+  state.loading = false
+}
+change()
 </script>
 <style lang="scss" scoped>
 .left,

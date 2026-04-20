@@ -4,19 +4,17 @@
     <span class="text">{{text}}</span>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    icon: {
-      type: String,
-      default: 'el-icon-s-order'
-    },
-    text: {
-      type: String,
-      default: '暂无数据'
-    }
-  }
-}
+<script setup lang="ts">
+defineProps({
+  icon: {
+    type: String,
+    default: 'el-icon-s-order',
+  },
+  text: {
+    type: String,
+    default: '暂无数据',
+  },
+})
 </script>
 <style lang="scss" scoped>
 .no-data {

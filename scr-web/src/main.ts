@@ -1,21 +1,43 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+import type { App as VueApp } from 'vue'
+import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
-import store from './store'
-import VueCompositionAPI from '@vue/composition-api'
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
-import dataV from '@jiaminghi/data-view'
-import CommonComponents from './components'
+import { registerComponents } from './components'
 
-Vue.use(VueCompositionAPI)
-Vue.use(ElementUI, { size: 'small' })
-Vue.use(dataV)
-Vue.use(CommonComponents)
-Vue.config.productionTip = false
+let app: VueApp | null = null
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')
+function render(props: Record<string, unknown> = {}) {
+  const container = props.container as Element | undefined
+  app = createApp(App)
+  app.use(createPinia())
+  app.use(router)
+  app.use(ElementPlus, { size: 'small' })
+  registerComponents(app)
+
+  const mountEl = container
+    ? (container.querySelector('#app') as Element)
+    : document.querySelector('#app')
+  app.mount(mountEl as Element)
+}
+
+// Qiankun lifecycle
+export async function bootstrap() {
+  // 初始化
+}
+
+export async function mount(props: Record<string, unknown>) {
+  render(props)
+}
+
+export async function unmount() {
+  app?.unmount()
+  app = null
+}
+
+// 独立运行
+if (!(window as unknown as Record<string, unknown>).__POWERED_BY_QIANKUN__) {
+  render()
+}

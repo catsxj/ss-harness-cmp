@@ -6,64 +6,70 @@
     </div>
   </div>
 </template>
-<script>
-import { ref, onUnmounted } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
 import { getDcs } from 'services/screen/outside'
-export default {
-  setup(props, context) {
-    const dcId = ref('');
-    let currentIndex = -1;
-    let timer = null;
-    const startTimer = () => {
-      // 如果timer存在先清除
-      if (timer) clearTimer();
-      timer = setInterval(() => {
-        currentIndex++;
-        select(currentIndex, 'auto');
-        if (currentIndex === dcList.value.length - 1) currentIndex = -1;
-      }, 1000 * 20)
-    }
-    const clearTimer = () => {
-      clearInterval(timer);
-      timer = null;
-    }
-    onUnmounted(() => {
-      clearTimer();
-    })
-    const select = (index, way) => {
-      // 手动触发重置定时器
-      if (way !== 'auto') startTimer();
-      currentIndex = index;
-      // -1时为全部
-      const id = currentIndex === -1 ? '' : dcList.value[index].id;
-      dcId.value = id;
-      context.emit('changeDc', id)
-    };
-    // 获取数据中心
-    const dcList = ref([]);
-    (async function() {
-      const res = await getDcs();
-      if (res.success) {
-        dcList.value = res.data.rows;
-        select(currentIndex);
-      }
-    })();
-    // 获取每个数据中心的样式 横向每个加400，大于3个折行
-    function getItemStyle(index) {
-      const rows = Math.floor(index / 2);
-      const style = {
-        // left: `${index % 2 * 400 + 50}px`,
-        // top: `${rows * 400}px`
-      }
-      return style
-    }
-    return {
-      dcList,
-      dcId,
-      select,
-      getItemStyle
-    }
+
+const emit = defineEmits<{
+  changeDc: [id: string | number]
+}>()
+
+const dcId = ref<string | number>('')
+let currentIndex = -1
+let timer: ReturnType<typeof setInterval> | null = null
+
+const startTimer = () => {
+  if (timer) clearTimer()
+  timer = setInterval(() => {
+    currentIndex++
+    select(currentIndex, 'auto')
+    if (currentIndex === dcList.value.length - 1) currentIndex = -1
+  }, 1000 * 20)
+}
+
+const clearTimer = () => {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
   }
+}
+
+onUnmounted(() => {
+  clearTimer()
+})
+
+const select = (index: number, way?: string) => {
+  // 手动触发重置定时器
+  if (way !== 'auto') startTimer()
+  currentIndex = index
+  // -1时为全部
+  const id = currentIndex === -1 ? '' : dcList.value[index].id
+  dcId.value = id
+  emit('changeDc', id)
+}
+
+// 获取数据中心
+interface DcItem {
+  id: number | string
+  name: string
+  type?: string
+}
+
+const dcList = ref<DcItem[]>([])
+
+;(async function () {
+  const res = await getDcs()
+  if (res.success) {
+    dcList.value = res.data.rows
+    select(currentIndex)
+  }
+})()
+
+// 获取每个数据中心的样式
+function getItemStyle(index: number): Record<string, string> {
+  const rows = Math.floor(index / 2)
+  const style: Record<string, string> = {}
+  return style
 }
 </script>
 <style lang="scss" scoped>

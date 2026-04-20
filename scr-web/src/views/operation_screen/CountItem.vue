@@ -19,29 +19,20 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    color: {},
-    title: {
-      type: String,
-      default: '周环比'
-    },
-    count: {
-      type: [String, Number],
-      default: '1.21%'
-    },
-    trend: {
-      type: String
-    },
-    time: {
-      type: String
-    },
-    prefix: {
-      type: String
-    }
-  }
+<script setup lang="ts">
+interface Props {
+  color?: string
+  title?: string
+  count?: string | number
+  trend?: string
+  time?: string
+  prefix?: string
 }
+
+withDefaults(defineProps<Props>(), {
+  title: '周环比',
+  count: '1.21%'
+})
 </script>
 <style scoped lang="scss">
 .count-card {

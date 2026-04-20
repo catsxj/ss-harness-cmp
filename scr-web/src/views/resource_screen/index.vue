@@ -68,12 +68,12 @@
   </ScreenWrapper>
 </template>
 
-<script>
-import { reactive, toRefs } from '@vue/composition-api'
-import ScreenWrapper from 'components/ScreenWrapper'
-import OverviewState from 'components/OverviewState'
-import PlatformCard from './PlatformCard'
-import ResourceCount from '../count_screen/ResourceCount'
+<script setup lang="ts">
+import { reactive, toRefs } from 'vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
+import OverviewState from 'components/OverviewState/index.vue'
+import PlatformCard from './PlatformCard.vue'
+import ResourceCount from '../count_screen/ResourceCount.vue'
 import { overviewConfigs } from './data'
 import {
   getOverview,
@@ -87,187 +87,164 @@ import {
   getHostStatus,
   getResourceCount
 } from 'services/screen/resource'
-export default {
-  components: {
-    ScreenWrapper,
-    OverviewState,
-    PlatformCard,
-    ResourceCount
-  },
-  setup() {
-    const state = reactive({
-      overviewConfigs,
-      alarmCount: [],
-      resourceCount: {},
-      cpuTop5: {},
-      memTop5: {},
-      hostCount: {},
-      applyTrendData: {},
-      usedTrendData: {},
-      vendorType: '',
-      loading: true
+
+const state = reactive({
+  overviewConfigs,
+  alarmCount: [] as Record<string, unknown>[],
+  resourceCount: {} as Record<string, unknown>,
+  cpuTop5: {} as Record<string, unknown>,
+  memTop5: {} as Record<string, unknown>,
+  hostCount: {} as Record<string, unknown>,
+  applyTrendData: {} as Record<string, unknown>,
+  usedTrendData: {} as Record<string, unknown>,
+  vendorType: '',
+  loading: true
+})
+
+const {
+  overviewConfigs: _oc, alarmCount, resourceCount, cpuTop5, memTop5,
+  hostCount, applyTrendData, usedTrendData, loading
+} = toRefs(state)
+
+// 总体情况
+const getOverviewState = async () => {
+  const res = await getOverview()
+  if (res.success) {
+    const { hosts, servers, running } = res.data
+    const unit = state.overviewConfigs[0]
+    ;[hosts, servers, running].forEach((item: number, index: number) => {
+      unit.data[index].value = item
     })
-    // 总体情况
-    const getOverviewState = async () => {
-      const res = await getOverview()
-      if (res.success) {
-        // 处理数据对configs赋值
-        const { hosts, servers, running } = res.data
-        const unit = state.overviewConfigs[0]
-        ;[hosts, servers, running].forEach((item, index) => {
-          unit.data[index].value = item
-        })
-      }
-    }
-    // 平台情况
-    const getPlatformState = async () => {
-      const res = await getPlatformOverview()
-      if (res.success) {
-        // 处理数据对configs赋值
-        const { pubNum, priNum } = res.data
-        const unit = state.overviewConfigs[1]
-        ;[priNum, pubNum].forEach((item, index) => {
-          unit.data[index].value = item
-        })
-      }
-    }
-    // 使用情况
-    const getUsedState = async () => {
-      const res = await getUsed()
-      if (res.success) {
-        // 处理数据对configs赋值
-        const {
-          menUnused,
-          memTotal,
-          cpuUnused,
-          cpuTotal,
-          diskTotal,
-          diskUnused
-        } = res.data
-        const unit = state.overviewConfigs[2]
-        ;[
-          { used: cpuUnused, total: cpuTotal },
-          { used: menUnused, total: memTotal },
-          { used: diskUnused, total: diskTotal }
-        ].forEach((item, index) => {
-          unit.data[index].used = item.used
-          unit.data[index].total = item.total
-        })
-      }
-    }
-    // 公有私有统计
-    const getPlatformCount = async () => {
-      const colors = ['#1890FF', '#19BE6B', '#4144E3', '#ecbc1e']
-      const res = await getPlatforms(state.vendorType)
-      if (res.success) {
-        const pub = []
-        const pri = []
-        res.data.forEach((item, index) => {
-          if (item.isPub) {
-            pub.push({
-              ...item,
-              color: colors[index]
-            })
-          } else {
-            pri.push({
-              ...item,
-              color: colors[index]
-            })
-          }
-        })
-        state.publicList = pub
-        state.privateList = pri
-      }
-    }
-    // 云资源统计
-    const getResource = async () => {
-      const res = await getResourceCount(state.vendorType)
-      if (res.success) {
-        state.resourceCount = res.data
-      }
-    }
-    // 云主机状态
-    const getHostCount = async () => {
-      const res = await getHostStatus(state.vendorType)
-      if (res.success) {
-        state.hostCount = res.data
-      }
-    }
-    // 告警统计
-    const getAlarmCount = async () => {
-      const res = await getAlarmPieChart()
-      if (res.success) {
-        state.alarmCount = res.data
-      }
-    }
-    // 申请趋势
-    const getApplyCount = async () => {
-      const res = await getResourceApply(state.vendorType)
-      if (res.success) {
-        state.applyTrendData = res.data
-      }
-    }
-    // 使用趋势
-    const getUsedCount = async () => {
-      const res = await getResourceTrend(state.vendorType)
-      if (res.success) {
-        state.usedTrendData = res.data
-      }
-    }
-    // cputop5
-    async function getCpuTop5() {
-      const res = await getResTops({
-        vendorType: state.vendorType,
-        type: 'vmCpu',
-        limit: 5
-      })
-      if (res.success) {
-        state.cpuTop5 = res.data
-      }
-    }
-    // mem top5
-    async function getMemTop5() {
-      const res = await getResTops({
-        vendorType: state.vendorType,
-        type: 'vmMem',
-        limit: 5
-      })
-      if (res.success) {
-        state.memTop5 = res.data
-      }
-    }
-    // 切换平台
-    const change = async (type) => {
-      state.vendorType = type
-      const proArr = [
-        getApplyCount(),
-        getUsedCount(),
-        getCpuTop5(),
-        getMemTop5(),
-        getHostCount(),
-        getResource()
-      ]
-      await Promise.all(proArr)
-    }
-    const init = async () => {
-      try {
-        await Promise.all([
-          getOverviewState(),
-          getUsedState(),
-          getPlatformState(),
-          getAlarmCount(),
-          change()
-        ])
-      } catch (error) {}
-      state.loading = false
-    }
-    init()
-    return {
-      ...toRefs(state),
-      change
-    }
   }
 }
+
+// 平台情况
+const getPlatformState = async () => {
+  const res = await getPlatformOverview()
+  if (res.success) {
+    const { pubNum, priNum } = res.data
+    const unit = state.overviewConfigs[1]
+    ;[priNum, pubNum].forEach((item: number, index: number) => {
+      unit.data[index].value = item
+    })
+  }
+}
+
+// 使用情况
+const getUsedState = async () => {
+  const res = await getUsed()
+  if (res.success) {
+    const {
+      menUnused,
+      memTotal,
+      cpuUnused,
+      cpuTotal,
+      diskTotal,
+      diskUnused
+    } = res.data
+    const unit = state.overviewConfigs[2]
+    ;[
+      { used: cpuUnused, total: cpuTotal },
+      { used: menUnused, total: memTotal },
+      { used: diskUnused, total: diskTotal }
+    ].forEach((item, index) => {
+      unit.data[index].used = item.used
+      unit.data[index].total = item.total
+    })
+  }
+}
+
+// 云资源统计
+const getResource = async () => {
+  const res = await getResourceCount(state.vendorType)
+  if (res.success) {
+    state.resourceCount = res.data
+  }
+}
+
+// 云主机状态
+const getHostCount = async () => {
+  const res = await getHostStatus(state.vendorType)
+  if (res.success) {
+    state.hostCount = res.data
+  }
+}
+
+// 告警统计
+const getAlarmCount = async () => {
+  const res = await getAlarmPieChart()
+  if (res.success) {
+    state.alarmCount = res.data
+  }
+}
+
+// 申请趋势
+const getApplyCount = async () => {
+  const res = await getResourceApply(state.vendorType)
+  if (res.success) {
+    state.applyTrendData = res.data
+  }
+}
+
+// 使用趋势
+const getUsedCount = async () => {
+  const res = await getResourceTrend(state.vendorType)
+  if (res.success) {
+    state.usedTrendData = res.data
+  }
+}
+
+// cputop5
+async function getCpuTop5() {
+  const res = await getResTops({
+    vendorType: state.vendorType,
+    type: 'vmCpu',
+    limit: 5
+  })
+  if (res.success) {
+    state.cpuTop5 = res.data
+  }
+}
+
+// mem top5
+async function getMemTop5() {
+  const res = await getResTops({
+    vendorType: state.vendorType,
+    type: 'vmMem',
+    limit: 5
+  })
+  if (res.success) {
+    state.memTop5 = res.data
+  }
+}
+
+// 切换平台
+const change = async (type: string) => {
+  state.vendorType = type
+  const proArr = [
+    getApplyCount(),
+    getUsedCount(),
+    getCpuTop5(),
+    getMemTop5(),
+    getHostCount(),
+    getResource()
+  ]
+  await Promise.all(proArr)
+}
+
+const init = async () => {
+  try {
+    await Promise.all([
+      getOverviewState(),
+      getUsedState(),
+      getPlatformState(),
+      getAlarmCount(),
+      change('')
+    ])
+  } catch (error) { /* ignore */ }
+  state.loading = false
+}
+init()
 </script>
 <style lang="scss" scoped>
 .left,
@@ -296,7 +273,7 @@ export default {
     height: calc(100% - 30px);
   }
 }
-.resource-count ::v-deep .cell{
+.resource-count :deep(.cell){
   height: 85px;
 }
 </style>

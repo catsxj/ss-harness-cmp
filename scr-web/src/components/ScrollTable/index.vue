@@ -5,50 +5,40 @@
         <span>{{item}}</span></div>
     </li>
     <div class="table-body">
-      <vueSeamlessScroll :data="data" :class-option="{singleHeight: 43, ...options}">
+      <vue-seamless-scroll :data="data" :class-option="{singleHeight: 43, ...options}">
         <li class="table-tr" v-for="(item, index) in data" :key="index">
           <slot :row="item"></slot>
         </li>
-      </vueSeamlessScroll>
+      </vue-seamless-scroll>
       <NoData v-if="!data.length" ></NoData>
     </div>
   </ul>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-import vueSeamlessScroll from 'vue-seamless-scroll'
-import NoData from '../NoData'
-export default {
-  components: { vueSeamlessScroll, NoData },
-  props: {
-    options: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    },
-    columns: {
-      type: Array
-    },
-    columnWidth: {
-      type: Array,
-      default: function() {
-        return []
-      }
-    },
-    data: {
-      type: Array
-    }
+<script setup lang="ts">
+import VueSeamlessScroll from 'vue-seamless-scroll'
+import NoData from '../NoData/index.vue'
+
+const props = defineProps({
+  options: {
+    type: Object,
+    default: () => ({}),
   },
-  setup(props) {
-    const getStyle = index => {
-      const width = props.columnWidth[index];
-      return width ? { width: width, flex: 'none' } : {}
-    }
-    return {
-      getStyle
-    }
-  }
+  columns: {
+    type: Array as () => string[],
+  },
+  columnWidth: {
+    type: Array as () => string[],
+    default: () => [],
+  },
+  data: {
+    type: Array as () => Record<string, unknown>[],
+    default: () => [],
+  },
+})
+
+const getStyle = (index: number) => {
+  const width = props.columnWidth[index]
+  return width ? { width: width, flex: 'none' } : {}
 }
 </script>
 <style lang="scss" scoped>

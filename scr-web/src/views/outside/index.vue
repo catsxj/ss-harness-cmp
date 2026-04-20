@@ -84,22 +84,26 @@
             <scroll-table :data="tenantResourceList" :column-width="['80px']" :columns="['单位名称', '云主机(台)', 'CPU(核)' , '内存(GB)' , '存储(GB)']" :options="{singleHeight: 40,  limitMoveNum: 7}">
               <template v-slot="scope">
                 <el-popover popper-class="popover-resource" placement="left" trigger="click">
-                  <scroll-table :data="scope.row.vendorServers" :columns="['平台类型', '云主机(台)', 'CPU(核)' , '内存(GB)' , '存储(GB)']" :options="{singleHeight: 40,  limitMoveNum: 8}">
-                    <template v-slot="scope">
-                      <scroll-table-column :value="scope.row.type" width="80px">
-                      </scroll-table-column>
-                      <scroll-table-column :value="scope.row.number">
-                      </scroll-table-column>
-                      <scroll-table-column :value="scope.row.cpu">
-                      </scroll-table-column>
-                      <scroll-table-column :value="scope.row.mem">
-                      </scroll-table-column>
-                      <scroll-table-column :value="scope.row.disk">
-                      </scroll-table-column>
-                    </template>
-                  </scroll-table>
-                  <scroll-table-column slot="reference" :value="scope.row.name" width="80px">
-                  </scroll-table-column>
+                  <template #default>
+                    <scroll-table :data="scope.row.vendorServers" :columns="['平台类型', '云主机(台)', 'CPU(核)' , '内存(GB)' , '存储(GB)']" :options="{singleHeight: 40,  limitMoveNum: 8}">
+                      <template v-slot="innerScope">
+                        <scroll-table-column :value="innerScope.row.type" width="80px">
+                        </scroll-table-column>
+                        <scroll-table-column :value="innerScope.row.number">
+                        </scroll-table-column>
+                        <scroll-table-column :value="innerScope.row.cpu">
+                        </scroll-table-column>
+                        <scroll-table-column :value="innerScope.row.mem">
+                        </scroll-table-column>
+                        <scroll-table-column :value="innerScope.row.disk">
+                        </scroll-table-column>
+                      </template>
+                    </scroll-table>
+                  </template>
+                  <template #reference>
+                    <scroll-table-column :value="scope.row.name" width="80px">
+                    </scroll-table-column>
+                  </template>
                 </el-popover>
                 <scroll-table-column :value="scope.row.number">
                 </scroll-table-column>
@@ -137,14 +141,13 @@
   </full-screen-container>
 </template>
 
-<script>
-import Header from './components/Header'
-import { reactive, toRefs, ref } from '@vue/composition-api'
-import ResourceCount from '../count_screen/ResourceCount'
-import OrderCount from './components/OrderCount'
-// import CenterCount from './components/CenterCount'
-import OutsideCenter from './OutsideCenter'
-import MapBg from './map'
+<script setup lang="ts">
+import Header from './components/Header.vue'
+import { reactive, toRefs, ref } from 'vue'
+import ResourceCount from '../count_screen/ResourceCount.vue'
+import OrderCount from './components/OrderCount.vue'
+import OutsideCenter from './OutsideCenter.vue'
+import MapBg from './map.vue'
 import {
   getOverview,
   getResource,
@@ -155,114 +158,124 @@ import {
   getOrders
 } from 'services/screen/cloud_network'
 import { getDcs } from 'services/screen/dc'
-const getColor = (key) => {
+
+interface DcItem {
+  id: number
+  name: string
+  config: { logo: string; [key: string]: unknown }
+  [key: string]: unknown
+}
+
+interface OverviewItem {
+  name: string
+  value: number
+}
+
+const getColor = (key: number): string => {
   const colors = ['#08E1F9', '#1890FF', '#DEB40B']
   return colors[key % 3]
 }
-export default {
-  components: {
-    Header,
-    ResourceCount,
-    // CenterCount,
-    MapBg,
-    OutsideCenter,
-    OrderCount
-  },
-  setup() {
-    const state = reactive({
-      serverTrend: {},
-      resourceCount: {},
-      tenantResourceList: [],
-      projectResourceList: [],
-      dcList: [],
-      netOverview: [],
-      orderOverview: [],
-      loading: false,
-      scale: 1
-    })
-    const mapRef = ref(null);
-    let params = {}
-    // 云主机申请趋势
-    const getServerData = async () => {
-      const res = await getServerTrend(params)
-      if (res.success) {
-        state.serverTrend = res.data
-      }
-    }
-    // 云资源统计
-    const getResourceCount = async () => {
-      const res = await getResource(params)
-      if (res.success) {
-        state.resourceCount = res.data
-      }
-    }
-    // 各单位资源统计
-    const getTenantResourceList = async () => {
-      const res = await getTenantResource(params)
-      if (res.success) {
-        state.tenantResourceList = res.data
-      }
-    }
-    // 系统资源统计
-    const getProjectResourceList = async () => {
-      const res = await getProjectResource(params)
-      if (res.success) {
-        state.projectResourceList = res.data
-      }
-    }
-    // 数据中心
-    const getDcList = async () => {
-      const res = await getDcs()
-      if (res.success) {
-        state.dcList = res.data.rows.map((item) => {
-          return {
-            ...item,
-            config: JSON.parse(item.config)
-          }
-        })
-        mapRef.value.addDcList(state.dcList);
-      }
-    }
-    // 网资源概况
-    const getNetworkOverview = async () => {
-      const res = await getNetworks()
-      if (res.success) {
-        state.netOverview = res.data
-      }
-    }
-    // 业务工单概况
-    const getOrderOverview = async () => {
-      const res = await getOrders()
-      if (res.success) {
-        state.orderOverview = res.data
-      }
-    }
-    const change = async (param) => {
-      state.loading = true
-      params = param
-      await Promise.all([
-        getServerData(),
-        getResourceCount(),
-        getTenantResourceList(),
-        getProjectResourceList(),
-        getDcList(),
-        getNetworkOverview(),
-        getOrderOverview()
-      ])
-      state.loading = false
-    }
-    change()
-    const getScale = (scale) => {
-      state.scale = scale
-    }
-    return {
-      ...toRefs(state),
-      mapRef,
-      getScale,
-      change,
-      getColor
-    }
+
+const state = reactive({
+  serverTrend: {} as Record<string, unknown>,
+  resourceCount: {} as Record<string, unknown>,
+  tenantResourceList: [] as Record<string, unknown>[],
+  projectResourceList: [] as Record<string, unknown>[],
+  dcList: [] as DcItem[],
+  netOverview: [] as OverviewItem[],
+  orderOverview: [] as OverviewItem[],
+  loading: false,
+  scale: 1
+})
+
+const {
+  serverTrend, resourceCount, tenantResourceList, projectResourceList,
+  dcList, netOverview, orderOverview, loading, scale
+} = toRefs(state)
+
+const mapRef = ref<InstanceType<typeof MapBg> | null>(null)
+let params: Record<string, unknown> = {}
+
+// 云主机申请趋势
+const getServerData = async () => {
+  const res = await getServerTrend(params)
+  if (res.success) {
+    state.serverTrend = res.data
   }
+}
+
+// 云资源统计
+const getResourceCount = async () => {
+  const res = await getResource(params)
+  if (res.success) {
+    state.resourceCount = res.data
+  }
+}
+
+// 各单位资源统计
+const getTenantResourceList = async () => {
+  const res = await getTenantResource(params)
+  if (res.success) {
+    state.tenantResourceList = res.data
+  }
+}
+
+// 系统资源统计
+const getProjectResourceList = async () => {
+  const res = await getProjectResource(params)
+  if (res.success) {
+    state.projectResourceList = res.data
+  }
+}
+
+// 数据中心
+const getDcList = async () => {
+  const res = await getDcs()
+  if (res.success) {
+    state.dcList = res.data.rows.map((item: Record<string, unknown>) => {
+      return {
+        ...item,
+        config: JSON.parse(item.config as string)
+      }
+    })
+    mapRef.value?.addDcList(state.dcList)
+  }
+}
+
+// 网资源概况
+const getNetworkOverview = async () => {
+  const res = await getNetworks()
+  if (res.success) {
+    state.netOverview = res.data
+  }
+}
+
+// 业务工单概况
+const getOrderOverview = async () => {
+  const res = await getOrders()
+  if (res.success) {
+    state.orderOverview = res.data
+  }
+}
+
+const change = async (param?: Record<string, unknown>) => {
+  state.loading = true
+  if (param) params = param
+  await Promise.all([
+    getServerData(),
+    getResourceCount(),
+    getTenantResourceList(),
+    getProjectResourceList(),
+    getDcList(),
+    getNetworkOverview(),
+    getOrderOverview()
+  ])
+  state.loading = false
+}
+change()
+
+const getScale = (scaleVal: number) => {
+  state.scale = scaleVal
 }
 </script>
 <style lang="scss" scoped>
@@ -292,15 +305,12 @@ export default {
   position: absolute;
   left: 26%;
   width: 48%;
-  // height: 100%;
-  // pointer-events: none;
 }
 .loop-card {
   display: flex;
   flex-wrap: wrap;
 }
 .card {
-  // height: calc((100% - 200px) / 3 - 20px);
   height: 430px;
   padding: 20px;
   box-sizing: border-box;

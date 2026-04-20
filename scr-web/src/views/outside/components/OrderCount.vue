@@ -9,28 +9,19 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    title: {
-      type: String,
-      default: '云主机总数'
-    },
-    icon: {
-      type: String,
-      default: '/static/img/sip/vm.png'
-    },
-    value: {
-      type: Number,
-      default: 0
-    },
-    color: {}
-  },
-  setup(props) {
-    return {
-    }
-  }
+<script setup lang="ts">
+interface Props {
+  title?: string
+  icon?: string
+  value?: number
+  color?: string
 }
+
+withDefaults(defineProps<Props>(), {
+  title: '云主机总数',
+  icon: '/static/img/sip/vm.png',
+  value: 0
+})
 </script>
 <style lang="scss" scoped>
 .cell {

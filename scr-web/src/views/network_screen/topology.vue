@@ -39,10 +39,6 @@
           <span class="link-panel-name">源设备名称：</span>
           <span class="link-panel-value">{{currentItem.srcDeviceName}}</span>
         </div>
-        <!-- <div class="link-panel-item">
-          <span class="link-panel-name">源设备IP：</span>
-          <span class="link-panel-value">{{currentItem.srcDeviceName}}</span>
-        </div> -->
         <div class="link-panel-item">
           <span class="link-panel-name">源端口名称：</span>
           <span class="link-panel-value">{{currentItem.srcIfUniqueName}}</span>
@@ -51,10 +47,6 @@
           <span class="link-panel-name">目的设备名称：</span>
           <span class="link-panel-value">{{currentItem.destDeviceName}}</span>
         </div>
-        <!-- <div class="link-panel-item">
-          <span class="link-panel-name">目的设备IP：</span>
-          <span class="link-panel-value">{{currentItem.srcDeviceName}}</span>
-        </div> -->
         <div class="link-panel-item">
           <span class="link-panel-name">目的端口名称：</span>
           <span class="link-panel-value">{{currentItem.destInterfaceName}}</span>
@@ -72,24 +64,48 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import {
   getTopoloy,
   getNodeDetail,
   getLinkDetail
 } from 'services/screen/business_network'
 import G6 from '@antv/g6'
-import { computed, reactive, toRefs, ref } from '@vue/composition-api'
-import ScreenTopology from 'components/Topology'
+import { reactive, toRefs, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import ScreenTopology from 'components/Topology/index.vue'
 import GaugeCharts from 'components/echarts/gauge-charts/GaugeCharts.vue'
-// import data from './test'
+
+interface NodeConfig {
+  item: Record<string, unknown>
+  x: number
+  y: number
+}
+
+interface CurrentItemData {
+  itemType?: string
+  ip?: string
+  name?: string
+  health?: string
+  cpu?: number
+  mem?: number
+  inSpeed?: string
+  status?: number
+  srcDeviceName?: string
+  srcIfUniqueName?: string
+  destDeviceName?: string
+  destInterfaceName?: string
+  inFlow?: string
+  outFlow?: string
+  [key: string]: unknown
+}
 
 const registerNode = () => {
   G6.registerNode(
     'image-alarm',
     {
-      afterDraw(cfg, group) {
-        const alarmNode = group.addShape('image', {
+      afterDraw(cfg: Record<string, unknown>, group: Record<string, unknown>) {
+        const alarmNode = (group as Record<string, Function>).addShape('image', {
           attrs: {
             x: 0,
             y: -70,
@@ -106,7 +122,7 @@ const registerNode = () => {
             duration: 1000 * 1,
             easing: 'easeCubic',
             delay: 0,
-            repeat: true // repeat
+            repeat: true
           }
         )
       }
@@ -115,19 +131,24 @@ const registerNode = () => {
   )
 }
 registerNode()
-function handleData(data) {
+
+function handleData(data: Record<string, unknown>) {
   const {
     nodes: sourceNodes = [],
     edges: sourceEdges = [],
     combos: sourceCombos = []
-  } = data
-  const nodes = []
-  const edges = []
-  const combos = []
-  const deviceMap = {}
+  } = data as {
+    nodes: Array<Record<string, unknown>>
+    edges: Array<Record<string, unknown>>
+    combos: Array<Record<string, unknown>>
+  }
+  const nodes: Record<string, unknown>[] = []
+  const edges: Record<string, unknown>[] = []
+  const combos: Record<string, unknown>[] = []
+  const deviceMap: Record<string, string> = {}
   sourceNodes.forEach((item) => {
-    const { name, alarmLevel, deviceType = 'switch' } = item
-    const result = {
+    const { name, alarmLevel, deviceType = 'switch' } = item as { name: string; alarmLevel: string; deviceType: string }
+    const result: Record<string, unknown> = {
       ...item,
       label: name,
       type: 'image',
@@ -142,8 +163,8 @@ function handleData(data) {
   sourceEdges.forEach((item) => {
     edges.push({
       data: item,
-      source: item.source.toString(),
-      target: item.target.toString()
+      source: (item.source as string | number).toString(),
+      target: (item.target as string | number).toString()
     })
   })
   sourceCombos.forEach((item) => {
@@ -165,7 +186,7 @@ function handleData(data) {
         }
       }
     }
-    let obj = {
+    let obj: Record<string, unknown> = {
       type: 'rect',
       ...item
     }
@@ -179,123 +200,83 @@ function handleData(data) {
   })
   return { nodes, edges, combos }
 }
-function statusFilter(val) {
-  const map = {
+
+function statusFilter(val: number | undefined): string {
+  const map: Record<number, string> = {
     1: '正常',
     2: '断开',
     3: '测试',
     0: '未知'
-  };
-  return map[val]
+  }
+  return val !== undefined ? map[val] : ''
 }
-export default {
-  components: { ScreenTopology, GaugeCharts },
-  setup(props, context) {
-    const state = reactive({
-      data: {},
-      currentItem: {},
-      itemStyle: {}
-    })
-    const graphRef = ref(null)
-    const getData = () => {
-      const { nodes, edges, combos } = graphRef.value.save()
-      const res = {
-        nodes: [],
-        edges: [],
-        combos: []
-      }
-      nodes.forEach((item) => {
-        const { id, label, x, y, comboId } = item
-        res.nodes.push({
-          id,
-          label,
-          x,
-          y,
-          comboId
-        })
-      })
-      edges.forEach((item) => {
-        const { source, target } = item
-        res.edges.push({
-          source,
-          target
-        })
-      })
-      combos.forEach((item) => {
-        const { id, label, parentId, main } = item
-        res.combos.push({
-          id,
-          label,
-          parentId,
-          main
-        })
-      })
-    }
-    const showInfo = (config) => {
-      const { x, y, item } = config
-      let left = x
-      let top = y
-      if (x + 600 > window.innerWidth) {
-        left = window.innerWidth - 600
-      }
-      if (y + 300 > window.innerHeight) {
-        top = window.innerHeight - 300
-      }
-      state.itemStyle = {
-        display: 'block',
-        left: left + 'px',
-        top: top + 'px'
-      }
-    }
-    const name = context.root.$route.query.name
-    const nodeClick = async (config) => {
-      showInfo(config)
-      state.currentItem = {
-        itemType: 'node'
-      }
-      const res = await getNodeDetail(config.item.infoId, name);
-      if (res.success) {
-        state.currentItem = {
-          itemType: 'node',
-          ...res.data
-        }
-      }
-    }
-    const edgeClick = async (config) => {
-      showInfo(config)
-      state.currentItem = {
-        itemType: 'edge'
-      }
-      const res = await getLinkDetail(config.item.data.id, name)
-      state.currentItem = {
-        itemType: 'edge',
-        ...res.data
-      }
-    }
-    const closeInfo = () => {
-      state.itemStyle.display = 'none'
-    }
-    const getTopologyData = async () => {
-      const res = await getTopoloy(context.root.$route.query.name)
-      state.data = handleData(res.data)
-      // setTimeout(() => {
-      //   if (graphRef.value.graph) {
-      //     // graphRef.value.graph.fitCenter()
-      //   }
-      // })
-    }
-    getTopologyData()
-    return {
-      ...toRefs(state),
-      graphRef,
-      statusFilter,
-      getData,
-      nodeClick,
-      edgeClick,
-      closeInfo
+
+const route = useRoute()
+
+const state = reactive({
+  data: {} as Record<string, unknown>,
+  currentItem: {} as CurrentItemData,
+  itemStyle: {} as Record<string, string>
+})
+
+const { data, currentItem, itemStyle } = toRefs(state)
+
+const graphRef = ref<InstanceType<typeof ScreenTopology> | null>(null)
+
+const showInfo = (config: { x: number; y: number }) => {
+  const { x, y } = config
+  let left = x
+  let top = y
+  if (x + 600 > window.innerWidth) {
+    left = window.innerWidth - 600
+  }
+  if (y + 300 > window.innerHeight) {
+    top = window.innerHeight - 300
+  }
+  state.itemStyle = {
+    display: 'block',
+    left: left + 'px',
+    top: top + 'px'
+  }
+}
+
+const name = route.query.name as string
+
+const nodeClick = async (config: NodeConfig) => {
+  showInfo(config)
+  state.currentItem = {
+    itemType: 'node'
+  }
+  const res = await getNodeDetail(config.item.infoId as string, name)
+  if (res.success) {
+    state.currentItem = {
+      itemType: 'node',
+      ...res.data
     }
   }
 }
+
+const edgeClick = async (config: NodeConfig) => {
+  showInfo(config)
+  state.currentItem = {
+    itemType: 'edge'
+  }
+  const res = await getLinkDetail((config.item.data as Record<string, unknown>).id as string, name)
+  state.currentItem = {
+    itemType: 'edge',
+    ...res.data
+  }
+}
+
+const closeInfo = () => {
+  state.itemStyle.display = 'none'
+}
+
+const getTopologyData = async () => {
+  const res = await getTopoloy(route.query.name as string)
+  state.data = handleData(res.data)
+}
+getTopologyData()
 </script>
 <style lang="scss" scoped>
 .full {

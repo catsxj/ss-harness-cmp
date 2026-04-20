@@ -1,7 +1,7 @@
 <template>
   <div class="three-container">
-    <template v-for="item in roomList">
-      <ThreeRoom :key="item.id" :item="item" v-if="item.id === roomId" :source="source" />
+    <template v-for="item in roomList" :key="item.id">
+      <ThreeRoom :item="item" v-if="item.id === roomId" :source="source" />
     </template>
     <div class="room-switch" :class="{collapsed: isCollapsed}" v-if="source !== 'screen'">
       <div class="room-item" :class="{selected: item.id === roomId}" @click="switchRoom(item.id)" v-for="item in roomList" :key="item.id">{{item.name}}</div>
@@ -13,43 +13,48 @@
   </div>
 </template>
 
-<script>
-import { onMounted, onUnmounted, reactive, toRefs } from '@vue/composition-api'
-import ThreeRoom from './room'
+<script setup lang="ts">
+import { reactive, toRefs } from 'vue'
+import { useRoute } from 'vue-router'
+import ThreeRoom from './room.vue'
 import { getRooms } from 'services/screen/room'
-export default {
-  components: {
-    ThreeRoom
-  },
-  setup(props, context) {
-    const state = reactive({
-      loading: true,
-      roomList: [],
-      roomId: context.root.$route.params.id / 1,
-      source: context.root.$route.query.source,
-      isCollapsed: true
-    })
-    const getRoomList = async () => {
-      const data = await getRooms()
-      if (data.success) {
-        state.roomList = data.data.rows
-        state.loading = false
-      }
-    }
-    getRoomList()
-    const switchRoom = (roomId) => {
-      if (state.roomId === roomId) return
-      state.roomId = roomId
-    }
-    const toggle = () => {
-      state.isCollapsed = !state.isCollapsed
-    }
-    return {
-      ...toRefs(state),
-      switchRoom,
-      toggle
-    }
+
+const route = useRoute()
+
+interface RoomItem {
+  id: number
+  name: string
+  config: string
+  rowNum?: number
+  colNum?: number
+}
+
+const state = reactive({
+  loading: true,
+  roomList: [] as RoomItem[],
+  roomId: Number(route.params.id),
+  source: route.query.source as string | undefined,
+  isCollapsed: true
+})
+
+const { loading, roomList, roomId, source, isCollapsed } = toRefs(state)
+
+const getRoomList = async () => {
+  const data = await getRooms()
+  if (data.success) {
+    state.roomList = data.data.rows
+    state.loading = false
   }
+}
+getRoomList()
+
+const switchRoom = (roomId: number) => {
+  if (state.roomId === roomId) return
+  state.roomId = roomId
+}
+
+const toggle = () => {
+  state.isCollapsed = !state.isCollapsed
 }
 </script>
 <style lang="scss">

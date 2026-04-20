@@ -3,58 +3,51 @@
    :setting="configs"
   ></bar-reverse-chart>
 </template>
-<script>
-import charts from 'cmp-echarts'
-const { BarReverseCharts } = charts
+<script setup lang="ts">
+import BarReverseChart from './bar-reverse-charts/BarReverseCharts.vue'
+
+defineProps({
+  setting: {
+    type: Object,
+    default() {
+      return {}
+    },
+  },
+})
+
 const configs = {
   series: {
     label: {
       show: true,
       formatter: '{b}',
       color: '#fff',
-      position: [10, -20]
-    }
+      position: [10, -20],
+    },
   },
   legend: {
     textStyle: {
-      color: '#fff'
-    }
+      color: '#fff',
+    },
   },
   xAxis: {
     axisLabel: {
       color: '#fff',
-      interval: 0
+      interval: 0,
     },
     axisLine: {
       lineStyle: {
-        color: '#ffffff'
-      }
+        color: '#ffffff',
+      },
     },
     splitArea: {
-      show: false
-    }
+      show: false,
+    },
   },
   yAxis: {
     axisLine: { show: false },
     axisLabel: { show: false },
     axisTick: { show: false },
-    splitLine: { show: false }
-  }
-}
-export default {
-  components: { BarReverseChart: BarReverseCharts },
-  props: {
-    setting: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
+    splitLine: { show: false },
   },
-  setup(props, context) {
-    return {
-      configs
-    }
-  }
 }
 </script>

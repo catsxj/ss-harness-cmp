@@ -15,8 +15,8 @@
   </div>
 </template>
 
-<script>
-import { onMounted, reactive, toRefs, nextTick } from '@vue/composition-api'
+<script setup lang="ts">
+import { onMounted, reactive, toRefs, nextTick } from 'vue'
 import { getMapToken, getMapConfig, mapUrl } from 'services/screen/outside'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import Map from 'ol/Map'
@@ -33,204 +33,230 @@ import Overlay from 'ol/Overlay'
 import ImageLayer from 'ol/layer/Image'
 import Static from 'ol/source/ImageStatic'
 import { getVectorContext } from 'ol/render'
-import OutsideCenter from './OutsideCenter'
+import OutsideCenter from './OutsideCenter.vue'
 import { addLineString } from './tools'
 import { getMapRelation } from 'services/screen/cloud_network'
 
-export default {
-  components: { OutsideCenter },
-  props: {
-    scale: {
-      type: Number,
-      default: 1
-    }
-  },
-  setup(props, context) {
-    const state = reactive({
-      dcList: [{ config: {} }],
-      nodeList: [],
-      params: {
-        type: '',
-        tenant: ''
-      }
-    })
-    let map = null
-    let view = null
-    const initMap = (token, options) => {
-      const { fullExtent, tileInfo, resolutions } = options
-      view = new View({
-        center: [63641.82242120001, 46084.01155038807],
-        zoom: 13.4
-      })
-      map = new Map({
-        target: 'map',
-        layers: [
-          new TileLayer({
-            // source: new OSM()
-            source: new XYZ({
-              tileGrid: new TileGrid({
-                extent: [
-                  fullExtent.xmin,
-                  fullExtent.ymin,
-                  fullExtent.xmax,
-                  fullExtent.ymax
-                ],
-                origin: [tileInfo.origin.x, tileInfo.origin.y],
-                resolutions,
-                tileSize: [tileInfo.cols, tileInfo.rows]
-              }),
-              url: mapUrl + '/tile/{z}/{y}/{x}?sipsdToken=' + token
-            })
-          })
-        ],
-        view
-      })
-    }
-    const addImageLayer = () => {
-      var imageLayer = new ImageLayer({
-        opacity: 1,
-        source: new Static({
-          url: '/static/img/outside/map.png',
-          imageExtent: [
-            55656.38659914988,
-            35894.30966144678,
-            77019.57345087627,
-            58318.62269787157
-          ]
+interface DcItem {
+  id: number | string
+  name: string
+  cloud?: string
+  coordinate?: number[]
+}
 
-          // imageExtent: [-272141.8389000008, -238788.26160000078, 314895.53250000067, 276661.7271999996]
-        })
-      })
-      map.addLayer(imageLayer)
-    }
-    const addPopup = (item, options = {}) => {
-      const { id = '', coordinate } = item
-      const { prefix = 'popup', overlayOpt = {} } = options
-      const container = document.getElementById(`${prefix}${id}`)
-      const overlay = new Overlay({
-        element: container, // 绑定 Overlay 对象和 DOM 对象的
-        autoPan: true, // 定义弹出窗口在边缘点击时候可能不完整 设置自动平移效果
-        autoPanAnimation: {
-          duration: 250 // 自动平移效果的动画时间 9毫秒
-        },
-        ...overlayOpt
-      })
-      map.addOverlay(overlay)
-      coordinate && overlay.setPosition(coordinate)
-      return overlay
-    }
-    // 添加线
-    const addLines = lines => {
-      const { vercorLayer, features } = addLineString(lines)
-      const arcStyle = new Style({
-        stroke: new Stroke({
-          color: [0, 122, 122, 0.7],
-          width: 1
-        })
-      })
+interface NodeItem {
+  id: number | string
+  name: string
+  coordinate?: number[]
+}
 
-      const dotStyle = new Style({
-        image: new CircleStyle({
-          fill: new Fill({
-            color: [255, 255, 255, 0.7]
+interface Props {
+  scale?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  scale: 1
+})
+
+const emit = defineEmits<{
+  getData: [params: Record<string, string>]
+}>()
+
+const state = reactive({
+  dcList: [{ config: {} }] as (DcItem & { config?: Record<string, unknown> })[],
+  nodeList: [] as NodeItem[],
+  params: {
+    type: '',
+    tenant: ''
+  }
+})
+
+const { dcList, nodeList } = toRefs(state)
+
+let map: InstanceType<typeof Map> | null = null
+let view: InstanceType<typeof View> | null = null
+
+const initMap = (token: string, options: Record<string, unknown>) => {
+  const { fullExtent, tileInfo, resolutions } = options as {
+    fullExtent: { xmin: number; ymin: number; xmax: number; ymax: number }
+    tileInfo: { origin: { x: number; y: number }; cols: number; rows: number }
+    resolutions: number[]
+  }
+  view = new View({
+    center: [63641.82242120001, 46084.01155038807],
+    zoom: 13.4
+  })
+  map = new Map({
+    target: 'map',
+    layers: [
+      new TileLayer({
+        source: new XYZ({
+          tileGrid: new TileGrid({
+            extent: [
+              fullExtent.xmin,
+              fullExtent.ymin,
+              fullExtent.xmax,
+              fullExtent.ymax
+            ],
+            origin: [tileInfo.origin.x, tileInfo.origin.y],
+            resolutions,
+            tileSize: [tileInfo.cols, tileInfo.rows]
           }),
-          radius: 5
+          url: mapUrl + '/tile/{z}/{y}/{x}?sipsdToken=' + token
         })
       })
-      vercorLayer.on('postrender', (evt) => {
-        const veContext = getVectorContext(evt)
-        features.forEach((item, index) => {
-          veContext.drawFeature(item, arcStyle)
-          const time = (evt.frameState.time - item.get('start')) / 1000
-          let frac = time / 5 - index / features.length
-          if (!item.get('start')) item.set('start', new Date().getTime())
-          if (frac >= 1) {
-            item.set('start', new Date().getTime())
-            frac = 0
-          }
-          const along = item.getGeometry().getCoordinateAt(frac)
-          const pF = new Feature(new Point(along))
-          veContext.drawFeature(pF, dotStyle)
-        })
-        map.render()
-      })
-      map && map.addLayer(vercorLayer)
-    }
-    // 添加关系图
-    const createRelation = async () => {
-      const res = await getMapRelation();
-      if (res.success) {
-        const { nodes, edges } = res.data;
-        state.nodeList = nodes
-        addLines(edges);
-        await nextTick();
-        nodes.forEach((item) => {
-          addPopup(item, {
-            prefix: 'step3-popup',
-            overlayOpt: {
-              offset: [-15, -9]
-            }
-          })
-        })
+    ],
+    view
+  })
+}
+
+const addImageLayer = () => {
+  const imageLayer = new ImageLayer({
+    opacity: 1,
+    source: new Static({
+      url: '/static/img/outside/map.png',
+      imageExtent: [
+        55656.38659914988,
+        35894.30966144678,
+        77019.57345087627,
+        58318.62269787157
+      ]
+    })
+  })
+  map!.addLayer(imageLayer)
+}
+
+const addPopup = (item: { id?: number | string; coordinate?: number[] }, options: { prefix?: string; overlayOpt?: Record<string, unknown> } = {}) => {
+  const { id = '', coordinate } = item
+  const { prefix = 'popup', overlayOpt = {} } = options
+  const container = document.getElementById(`${prefix}${id}`)
+  const overlay = new Overlay({
+    element: container!,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250
+    },
+    ...overlayOpt
+  })
+  map!.addOverlay(overlay)
+  coordinate && overlay.setPosition(coordinate)
+  return overlay
+}
+
+// 添加线
+const addLines = (lines: unknown[]) => {
+  const { vercorLayer, features } = addLineString(lines)
+  const arcStyle = new Style({
+    stroke: new Stroke({
+      color: [0, 122, 122, 0.7] as unknown as string,
+      width: 1
+    })
+  })
+
+  const dotStyle = new Style({
+    image: new CircleStyle({
+      fill: new Fill({
+        color: [255, 255, 255, 0.7] as unknown as string
+      }),
+      radius: 5
+    })
+  })
+  vercorLayer.on('postrender', (evt: Record<string, unknown>) => {
+    const veContext = getVectorContext(evt as unknown as Parameters<typeof getVectorContext>[0])
+    features.forEach((item: Feature, index: number) => {
+      veContext.drawFeature(item, arcStyle)
+      const time = ((evt.frameState as Record<string, unknown>).time as number - (item.get('start') as number)) / 1000
+      let frac = time / 5 - index / features.length
+      if (!item.get('start')) item.set('start', new Date().getTime())
+      if (frac >= 1) {
+        item.set('start', new Date().getTime())
+        frac = 0
       }
-    };
-    createRelation();
-    const init = async () => {
-      const { token } = await getMapToken()
-      const res = await getMapConfig(token)
-      const { fullExtent, tileInfo } = res
-      const resolutions = tileInfo.lods.map((item) => item.resolution)
-      initMap(token, {
-        fullExtent,
-        tileInfo,
-        resolutions
-      })
-      map.on('singleclick', function (e) {
-        // console.log(e.coordinate);
-        // featureClick(e)
-      })
-      addImageLayer()
-    }
-    init()
-    const addDcList = async (dcs) => {
-      state.dcList = dcs.map((item) => {
-        const {
-          id,
-          name,
-          config: { cloud, coordinate }
-        } = item
-        return {
-          id,
-          name,
-          cloud,
-          coordinate
+      const along = (item.getGeometry()! as { getCoordinateAt: (f: number) => number[] }).getCoordinateAt(frac)
+      const pF = new Feature(new Point(along))
+      veContext.drawFeature(pF, dotStyle)
+    })
+    map!.render()
+  })
+  map && map.addLayer(vercorLayer)
+}
+
+// 添加关系图
+const createRelation = async () => {
+  const res = await getMapRelation()
+  if (res.success) {
+    const { nodes, edges } = res.data
+    state.nodeList = nodes
+    addLines(edges)
+    await nextTick()
+    nodes.forEach((item: NodeItem) => {
+      addPopup(item, {
+        prefix: 'step3-popup',
+        overlayOpt: {
+          offset: [-15, -9]
         }
       })
-      await nextTick()
-      state.dcList.forEach((item) => {
-        if (!item.coordinate) return
-        addPopup(item, {
-          overlayOpt: {
-            offset: [-86, -48]
-          }
-        })
-      })
-    }
-    const selectCloud = (type) => {
-      state.params.type = type
-      context.emit('getData', state.params)
-    }
-    const selectDc = (id) => {
-      window.open(`/#/room/3d/${id}`)
-    }
-    return {
-      ...toRefs(state),
-      addDcList,
-      selectCloud,
-      selectDc
-    }
+    })
   }
 }
+createRelation()
+
+const init = async () => {
+  const { token } = await getMapToken()
+  const res = await getMapConfig(token)
+  const { fullExtent, tileInfo } = res
+  const resolutions = tileInfo.lods.map((item: { resolution: number }) => item.resolution)
+  initMap(token, {
+    fullExtent,
+    tileInfo,
+    resolutions
+  })
+  map!.on('singleclick', function (e: unknown) {
+    // console.log(e.coordinate);
+    // featureClick(e)
+  })
+  addImageLayer()
+}
+init()
+
+const addDcList = async (dcs: DcItem[]) => {
+  state.dcList = dcs.map((item) => {
+    const {
+      id,
+      name,
+      cloud,
+      coordinate
+    } = item as DcItem & { config?: { cloud?: string; coordinate?: number[] } }
+    return {
+      id,
+      name,
+      cloud: (item as Record<string, unknown>).cloud as string | undefined ?? (item as { config?: { cloud?: string } }).config?.cloud,
+      coordinate: coordinate ?? (item as { config?: { coordinate?: number[] } }).config?.coordinate
+    }
+  }) as typeof state.dcList
+  await nextTick()
+  state.dcList.forEach((item) => {
+    if (!item.coordinate) return
+    addPopup(item, {
+      overlayOpt: {
+        offset: [-86, -48]
+      }
+    })
+  })
+}
+
+const selectCloud = (type: DcItem) => {
+  state.params.type = type.cloud || ''
+  emit('getData', state.params)
+}
+
+const selectDc = (id: number | string) => {
+  window.open(`/#/room/3d/${id}`)
+}
+
+defineExpose({
+  addDcList
+})
 </script>
 
 <style lang="scss" scoped>
