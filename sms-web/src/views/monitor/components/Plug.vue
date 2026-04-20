@@ -1,13 +1,14 @@
 <template>
   <div>
     <el-row type="flex" :gutter="20" class="component-container">
-      <el-col v-for="(item, key) in data" :key="key" :span="24" :class="colorMap[item.status]">
+      <el-col v-for="(item, key) in dataList" :key="key" :span="24" :class="colorMap[item.status]">
         <div class="cell">
           <div class="cell-title">{{ item.name }}</div>
-          <div class="cell-body" v-for="(cell, key) in item.instance" :key="key" :title="cell.host" :style="{ 'border-color': borderColorMap[cell.status] }">
+          <div class="cell-body" v-for="(cell, idx) in item.instance" :key="idx" :title="cell.host" :style="{ 'border-color': borderColorMap[cell.status] }">
             <el-row class="row">
               <el-col :span="24">
                 <span class="status">
+                  <!-- TODO: cmp-element -->
                   <status-icon :type="statusFilter(cell.status, 'color')"></status-icon>
                 </span>
                 {{ cell.host }}
@@ -17,96 +18,86 @@
         </div>
       </el-col>
     </el-row>
-    <common-detail v-if="detailVisible" :setting="detailSetting" :title="detailData.name" @goBack="goBack"> </common-detail>
+    <!-- TODO: cmp-element -->
+    <common-detail v-if="detailVisible" :setting="detailSetting" :title="(detailData as any).name" @goBack="goBack"> </common-detail>
     <!--实时日志-->
     <RealLog v-if="realLog.visible" :realLogData="realLog"></RealLog>
     <LogDownload v-if="logDownload.visible" :dialog="logDownload"></LogDownload>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'
 import RealLog from './realLog.vue'
 import LogDownload from './logDownload.vue'
-import { getLogStats } from 'services/system/log'
 import { getPlugs, getStatus } from 'services/system/service_system'
 import { statusFilter, colorMap, borderColorMap } from './filters'
 
-export default {
-  components: { RealLog, LogDownload },
-  data() {
-    return {
-      statusFilter,
-      colorMap,
-      data: '',
-      relationData: {},
-      detailVisible: false,
-      borderColorMap,
-      detailSetting: {
-        type: 'host',
-        columns: []
-      },
-      detailData: [],
-      realLog: {
-        visible: false,
-        data: {}
-      },
-      logDownload: {
-        visible: false
-      }
-    }
-  },
-  created() {
-    this.getList()
-  },
-  mounted() {},
-  methods: {
-    getData(value) {
-      this.getList()
-    },
-    getList() {
-      getPlugs().then((data) => {
-        if (data.success) {
-          this.data = data.data
-        }
-      })
-    },
-    download(item) {
-      this.logDownload = {
-        visible: true,
-        data: Object.assign({}, item)
-      }
-    },
-    getDetail(row) {
-      this.detailSetting.columns = []
-      getStatus({
-        value: row.host
-      }).then((data) => {
-        if (data.success) {
-          this.detailData = data.data
-          const array = []
-          for (const key in this.detailData) {
-            array.push({
-              name: key,
-              value: key
-            })
-          }
-          this.detailSetting.columns.push(array)
-          this.detailVisible = true
-        }
-      })
-    },
-    goBack() {
-      this.detailVisible = false
-    },
-    handleRealLog(row) {
-      this.realLog = {
-        visible: true,
-        data: row
-      }
-    }
-  }
+interface InstanceItem {
+  host: string
+  status: string
+  [key: string]: unknown
 }
+
+interface PlugItem {
+  name: string
+  status: string
+  instance: InstanceItem[]
+}
+
+const dataList = ref<PlugItem[] | ''>('')
+const detailVisible = ref(false)
+const detailSetting = reactive<{ type: string; columns: Array<Array<{ name: string; value: string }>> }>({
+  type: 'host',
+  columns: []
+})
+// TODO: type - 详情数据结构依赖后端
+const detailData = ref<Record<string, unknown> | unknown[]>([])
+const realLog = reactive<{ visible: boolean; data: Record<string, unknown> }>({ visible: false, data: {} })
+const logDownload = reactive<{ visible: boolean; data?: Record<string, unknown> }>({ visible: false })
+
+function getList(): void {
+  getPlugs().then((data: any) => {
+    if (data.success) {
+      dataList.value = data.data
+    }
+  })
+}
+
+function download(item: InstanceItem): void {
+  logDownload.visible = true
+  logDownload.data = { ...item }
+}
+
+function getDetail(row: InstanceItem): void {
+  detailSetting.columns = []
+  getStatus({ value: row.host }).then((data: any) => {
+    if (data.success) {
+      detailData.value = data.data
+      const array: Array<{ name: string; value: string }> = []
+      for (const key in detailData.value as Record<string, unknown>) {
+        array.push({ name: key, value: key })
+      }
+      detailSetting.columns.push(array)
+      detailVisible.value = true
+    }
+  })
+}
+
+function goBack(): void {
+  detailVisible.value = false
+}
+
+function handleRealLog(row: InstanceItem): void {
+  realLog.visible = true
+  realLog.data = row
+}
+
+onMounted(getList)
+
+defineExpose({ getDetail, download, handleRealLog })
 </script>
+
 <style scoped lang="scss">
 @import './index';
 .component-container {

@@ -6,79 +6,88 @@
   </div>
 </template>
 
-<script>
-/* global $ */
+<script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { getToken } from 'utils/auth'
-export default {
-  props: {
-    realLogData: {
-      type: Object
+
+interface RealLogData {
+  visible: boolean
+  data: {
+    logger?: string
+    host?: string
+    position?: number
+    [key: string]: unknown
+  }
+}
+
+const props = defineProps<{
+  realLogData: RealLogData
+}>()
+
+const realLog = ref('')
+// TODO: type - WebSocket 封装类型待补
+const socket = ref<WebSocket | null>(null)
+
+function init(): void {
+  const setting: RealLogData['data'] = Object.assign({}, props.realLogData.data)
+  const protocol = location.protocol === 'http:' ? 'ws' : 'wss'
+  socket.value = new WebSocket(`${protocol}://${location.host}/api/sms/logViewService`, getToken() as string)
+  const target = document.getElementById('log-body')
+  const handleDom = () => {
+    const height = document.getElementById('pre')?.offsetHeight ?? 0
+    if (target) target.scrollTop = height
+  }
+  socket.value.onopen = () => {
+    socket.value?.send(
+      JSON.stringify({
+        logger: setting.logger,
+        logsize: 1024,
+        host: setting.host
+      })
+    )
+  }
+  socket.value.onmessage = (event: MessageEvent) => {
+    const data = JSON.parse(event.data)
+    if (data && data.content) {
+      realLog.value += data.content
+      setting.position = data.position
     }
-  },
-  data() {
-    return {
-      realLog: '',
-      socket: ''
-    }
-  },
-  mounted() {
-    this.init()
-    this.$message.info('按esc退出实时日志')
-    document.addEventListener('keyup', this.exit, false)
-  },
-  beforeDestroy() {
-    document.removeEventListener('keyup', this.exit, false)
-  },
-  methods: {
-    init() {
-      const that = this
-      const setting = Object.assign({}, this.realLogData.data)
-      const protocol = location.protocol === 'http:' ? 'ws' : 'wss'
-      this.socket = new WebSocket(`${protocol}://${location.host}/api/sms/logViewService`, getToken())
-      const target = document.getElementById('log-body')
-      const handleDom = function () {
-        const height = document.getElementById('pre').offsetHeight
-        target.scrollTop = height
-      }
-      this.socket.onopen = function () {
-        that.socket.send(
+    nextTick(() => {
+      handleDom()
+    })
+    setTimeout(() => {
+      if (socket.value && socket.value.readyState === 1) {
+        socket.value.send(
           JSON.stringify({
             logger: setting.logger,
-            logsize: 1024,
+            position: setting.position,
             host: setting.host
           })
         )
       }
-      this.socket.onmessage = function (event) {
-        const data = JSON.parse(event.data)
-        if (data && data.content) {
-          that.realLog += data.content
-          setting.position = data.position
-        }
-        that.$nextTick(() => {
-          handleDom()
-        })
-        setTimeout(function () {
-          if (that.socket.readyState == 1) {
-            that.socket.send(
-              JSON.stringify({
-                logger: setting.logger,
-                position: setting.position,
-                host: setting.host
-              })
-            )
-          }
-        }, 1000)
-      }
-    },
-    exit(event) {
-      if (event.keyCode === 27) {
-        this.socket.close()
-        this.realLogData.visible = false
-      }
-    }
+    }, 1000)
   }
 }
+
+function exit(event: KeyboardEvent): void {
+  if (event.keyCode === 27) {
+    socket.value?.close()
+    props.realLogData.visible = false
+  }
+}
+
+onMounted(() => {
+  init()
+  ElMessage.info('按esc退出实时日志')
+  document.addEventListener('keyup', exit, false)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keyup', exit, false)
+  socket.value?.close()
+  socket.value = null
+})
 </script>
 
 <style scoped lang="scss">

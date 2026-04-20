@@ -1,143 +1,128 @@
 <template>
   <div>
+    <!-- TODO: cmp-element basic-form -->
     <basic-form>
-      <!-- <el-select style="width: 300px;" v-model="apiGrantData.module" placeholder="请选择服务" :loading="loading" @change="changeModule">
-          <el-option v-for="item in modulesData" :key="item.value" :label="item.name" :value="item.value">
-          </el-option>
-        </el-select> -->
-      <!-- <el-button class="m-l" type="primary" @click="apiGrantSubmit()"><i class="el-icon-plus"></i>提交</el-button> -->
       <el-row class="m-t" :gutter="10" v-loading="loading">
         <el-col :span="12">
-          <!-- <el-checkbox v-model="apiGrantData.selectAll" @change="selectAll">全选</el-checkbox> -->
-          <el-tree ref="apitree" :expand-on-click-node="false" :data="modulesData" node-key="pattern" :props="{ label: 'label', children: 'value' }" @check-change="changeCheckApi">
-            <span slot-scope="{ node }">
-              <span :class="node.label.indexOf(':') > -1 ? 'custom-tree-node' : ''">{{ node.label.split(':')[0] }}</span
-              ><span>: {{ node.label.split(':')[1] }}</span>
-            </span>
+          <el-tree ref="apitreeRef" :expand-on-click-node="false" :data="modulesData" node-key="pattern" :props="{ label: 'label', children: 'value' }" @check-change="changeCheckApi">
+            <template #default="{ node }">
+              <span>
+                <span :class="node.label.indexOf(':') > -1 ? 'custom-tree-node' : ''">{{ node.label.split(':')[0] }}</span><span>: {{ node.label.split(':')[1] }}</span>
+              </span>
+            </template>
           </el-tree>
         </el-col>
       </el-row>
     </basic-form>
   </div>
 </template>
-<script>
-import { mapState } from 'vuex'
-import { getModules, getModulesByName, getApiById, updateApi } from 'services/system/role'
 
-export default {
-  data() {
-    return {
-      loading: false,
-      apiGrantData: {
-        apis: []
-      },
-      modulesData: [], // 服务列表
-      modulesList: [], // 服务下api列表
-      apisById: [] // 当前角色已授权api
-    }
-  },
-  computed: {
-    ...mapState({
-      userData: (state) => state.app.userData
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getModules, getModulesByName, updateApi } from 'services/system/role'
+import { usePermissionStore } from '@/stores'
+import router, { resetRouter } from '@/router'
+
+const permissionStore = usePermissionStore()
+
+const loading = ref(false)
+const apiGrantData = ref<any>({ apis: [] })
+const modulesData = ref<any[]>([])
+const modulesList = ref<any[]>([])
+const apitreeRef = ref<any>(null)
+
+onMounted(() => {
+  handleApi()
+})
+
+function handleApi() {
+  apiGrantData.value = { apis: [], selectAll: false }
+  modulesList.value = []
+  getModulesList()
+}
+
+async function getModulesList() {
+  loading.value = true
+  const data = await getModules()
+  if (data.success) {
+    loading.value = false
+    modulesData.value = data.data
+    modulesData.value.forEach((item: any) => {
+      item.label = item.name
+      item.value.forEach((a: any) => {
+        a.label = a.name
+        a.value.forEach((b: any) => {
+          b.label = `${b.method}: ${b.operation} (${b.url})`
+        })
+      })
     })
-  },
-  created() {
-    this.handleApi()
-  },
-  methods: {
-    handleApi() {
-      this.apiGrantData = {
-        apis: [],
-        selectAll: false
-      }
-      this.modulesList = []
-      this.getModules()
-    },
-    async getModules() {
-      this.loading = true
-      const data = await getModules()
-      if (data.success) {
-        this.loading = false
-        this.modulesData = data.data
-        this.modulesData.forEach((item) => {
-          item.label = item.name
-          item.value.forEach((a) => {
-            a.label = a.name
-            a.value.forEach((b) => {
-              b.label = `${b.method}: ${b.operation} (${b.url})`
-            })
-          })
-        })
-        // if (this.modulesData.length) {
-        //   this.$set(this.apiGrantData, 'module', this.modulesData[0].value)
-        //   this.changeModule(this.apiGrantData.module)
-        // }
-      }
-    },
-    async changeModule(value) {
-      this.modulesList = []
-      this.apiGrantData.selectAll = false
-      this.apiGrantData.apis = []
-      this.loading = true
-      getModulesByName(value).then((data) => {
-        if (data.success) {
-          this.loading = false
-          this.modulesList = data.data
-          this.modulesList.forEach((item) => {
-            // item.disabled = true
-            item.label = item.name
-            item.value.forEach((target) => {
-              target.label = `${target.method}: ${target.operation} (${target.url})`
-            })
-          })
-        }
-      })
-    },
-    changeCheckApi(obj, isChecked, data3) {
-      if (isChecked) {
-        this.apiGrantData.apis.push(obj)
-      } else {
-        const index = this.apiGrantData.apis.indexOf(obj.pattern)
-        if (index != -1) {
-          this.apiGrantData.apis.splice(index, 1)
-        }
-      }
-    },
-    selectAll(value) {
-      const arr = []
-      if (value) {
-        this.modulesList.forEach((item) => {
-          item.value.forEach((target) => {
-            arr.push(target.pattern)
-          })
-        })
-      }
-      this.$refs.apitree.setCheckedKeys(arr)
-    },
-    apiGrantSubmit() {
-      const that = this
-      const nodes = this.$refs.apitree.getCheckedNodes()
-      const { id, module } = that.apiGrantData
-      const apis = []
-      nodes.forEach((item) => {
-        if (!item.value) {
-          apis.push(item)
-        }
-      })
-      this.loading = true
-      updateApi(id, { apis, module: module }).then((data) => {
-        if (data.success) {
-          this.$message({
-            message: data.message,
-            type: 'success'
-          })
-          // 更新路由
-          this.$store.dispatch('permission/ChangeRoutes')
-          this.getList()
-        }
-        this.loading = false
-      })
-    }
   }
 }
+
+async function changeModule(value: string) {
+  modulesList.value = []
+  apiGrantData.value.selectAll = false
+  apiGrantData.value.apis = []
+  loading.value = true
+  getModulesByName(value).then((data: any) => {
+    if (data.success) {
+      loading.value = false
+      modulesList.value = data.data
+      modulesList.value.forEach((item: any) => {
+        item.label = item.name
+        item.value.forEach((target: any) => {
+          target.label = `${target.method}: ${target.operation} (${target.url})`
+        })
+      })
+    }
+  })
+}
+
+function changeCheckApi(obj: any, isChecked: boolean) {
+  if (isChecked) {
+    apiGrantData.value.apis.push(obj)
+  } else {
+    const index = apiGrantData.value.apis.indexOf(obj.pattern)
+    if (index != -1) apiGrantData.value.apis.splice(index, 1)
+  }
+}
+
+function selectAll(val: boolean) {
+  const arr: string[] = []
+  if (val) {
+    modulesList.value.forEach((item: any) => {
+      item.value.forEach((target: any) => {
+        arr.push(target.pattern)
+      })
+    })
+  }
+  apitreeRef.value?.setCheckedKeys(arr)
+}
+
+async function changeRoutes() {
+  const { asyncRouterMap } = await import('@/router')
+  return permissionStore.changeRoutes(asyncRouterMap, router, resetRouter)
+}
+
+function apiGrantSubmit() {
+  const nodes: any[] = apitreeRef.value?.getCheckedNodes() || []
+  const { id, module } = apiGrantData.value
+  const apis: any[] = []
+  nodes.forEach((item: any) => {
+    if (!item.value) apis.push(item)
+  })
+  loading.value = true
+  updateApi(id, { apis, module }).then((data: any) => {
+    if (data.success) {
+      ElMessage.success(data.message)
+      changeRoutes()
+    }
+    loading.value = false
+  })
+}
+
+// 保留未使用方法的语义（视图未触发但组件开放接口）
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _public = { changeModule, selectAll, apiGrantSubmit }
 </script>

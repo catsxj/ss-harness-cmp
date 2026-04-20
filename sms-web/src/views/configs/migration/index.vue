@@ -1,5 +1,6 @@
 <template>
   <el-card class="box-card">
+    <!-- TODO: cmp-element - 自研包在 compat 层处理：basic-form / basic-form-item / AdvanceTable / status-icon -->
     <basic-form :model="form" label-width="110px">
       <el-row :gutter="10">
         <el-col :span="24">
@@ -44,118 +45,100 @@
   </el-card>
 </template>
 
-<script>
-import { reactive, toRefs, computed, onBeforeUnmount } from '@vue/composition-api'
+<script setup lang="ts">
+import { reactive, ref, computed, onBeforeUnmount } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useAppStore } from '@/stores'
 import { getMeta, migrationData, getMigrationData } from 'services/system/migration'
 import crypto from 'utils/crypto'
-import { Message } from 'element-ui'
 import Detail from './detail.vue'
 import { getStatus, columns } from './configs'
 
-export default {
-  components: {
-    Detail
-  },
-  setup(props, context) {
-    const state = reactive({
-      form: {
-        url: '',
-        user: '',
-        pass: ''
-      },
-      columns,
-      list: [],
-      params: {
-        page: 1,
-        rows: 10
-      },
-      total: 0,
-      loading: false,
-      interNum: 0,
-      detail: {
-        visible: false
-      }
-    })
+const appStore = useAppStore()
 
-    const pwdRule = computed(() => {
-      return context.root.$store.state.app.systemConfig.pwdStrength
-    })
+interface FormData {
+  url: string
+  user: string
+  pass: string
+}
+interface DetailState {
+  visible: boolean
+  id?: number | string
+  [key: string]: unknown
+}
 
-    const visible = computed(() => {
-      return state.detail.visible
-    })
+const form = reactive<FormData>({ url: '', user: '', pass: '' })
+// TODO: type - 迁移记录行类型后续补 interface
+const list = ref<any[]>([])
+const params = reactive<Record<string, any>>({ page: 1, rows: 10 })
+const total = ref(0)
+const loading = ref(false)
+const interNum = ref<number | null>(null)
+const detail = reactive<DetailState>({ visible: false })
 
-    const _getMeta = async function () {
-      const res = await getMeta()
-      if (res.success) {
-        state.form = {
-          url: res.data.url,
-          user: res.data.user,
-          pass: crypto.decrypt(res.data.pass)
-        }
-      }
-    }
-    _getMeta()
+// TODO: type - pwdStrength 类型后续由 app store 补全
+const pwdRule = computed(() => (appStore.systemConfig as any).pwdStrength)
 
-    const gotoMigration = async function () {
-      // 启动迁移
-      const pass = crypto.encrypt(state.form.pass)
-      const res = await migrationData({ ...state.form, pass })
-      if (res.success) {
-        Message.success(res.message)
-        getList()
-      }
-    }
-    const refresh = function () {
-      state.interNum = setInterval(() => {
-        if (!visible.value) {
-          getList()
-        }
-      }, 5000)
-    }
+const visible = computed(() => detail.visible)
 
-    const getList = async function () {
-      console.log('page: ', state.params.page)
-      state.loading = true
-      const res = await getMigrationData(state.params)
-      if (res.success) {
-        state.list = res.data.rows
-        state.total = res.data.total
-      }
-      state.loading = false
-    }
-
-    getList()
-
-    refresh()
-
-    const getDetail = function (record) {
-      state.detail = {
-        visible: true,
-        ...Object.assign({}, record)
-      }
-    }
-
-    const getProgress = function ({ totalCnt = 0, completeCnt = 0 }) {
-      return ((completeCnt / totalCnt) * 100).toFixed(1) - 0
-    }
-
-    onBeforeUnmount(() => {
-      clearInterval(state.interNum)
-    })
-
-    return {
-      ...toRefs(state),
-      getMeta,
-      gotoMigration,
-      getDetail,
-      getProgress,
-      getList,
-      pwdRule,
-      getStatus
-    }
+async function loadMeta() {
+  const res = await getMeta()
+  if (res.success) {
+    form.url = res.data.url
+    form.user = res.data.user
+    form.pass = crypto.decrypt(res.data.pass)
   }
 }
+loadMeta()
+
+async function gotoMigration() {
+  const pass = crypto.encrypt(form.pass)
+  const res = await migrationData({ ...form, pass })
+  if (res.success) {
+    ElMessage.success(res.message)
+    getList()
+  }
+}
+
+function refresh() {
+  interNum.value = window.setInterval(() => {
+    if (!visible.value) {
+      getList()
+    }
+  }, 5000)
+}
+
+async function getList() {
+  console.log('page: ', params.page)
+  loading.value = true
+  const res = await getMigrationData(params)
+  if (res.success) {
+    list.value = res.data.rows
+    total.value = res.data.total
+  }
+  loading.value = false
+}
+
+getList()
+refresh()
+
+function getDetail(record: any) {
+  Object.assign(detail, { visible: true, ...record })
+}
+
+function getProgress({ totalCnt = 0, completeCnt = 0 }: { totalCnt?: number; completeCnt?: number }) {
+  return Number(((completeCnt / totalCnt) * 100).toFixed(1))
+}
+
+// 占位函数：此处未实现但原模板引用该方法。行内按钮禁用时 record.status !== 'FAILED' 才可点击
+// TODO: type - 迁移 detail 行重试接口后续由 services 提供
+function refreshItem(_recordId: unknown, _taskId: unknown) {
+  /* noop */
+}
+
+onBeforeUnmount(() => {
+  if (interNum.value != null) clearInterval(interNum.value)
+})
 </script>
 
 <style scoped lang="scss"></style>

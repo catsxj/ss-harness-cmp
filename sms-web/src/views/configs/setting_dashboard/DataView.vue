@@ -5,42 +5,43 @@
     </div>
     <div class="count-content">
       <div class="count-cell" v-for="(row, key) in itemData.data" :key="key">
-        <el-tooltip class="item" effect="dark" :open-delay="600" :content="row.name" placement="top-start">
+        <el-tooltip class="item" effect="dark" :show-after="600" :content="row.name" placement="top-start">
           <div class="count-title">{{ row.name }}</div>
         </el-tooltip>
-        <el-tooltip class="item" effect="dark" :open-delay="600" :content="String(row.value) + row.unit" placement="top-start">
+        <el-tooltip class="item" effect="dark" :show-after="600" :content="String(row.value) + row.unit" placement="top-start">
           <div class="count-value">{{ row.value }}</div>
         </el-tooltip>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
-import { computed, defineComponent, PropType } from '@vue/composition-api'
-const logoMap: any = {
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const logoMap: Record<string, string> = {
   TCE: 'tenant',
   FUSIONCLOUD: 'huawei',
   MANAGEONE: 'huawei',
   HCSO: 'huawei',
   ACAS: 'aliyun'
 }
-export default defineComponent({
-  props: {
-    itemData: {
-      type: Object as PropType<{ config: any }>,
-      required: true
-    }
-  },
-  setup(props, context) {
-    const imageSrc = computed(() => {
-      const type = props.itemData.config.dataType.toLocaleLowerCase()
-      return `/web-common-resource/img/dashboard/${logoMap[type] || type}.png`
-    })
-    return {
-      imageSrc,
-      logoMap
-    }
+
+interface DataRow {
+  name: string
+  value: number | string
+  unit: string
+}
+
+const props = defineProps<{
+  itemData: {
+    config: { dataType: string }
+    data?: DataRow[]
   }
+}>()
+
+const imageSrc = computed(() => {
+  const type = props.itemData.config.dataType.toLocaleLowerCase()
+  return `/web-common-resource/img/dashboard/${logoMap[type] || type}.png`
 })
 </script>
 <style lang="scss" scoped>

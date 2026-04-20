@@ -5,29 +5,33 @@
     </el-col>
     <el-col :span="6" style="width: 286px">
       <el-card class="service-menu">
-        <div slot="header">
-          <el-button type="primary" style="width: 100%" size="mini" @click="handleCreate()" icon="el-icon-plus"> 添加根节点</el-button>
-        </div>
+        <template #header>
+          <el-button type="primary" style="width: 100%" size="small" @click="handleCreate()">
+            <el-icon><Plus /></el-icon> 添加根节点
+          </el-button>
+        </template>
         <el-row>
           <el-col :span="24">
             <el-tree highlight-current node-key="id" :data="dataSource" :props="{ label: 'name' }" @node-click="handleNodeClick" :accordion="true" @node-drop="handleDrop" @node-expand="handleExpand" @node-collapse="handleCollapse" :default-expanded-keys="expandenKeys" ref="authTree" draggable>
-              <span class="custom-tree-node" slot-scope="{ node, data }">
-                <div class="custom-tree-node-wrapper">
-                  <span class="custom-tree-node-label">
-                    {{ node.label }}
-                  </span>
-                  <span class="operate-btns">
-                    <el-dropdown trigger="hover" class="custom-tree-menu" size="small">
-                      <i class="el-icon-more rotate" />
-                      <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item @click.native="handleCreate('update', data.id)"> 编辑 </el-dropdown-item>
-                        <el-dropdown-item v-if="data.id" @click.native="remove(data.id)"> 删除 </el-dropdown-item>
-                        <el-dropdown-item v-if="data.id && data.category !== 'button'" @click.native="handleCreate('create', data.id)"> 新增子节点 </el-dropdown-item>
-                      </el-dropdown-menu>
-                    </el-dropdown>
-                  </span>
-                </div>
-              </span>
+              <template #default="{ node, data }">
+                <span class="custom-tree-node">
+                  <div class="custom-tree-node-wrapper">
+                    <span class="custom-tree-node-label">{{ node.label }}</span>
+                    <span class="operate-btns">
+                      <el-dropdown trigger="hover" class="custom-tree-menu" size="small">
+                        <el-icon class="rotate"><More /></el-icon>
+                        <template #dropdown>
+                          <el-dropdown-menu>
+                            <el-dropdown-item @click="handleCreate('update', data.id)"> 编辑 </el-dropdown-item>
+                            <el-dropdown-item v-if="data.id" @click="remove(data.id)"> 删除 </el-dropdown-item>
+                            <el-dropdown-item v-if="data.id && data.category !== 'button'" @click="handleCreate('create', data.id)"> 新增子节点 </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </template>
+                      </el-dropdown>
+                    </span>
+                  </div>
+                </span>
+              </template>
             </el-tree>
           </el-col>
         </el-row>
@@ -35,7 +39,7 @@
     </el-col>
     <el-col :span="18" style="width: calc(100% - 286px)">
       <el-card>
-        <div slot="header">权限详情</div>
+        <template #header><div>权限详情</div></template>
         <span :title="nodeData.name" class="authDetail">菜单名称：{{ nodeData.name }}</span>
         <span :title="nodeData.router" class="authDetail">路由名称：{{ nodeData.router }}</span>
         <span :title="nodeData.component" class="authDetail">组件名称：{{ nodeData.component }}</span>
@@ -45,168 +49,162 @@
       <el-row :gutter="10" class="m-t">
         <el-col :span="24">
           <el-card>
-            <div slot="header">按钮列表</div>
+            <template #header><div>按钮列表</div></template>
             <el-form :inline="true">
               <el-form-item>
-                <el-button type="primary" size="mini" :disabled="!isLeaf" @click="handleCreate('create', nodeData.id, 'button')" icon="el-icon-plus"> </el-button>
+                <el-button type="primary" size="small" :disabled="!isLeaf" @click="handleCreate('create', nodeData.id, 'button')">
+                  <el-icon><Plus /></el-icon>
+                </el-button>
               </el-form-item>
             </el-form>
+            <!-- TODO: cmp-element basic-table -->
             <basic-table :data="buttonList">
               <el-table-column show-overflow-tooltip label="名称" prop="name"> </el-table-column>
-
               <el-table-column show-overflow-tooltip label="编码" prop="meta"> </el-table-column>
               <el-table-column show-overflow-tooltip label="操作" width="160px">
-                <template slot-scope="scope">
-                  <el-button type="text" @click="handleCreate('update', scope.row.id, 'button')"><i class="el-icon-edit"></i> 编辑 </el-button>
+                <template #default="scope">
+                  <el-button type="text" @click="handleCreate('update', scope.row.id, 'button')">
+                    <el-icon><Edit /></el-icon> 编辑
+                  </el-button>
                   <div class="action-divider"></div>
-                  <el-button type="text" @click="remove(scope.row.id, 1)"><i class="el-icon-delete"></i> 删除</el-button>
+                  <el-button type="text" @click="remove(scope.row.id, 1)">
+                    <el-icon><Delete /></el-icon> 删除
+                  </el-button>
                 </template>
               </el-table-column>
-              <div slot="pagination"></div>
+              <template #pagination><div></div></template>
             </basic-table>
           </el-card>
         </el-col>
       </el-row>
-      <AuthAddDialog :dialog="addData" v-if="addData.visible" :authtype="type" @getData="getList" @getButtonList="getButtonList"></AuthAddDialog>
+      <AuthAddDialog :dialog="addData" v-if="addData.visible" :authtype="type" @get-data="getList" @get-button-list="getButtonList"></AuthAddDialog>
     </el-col>
   </el-row>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted, nextTick } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Edit, Delete, More } from '@element-plus/icons-vue'
 import AuthAddDialog from './AddDialog.vue'
 import { cloneDeep } from 'lodash-es'
 import { getAuth, getAuthByCategory, removeAuth, modifyAuth } from 'services/system/auth'
+import { usePermissionStore } from '@/stores'
+import router, { resetRouter } from '@/router'
 
-export default {
-  components: {
-    AuthAddDialog
-  },
-  data() {
-    return {
-      dataSource: [],
-      addData: {},
-      nodeData: {},
-      expandenKeys: [],
-      buttonList: [],
-      type: '',
-      isLeaf: false
+const permissionStore = usePermissionStore()
+
+const dataSource = ref<any[]>([])
+const addData = ref<any>({})
+const nodeData = ref<any>({})
+const expandenKeys = ref<any[]>([])
+const buttonList = ref<any[]>([])
+const type = ref<string>('')
+const isLeaf = ref(false)
+const authTree = ref<any>(null)
+
+onMounted(() => {
+  getList()
+})
+
+function handleNodeClick(data: any) {
+  nodeData.value = data
+  isLeaf.value = !nodeData.value.childs
+  getButtonList()
+}
+
+async function changeRoutes() {
+  const { asyncRouterMap } = await import('@/router')
+  return permissionStore.changeRoutes(asyncRouterMap, router, resetRouter)
+}
+
+function handleDrop(draggingNode: any, dropNode: any, dropType: string) {
+  const dragNode = cloneDeep(draggingNode.data)
+  const dropNodes = cloneDeep(dropNode.data)
+  switch (dropType) {
+    case 'after':
+      dragNode.parentId = dropNodes.parentId
+      dragNode.priority = ++dropNodes.priority
+      break
+    case 'before': {
+      dragNode.parentId = dropNodes.parentId
+      const priority = --dropNodes.priority
+      dragNode.priority = priority > 0 ? priority : 1
+      break
     }
-  },
-  created() {
-    this.getList()
-  },
-  methods: {
-    handleNodeClick(data) {
-      this.nodeData = data
-      if (this.nodeData.childs) {
-        this.isLeaf = false
-      } else {
-        this.isLeaf = true
-      }
-      this.getButtonList()
-    },
-    handleDrop(draggingNode, dropNode, dropType) {
-      const dragNode = cloneDeep(draggingNode.data)
-      const dropNodes = cloneDeep(dropNode.data)
-      switch (dropType) {
-        case 'after':
-          dragNode.parentId = dropNodes.parentId
-          dragNode.priority = ++dropNodes.priority
-          break
-        case 'before':
-          dragNode.parentId = dropNodes.parentId
-          const priority = --dropNodes.priority
-          dragNode.priority = priority > 0 ? priority : 1
-          break
-        case 'inner':
-          dragNode.parentId = dropNodes.id
-          break
-      }
-      this.updateMenu(dragNode)
-    },
-    updateMenu(data) {
-      modifyAuth(data).then((data) => {
-        if (data.success) {
-          this.$message({
-            message: data.message,
-            type: 'success'
-          })
-          this.$store.dispatch('permission/ChangeRoutes')
-          this.getList()
-        }
-      })
-    },
-    remove(id, index) {
-      this.$confirm('您确定要删除该权限吗？', '提示', {
-        type: 'warning'
-      }).then(() => {
-        removeAuth(id).then((data) => {
-          if (data.success) {
-            this.$message.success({
-              message: data.message,
-              type: 'success'
-            })
-            if (!index) {
-              this.nodeData = {}
-              this.getList()
-              // 删除菜单更新路由
-              this.$store.dispatch('permission/ChangeRoutes')
-            } else {
-              this.getButtonList()
-            }
-          }
-        })
-      })
-    },
-    async getList() {
-      const data = await getAuth({ parentId: null, tenant: false })
+    case 'inner':
+      dragNode.parentId = dropNodes.id
+      break
+  }
+  updateMenu(dragNode)
+}
+
+function updateMenu(data: any) {
+  modifyAuth(data).then((res: any) => {
+    if (res.success) {
+      ElMessage.success(res.message)
+      changeRoutes()
+      getList()
+    }
+  })
+}
+
+function remove(id: number, index?: number) {
+  ElMessageBox.confirm('您确定要删除该权限吗？', '提示', { type: 'warning' }).then(() => {
+    removeAuth(id).then((data: any) => {
       if (data.success) {
-        this.dataSource = data.data
-        this.$nextTick(() => {
-          if (this.nodeData.id) {
-            this.$refs.authTree.setCurrentKey(this.nodeData.id)
-          }
-        })
-      }
-    },
-    async getButtonList() {
-      const data = await getAuthByCategory({
-        parentId: this.nodeData.id,
-        category: 'button'
-      })
-      if (data.success) {
-        this.buttonList = data.data
-      }
-    },
-    handleCreate(type = 'create', id, category) {
-      this.addData = {
-        visible: true,
-        id: id,
-        type: type
-      }
-      if (category) {
-        switch (category) {
-          case 'button':
-            this.type = 'button'
-            break
-          case 'api':
-            this.type = 'api'
-            break
+        ElMessage.success(data.message)
+        if (!index) {
+          nodeData.value = {}
+          getList()
+          changeRoutes()
+        } else {
+          getButtonList()
         }
-      } else {
-        this.type = 'menu'
       }
-    },
-    handleExpand(data) {
-      this.expandenKeys.push(data.id)
-    },
-    handleCollapse(data) {
-      const index = this.expandenKeys.indexOf(data.id)
-      this.expandenKeys.splice(index, 1)
+    })
+  })
+}
+
+async function getList() {
+  const data = await getAuth({ parentId: null, tenant: false })
+  if (data.success) {
+    dataSource.value = data.data
+    await nextTick()
+    if (nodeData.value.id) {
+      authTree.value?.setCurrentKey(nodeData.value.id)
     }
   }
 }
+
+async function getButtonList() {
+  const data = await getAuthByCategory({ parentId: nodeData.value.id, category: 'button' })
+  if (data.success) {
+    buttonList.value = data.data
+  }
+}
+
+function handleCreate(createType: 'create' | 'update' = 'create', id?: number, category?: string) {
+  addData.value = { visible: true, id, type: createType }
+  if (category === 'button') {
+    type.value = 'button'
+  } else if (category === 'api') {
+    type.value = 'api'
+  } else {
+    type.value = 'menu'
+  }
+}
+
+function handleExpand(data: any) {
+  expandenKeys.value.push(data.id)
+}
+
+function handleCollapse(data: any) {
+  const index = expandenKeys.value.indexOf(data.id)
+  expandenKeys.value.splice(index, 1)
+}
 </script>
+
 <style lang="scss" scoped>
 .authDetail {
   display: inline-block;
@@ -215,15 +213,15 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-::v-deep .tree .el-tree-node__expand-icon.expanded {
+:deep(.tree .el-tree-node__expand-icon.expanded) {
   -webkit-transform: rotate(0deg);
   transform: rotate(0deg);
 }
-::v-deep .el-icon-caret-right:before {
+:deep(.el-icon-caret-right:before) {
   content: '\e6e0';
   font-size: 14px;
 }
-::v-deep .el-tree-node__content {
+:deep(.el-tree-node__content) {
   position: relative;
   height: 32px;
   line-height: 32px;
@@ -232,7 +230,6 @@ export default {
     right: 2px;
     display: none;
   }
-  // 鼠标悬停时，展示
   &:hover,
   :focus-within {
     .operate-btns {

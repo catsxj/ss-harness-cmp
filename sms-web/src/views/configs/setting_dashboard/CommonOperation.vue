@@ -3,61 +3,58 @@
     <el-col :span="6" v-for="(item, index) in list" :key="index">
       <div class="operation-cell" @click="goPage(item.path)">
         <span>{{ item.name }}</span>
-        <i class="el-icon-close" @click.stop="closeCell(item.path)" v-if="isSetting"></i>
+        <el-icon v-if="isSetting" class="close-icon" @click.stop="closeCell(item.path)"><Close /></el-icon>
       </div>
     </el-col>
     <el-col :span="6" v-if="isSetting">
-      <el-popover placement="bottom" width="200" trigger="click">
+      <el-popover placement="bottom" :width="200" trigger="click">
+        <template #reference>
+          <div class="operation-cell">
+            <el-icon class="m-r-sm"><Plus /></el-icon>
+            <!-- TODO: i18n -->
+            <span>添加快捷入口</span>
+          </div>
+        </template>
+        <!-- TODO: i18n -->
         <el-select v-model="itemData.config.selecteds" multiple filterable collapse-tags placeholder="请选择">
-          <el-option v-for="item in shortcuts" :key="item.name" :label="item.name" :value="item.path"> </el-option>
+          <el-option v-for="item in shortcuts" :key="item.name" :label="item.name" :value="item.path"></el-option>
         </el-select>
-        <div class="operation-cell" slot="reference">
-          <i class="el-icon-plus m-r-sm"></i>
-          <span>添加快捷入口</span>
-        </div>
       </el-popover>
     </el-col>
   </el-row>
 </template>
-<script lang="ts">
-import { computed, defineComponent, PropType } from '@vue/composition-api'
+<script setup lang="ts">
+import { computed } from 'vue'
 import { shortcuts } from './data'
-export default defineComponent({
-  props: {
-    itemData: {
-      type: Object as PropType<{ config: any }>,
-      required: true
-    },
-    isSetting: {
-      type: Boolean
-    }
-  },
-  setup(props, context) {
-    const list = computed(() => {
-      return shortcuts.filter((item) => {
-        const {
-          config: { selecteds = [] }
-        } = props.itemData
-        return selecteds.includes(item.path)
-      })
-    })
-    function closeCell(path: string) {
-      const {
-        config: { selecteds = [] }
-      } = props.itemData
-      selecteds.splice(selecteds.indexOf(path), 1)
-    }
-    function goPage(path: string) {
-      ;(context.root as any).mainRouter.push(path)
-    }
-    return {
-      shortcuts,
-      list,
-      closeCell,
-      goPage
-    }
-  }
+import { Close, Plus } from '@element-plus/icons-vue'
+
+const props = defineProps<{
+  itemData: { config: { selecteds?: string[] } }
+  isSetting?: boolean
+}>()
+
+const list = computed(() => {
+  return shortcuts.filter((item) => {
+    const { selecteds = [] } = props.itemData.config
+    return selecteds.includes(item.path)
+  })
 })
+
+function closeCell(path: string) {
+  const { selecteds = [] } = props.itemData.config
+  selecteds.splice(selecteds.indexOf(path), 1)
+}
+
+// TODO: cmp-element - 原使用 context.root.mainRouter (基座注入)，Qiankun 全局跳转后续统一改为 initGlobalState
+function goPage(path: string) {
+  const mainRouter = (window as any).mainRouter
+  if (mainRouter?.push) {
+    mainRouter.push(path)
+  } else {
+    window.history.pushState(null, '', path)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+}
 </script>
 <style lang="scss" scoped>
 .operation-wrapper {
@@ -75,12 +72,12 @@ export default defineComponent({
     & > span {
       flex: 1;
     }
-    .el-icon-close {
+    .close-icon {
       display: none;
     }
     &:hover {
       background: #e8efff;
-      .el-icon-close {
+      .close-icon {
         display: inline-block;
       }
     }

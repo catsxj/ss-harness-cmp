@@ -1,6 +1,7 @@
 <template>
-  <el-dialog :title="textMap[dialog.type]" :close-on-click-modal="false" :visible.sync="dialog.visible">
-    <basic-form :model="addData" ref="addForm" label-width="120px" v-if="type === 'menu'">
+  <el-dialog :title="textMap[props.dialog.type]" :close-on-click-modal="false" v-model="props.dialog.visible">
+    <!-- TODO: cmp-element basic-form -->
+    <basic-form :model="addData" ref="addFormRef" label-width="120px" v-if="type === 'menu'">
       <el-row>
         <el-col :span="24" class="cell-title">基本信息设置</el-col>
       </el-row>
@@ -14,7 +15,6 @@
           <basic-form-item label="菜单图标：" prop="icon">
             <el-select clearable v-model="addData.icon" placeholder="请选择图标">
               <el-option v-for="item in iconData" :key="item.value" :label="item.name" :value="item.value">
-                <!-- <Icon :type="item.value"></Icon> -->
                 {{ item.value }}
               </el-option>
             </el-select>
@@ -30,8 +30,8 @@
         <el-col :span="12">
           <basic-form-item label="是否隐藏：" prop="category" validate="required">
             <el-radio-group v-model="addData.category">
-              <el-radio label="menu">否</el-radio>
-              <el-radio label="view">是</el-radio>
+              <el-radio value="menu">否</el-radio>
+              <el-radio value="view">是</el-radio>
             </el-radio-group>
           </basic-form-item>
         </el-col>
@@ -47,9 +47,9 @@
         <el-col :span="12">
           <basic-form-item label="服务权限设置：" prop="props">
             <el-radio-group v-model="addData.props">
-              <el-radio label="isAlwaysShow">总是展示</el-radio>
-              <el-radio label="">与服务关联</el-radio>
-              <el-radio label="isServiceMenu">主菜单</el-radio>
+              <el-radio value="isAlwaysShow">总是展示</el-radio>
+              <el-radio value="">与服务关联</el-radio>
+              <el-radio value="isServiceMenu">主菜单</el-radio>
             </el-radio-group>
           </basic-form-item>
         </el-col>
@@ -97,13 +97,12 @@
             </basic-form-item>
           </el-col>
           <el-col :span="4">
-            <el-button class="m-t-xs" type="danger" size="mini" @click="removeItem(key, addData.meta)">删除</el-button>
+            <el-button class="m-t-xs" type="danger" size="small" @click="removeItem(key, addData.meta)">删除</el-button>
           </el-col>
         </el-row>
         <el-col :span="24" class="m-b">
-          <el-button type="primary" size="mini" @click="addItem(addData.meta)">
-            <i class="el-icon-plus"></i>
-            添加设置
+          <el-button type="primary" size="small" @click="addItem(addData.meta)">
+            <el-icon><Plus /></el-icon> 添加设置
           </el-button>
         </el-col>
       </el-row>
@@ -123,18 +122,17 @@
             </basic-form-item>
           </el-col>
           <el-col :span="4">
-            <el-button class="m-t-xs" size="mini" type="danger" @click="removeItem(key, addData.params)">删除</el-button>
+            <el-button class="m-t-xs" size="small" type="danger" @click="removeItem(key, addData.params)">删除</el-button>
           </el-col>
         </el-row>
         <el-col :span="24" class="m-b">
-          <el-button type="primary" size="mini" @click="addItem(addData.params)">
-            <i class="el-icon-plus"></i>
-            添加设置
+          <el-button type="primary" size="small" @click="addItem(addData.params)">
+            <el-icon><Plus /></el-icon> 添加设置
           </el-button>
         </el-col>
       </el-row>
     </basic-form>
-    <basic-form :model="addData" ref="addForm" label-width="120px" v-if="type === 'button'">
+    <basic-form :model="addData" ref="addFormRef" label-width="120px" v-if="type === 'button'">
       <el-row>
         <el-col :span="24" class="cell-title">基本信息设置</el-col>
       </el-row>
@@ -151,7 +149,7 @@
         </el-col>
       </el-row>
     </basic-form>
-    <basic-form :model="addData" ref="addForm" label-width="120px" v-if="type === 'api'">
+    <basic-form :model="addData" ref="addFormRef" label-width="120px" v-if="type === 'api'">
       <el-row>
         <el-col :span="24" class="cell-title">基本信息设置</el-col>
       </el-row>
@@ -168,152 +166,142 @@
         </el-col>
       </el-row>
     </basic-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="ghost" @click.native="dialog.visible = false">取消</el-button>
-      <el-button type="primary" @click.native="addSubmit" :loading="loading">确定</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="props.dialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="addSubmit" :loading="loading">确定</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
-<script>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { getAuthDetail, createAuth, modifyAuth } from 'services/system/auth'
 import { getService } from 'services/services/service'
 import { getDictChildren } from 'services/system/dictionary'
-export default {
-  props: {
-    dialog: {
-      type: Object
-    },
-    authtype: {
-      type: String
-    }
-  },
-  data() {
-    return {
-      textMap: {
-        update: '编辑权限',
-        create: '添加权限'
-      },
-      addData: {},
-      iconData: [],
-      type: '',
-      serviceList: [],
-      loading: false
-    }
-  },
-  created() {
-    this.type = this.authtype
-    // this.getIcon()
-    this.getService()
-    if (this.dialog.type === 'update') {
-      this.getDetail()
-    } else {
-      this.addData = {
-        tenant: true,
-        meta: [],
-        params: [],
-        category: 'menu',
-        priority: 1,
-        path: '',
-        props: '',
-        parentId: this.dialog.id || 0
-      }
-      switch (this.type) {
-        case 'button':
-          this.addData.meta = ''
-          break
-        case 'api':
-          this.addData.path = ''
-          delete this.addData.meta
-          break
-        default:
-          this.addData.meta = []
-          break
-      }
-    }
-  },
-  methods: {
-    async getDetail() {
-      const data = await getAuthDetail(this.dialog.id)
-      if (data.success) {
-        this.addData = Object.assign({}, data.data)
-        if (this.addData.serviceCodes) this.addData.serviceCodes = JSON.parse(this.addData.serviceCodes)
-        switch (this.addData.category) {
-          case 'button':
-            this.type = 'button'
-            break
-          case 'api':
-            this.type = 'api'
-            break
-          default:
-            this.type = 'menu'
-            this.addData.meta = JSON.parse(this.addData.meta)
-            this.addData.params = JSON.parse(this.addData.params)
-            break
-        }
-      }
-    },
-    async getService() {
-      const data = await getService({ page: 1, rows: 10000 })
-      if (data.success) {
-        this.serviceList = data.data.rows
-      }
-    },
-    getIcon() {
-      getDictChildren({ value: 'AUTH_ICON' }).then((data) => {
-        if (data.success) {
-          this.iconData = data.data
-        }
-      })
-    },
-    async addSubmit() {
-      this.$refs.addForm.validate((valid) => {
-        if (valid) {
-          switch (this.type) {
-            case 'button':
-              this.addData.category = 'button'
-              break
-            case 'api':
-              this.addData.category = 'api'
-              break
-          }
-          this.loading = true
-          const http = this.addData.id ? modifyAuth : createAuth
-          http(this.addData)
-            .then((data) => {
-              if (data.success) {
-                this.$message({
-                  message: data.message,
-                  type: 'success'
-                })
-                this.dialog.visible = false
-                switch (this.type) {
-                  case 'button':
-                    this.$emit('getButtonList')
-                    break
-                  case 'api':
-                    this.$emit('getApiList')
-                    break
-                  default:
-                    this.$emit('getData')
-                    break
-                }
-              }
-            })
-            .finally(() => {
-              this.loading = false
-            })
-        }
-      })
-    },
-    addItem(data) {
-      data.push({})
-    },
-    removeItem(key, data) {
-      data.splice(key, 1)
+
+interface DialogItem {
+  visible: boolean
+  id?: number
+  type: 'update' | 'create'
+}
+
+const props = defineProps<{
+  dialog: DialogItem
+  authtype: string
+}>()
+const emit = defineEmits<{
+  getData: []
+  getButtonList: []
+  getApiList: []
+}>()
+
+const textMap: Record<string, string> = { update: '编辑权限', create: '添加权限' }
+const addData = ref<any>({})
+const iconData = ref<any[]>([])
+const type = ref<string>('')
+const serviceList = ref<any[]>([])
+const loading = ref(false)
+const addFormRef = ref<any>(null)
+
+async function getDetail() {
+  const data = await getAuthDetail(props.dialog.id)
+  if (data.success) {
+    addData.value = Object.assign({}, data.data)
+    if (addData.value.serviceCodes) addData.value.serviceCodes = JSON.parse(addData.value.serviceCodes)
+    switch (addData.value.category) {
+      case 'button':
+        type.value = 'button'
+        break
+      case 'api':
+        type.value = 'api'
+        break
+      default:
+        type.value = 'menu'
+        addData.value.meta = JSON.parse(addData.value.meta)
+        addData.value.params = JSON.parse(addData.value.params)
+        break
     }
   }
 }
+
+async function getServiceList() {
+  const data = await getService({ page: 1, rows: 10000 })
+  if (data.success) {
+    serviceList.value = data.data.rows
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getIcon() {
+  getDictChildren({ value: 'AUTH_ICON' }).then((data: any) => {
+    if (data.success) iconData.value = data.data
+  })
+}
+
+onMounted(() => {
+  type.value = props.authtype
+  getServiceList()
+  if (props.dialog.type === 'update') {
+    getDetail()
+  } else {
+    addData.value = {
+      tenant: true,
+      meta: [],
+      params: [],
+      category: 'menu',
+      priority: 1,
+      path: '',
+      props: '',
+      parentId: props.dialog.id || 0
+    }
+    if (type.value === 'button') {
+      addData.value.meta = ''
+    } else if (type.value === 'api') {
+      addData.value.path = ''
+      delete addData.value.meta
+    } else {
+      addData.value.meta = []
+    }
+  }
+})
+
+function addSubmit() {
+  addFormRef.value?.validate((valid: boolean) => {
+    if (valid) {
+      if (type.value === 'button') addData.value.category = 'button'
+      else if (type.value === 'api') addData.value.category = 'api'
+      loading.value = true
+      const http = addData.value.id ? modifyAuth : createAuth
+      http(addData.value)
+        .then((data: any) => {
+          if (data.success) {
+            ElMessage.success(data.message)
+            props.dialog.visible = false
+            if (type.value === 'button') emit('getButtonList')
+            else if (type.value === 'api') emit('getApiList')
+            else emit('getData')
+          }
+        })
+        .finally(() => {
+          loading.value = false
+        })
+    }
+  })
+}
+
+function addItem(data: any[]) {
+  data.push({})
+}
+
+function removeItem(key: number, data: any[]) {
+  data.splice(key, 1)
+}
 </script>
+
 <style lang="scss" scoped>
 .cell-title {
   border-left: 2px solid #1890ff;

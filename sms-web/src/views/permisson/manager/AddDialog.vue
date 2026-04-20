@@ -1,9 +1,10 @@
 <template>
-  <el-dialog :title="addData.id ? '编辑用户' : '新增用户'" :close-on-click-modal="false" :visible.sync="dialog.visible" width="900px">
+  <el-dialog :title="addData.id ? '编辑用户' : '新增用户'" :close-on-click-modal="false" v-model="props.dialog.visible" width="900px">
+    <!-- TODO: cmp-element basic-form -->
     <basic-form ref="addFormRef" :model="addData" label-width="110px">
       <el-row>
         <el-col :span="12">
-          <basic-form-item label="登录账号：" prop="account" validate="required" showOverflowTooltip>
+          <basic-form-item label="登录账号：" prop="account" validate="required" show-overflow-tooltip>
             <el-input :disabled="!!addData.id" v-model="addData.account" auto-complete="off"></el-input>
           </basic-form-item>
         </el-col>
@@ -17,16 +18,16 @@
         <el-col :span="12">
           <basic-form-item label="用户类型：" prop="isManager" validate="required">
             <el-radio-group v-model="addData.isManager">
-              <el-radio-button :label="true">管理用户</el-radio-button>
-              <el-radio-button :label="false">普通用户</el-radio-button>
+              <el-radio-button :value="true">管理用户</el-radio-button>
+              <el-radio-button :value="false">普通用户</el-radio-button>
             </el-radio-group>
           </basic-form-item>
         </el-col>
         <el-col :span="12">
           <basic-form-item label="用户性别：" prop="sex">
             <el-radio-group v-model="addData.sex">
-              <el-radio-button :label="true">男</el-radio-button>
-              <el-radio-button :label="false">女</el-radio-button>
+              <el-radio-button :value="true">男</el-radio-button>
+              <el-radio-button :value="false">女</el-radio-button>
             </el-radio-group>
           </basic-form-item>
         </el-col>
@@ -83,7 +84,7 @@
         <el-col :span="12">
           <basic-form-item label="所属租户：" prop="tenantId">
             <el-select v-model="addData.tenantId" filterable clearable @change="selectTenant">
-              <el-option v-for="item in tenantList" :key="item.id" :value="item.id" :label="item.name"></el-option>
+              <el-option v-for="item in props.tenantList" :key="item.id" :value="item.id" :label="item.name"></el-option>
             </el-select>
           </basic-form-item>
         </el-col>
@@ -101,111 +102,101 @@
         </el-col>
       </el-row>
     </basic-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="ghost" @click.native="dialog.visible = false">取消</el-button>
-      <el-button type="primary" @click.native="addSubmit" :loading="loading">确定</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="props.dialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="addSubmit" :loading="loading">确定</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
-<script lang="ts">
-import { IUser } from '@/models/user'
-import { ITenant } from '@/models/tenant'
+
+<script setup lang="ts">
+import { ref, computed, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import type { IUser } from '@/models/user'
+import type { ITenant } from '@/models/tenant'
+import type { IDepart } from '@/models/depart'
 import { createUser, modifyUser } from 'services/system/manager'
-import { defineComponent, computed, reactive, ref, toRefs, Ref, onMounted } from '@vue/composition-api'
-import { Message } from 'element-ui'
 import crypto from 'utils/crypto'
 import { getDepart } from 'services/system/depart'
-import { IDepart } from '@/models/depart'
+import { useAppStore } from '@/stores'
 
-interface IAddUserProp {
-  // eslint-disable-next-line no-undef
-  dialog: Base.IDialog
-  tenantList: ITenant[]
+interface DialogItem {
+  visible: boolean
+  record: any
 }
-export default defineComponent({
-  props: {
-    dialog: {
-      type: Object
-    },
-    tenantList: {
-      type: Array,
-      default() {
-        return []
-      }
-    }
-  },
-  setup(props: IAddUserProp, context: any) {
-    // 获取部门列表
-    const departList: Ref<IDepart[]> = ref([])
-    ;(async function () {
-      const res = await getDepart({ parentId: 0 })
-      if (res.success) {
-        departList.value = res.data
-      }
-    })()
-    // 选择租户
-    const selectTenant = (tenantId: number) => {
-      let departIds = []
-      if (tenantId) {
-        const item = props.tenantList.find((item) => item.id === tenantId)
-        departIds = JSON.parse((item as ITenant).departIds as string)
-      }
-      state.addData.departIds = departIds
-    }
-    const { record } = props.dialog
-    const addData: IUser & { confirmPassword: string } = record.id ? { ...record, departIds: JSON.parse(record.departIds) } : { sex: true, isManager: true, departIds: [] }
-    const state = reactive({
-      addData
-    })
-    const addFormRef = ref(null)
-    const loading = ref(false)
-    function addSubmit() {
-      const http = state.addData.id ? modifyUser : createUser
-      const { password, confirmPassword, departIds = [], ...others } = state.addData
-      // 代码容错处理
-      const { validate } = (addFormRef.value || context.refs.addFormRef) as HTMLFormElement
-      validate(async (valid: boolean) => {
-        if (valid) {
-          if (!others.id && password !== confirmPassword) return Message.error('两次密码输入不一致')
-          const params: IUser = {
-            ...others,
-            departIds,
-            departId: [...(departIds || [])].pop(),
-            password
-          }
-          if (!others.id) {
-            params.password = crypto.encrypt(password)
-          }
-          loading.value = true
-          const data = await http(params)
-          loading.value = false
-          if (data.success) {
-            Message({
-              message: data.message,
-              type: 'success'
-            })
-            context.emit('getData')
-            // eslint-disable-next-line no-undef
-            ;(props.dialog as Base.IDialog).visible = false
-          }
-        }
-      })
-    }
-    const pwdRule = computed(() => context.root.$store.state.app.systemConfig.pwdStrength + ',pswNoSpace' + ',required')
-    return {
-      ...toRefs(state),
-      pwdRule,
-      departList,
-      loading,
-      pickerOptions: {
-        disabledDate(time: any) {
-          return time.getTime() <= Date.now()
-        }
-      },
-      addFormRef,
-      addSubmit,
-      selectTenant
-    }
+
+const props = defineProps<{
+  dialog: DialogItem
+  tenantList: ITenant[]
+}>()
+const emit = defineEmits<{ getData: [] }>()
+
+const appStore = useAppStore()
+
+const departList = ref<IDepart[]>([])
+;(async function () {
+  const res = await getDepart({ parentId: 0 })
+  if (res.success) {
+    departList.value = res.data
   }
-})
+})()
+
+const { record } = props.dialog
+const initial: any = record.id
+  ? { ...record, departIds: JSON.parse(record.departIds) }
+  : { sex: true, isManager: true, departIds: [] }
+const addData = reactive<IUser & { confirmPassword?: string }>(initial)
+const addFormRef = ref<any>(null)
+const loading = ref(false)
+
+function selectTenant(tenantId: number) {
+  let departIds: number[] = []
+  if (tenantId) {
+    const item = props.tenantList.find((i) => i.id === tenantId)
+    departIds = JSON.parse((item as ITenant).departIds as string)
+  }
+  addData.departIds = departIds as any
+}
+
+function addSubmit() {
+  const http = addData.id ? modifyUser : createUser
+  const { password, confirmPassword, departIds = [], ...others } = addData as any
+  addFormRef.value?.validate(async (valid: boolean) => {
+    if (valid) {
+      if (!others.id && password !== confirmPassword) {
+        ElMessage.error('两次密码输入不一致')
+        return
+      }
+      const params: IUser = {
+        ...others,
+        departIds,
+        departId: [...(departIds || [])].pop(),
+        password
+      }
+      if (!others.id) {
+        params.password = crypto.encrypt(password)
+      }
+      loading.value = true
+      const data = await http(params)
+      loading.value = false
+      if (data.success) {
+        ElMessage.success(data.message)
+        emit('getData')
+        props.dialog.visible = false
+      }
+    }
+  })
+}
+
+const pwdRule = computed(() => (appStore.systemConfig as any).pwdStrength + ',pswNoSpace' + ',required')
+
+// 日期 picker 相关（原代码保留）
+const pickerOptions = {
+  disabledDate(time: Date) {
+    return time.getTime() <= Date.now()
+  }
+}
+void pickerOptions
 </script>

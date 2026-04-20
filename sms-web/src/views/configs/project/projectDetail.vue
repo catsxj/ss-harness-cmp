@@ -1,11 +1,12 @@
 <template>
+  <!-- TODO: cmp-element - 自研包在 compat 层处理：common-detail / common-detail-item / AdvanceTable / status-icon -->
   <common-detail :title="detailData.name" @goBack="goBack">
-    <template v-slot:item_container>
-      <common-detail-item :label="$store.getters.systemConfig.projectConfigLabel + '名称'">{{ detailData.name }}</common-detail-item>
+    <template #item_container>
+      <common-detail-item :label="appStore.systemConfig.projectConfigLabel + '名称'">{{ detailData.name }}</common-detail-item>
       <common-detail-item label="资源属性">{{ handleVisibility(detailData.visibility) }}</common-detail-item>
-      <common-detail-item :label="$store.getters.systemConfig.projectConfigLabel + '编号'">{{ detailData.code }}</common-detail-item>
-      <common-detail-item :label="$store.getters.systemConfig.projectConfigLabel + '经理'">{{ detailData.managerName }}</common-detail-item>
-      <common-detail-item :label="'所属' + $store.getters.systemConfig.serviceConfigLabel">{{ detailData.businessName }}</common-detail-item>
+      <common-detail-item :label="appStore.systemConfig.projectConfigLabel + '编号'">{{ detailData.code }}</common-detail-item>
+      <common-detail-item :label="appStore.systemConfig.projectConfigLabel + '经理'">{{ detailData.managerName }}</common-detail-item>
+      <common-detail-item :label="'所属' + appStore.systemConfig.serviceConfigLabel">{{ detailData.businessName }}</common-detail-item>
       <common-detail-item label="创建时间">{{ detailData.gmtCreate }}</common-detail-item>
       <common-detail-item label="描述">{{ detailData.remark }}</common-detail-item>
     </template>
@@ -27,83 +28,71 @@
   </common-detail>
 </template>
 
-<script>
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { useAppStore } from '@/stores'
 import { getUser } from 'services/system/user'
 import { generalStatusFilter, sexFilter } from '@/filters/common'
 
-export default {
-  props: {
-    detailData: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
-  },
-  data() {
-    return {
-      list: [],
-      loading: false,
-      total: 0,
-      columns: [
-        { label: '登录账号', prop: 'account' },
-        { label: '用户姓名', prop: 'name' },
-        {
-          label: '状态',
-          prop: 'status',
-          scopedSlots: { customRender: 'status' }
-        },
-        {
-          label: '角色',
-          prop: 'projectManager',
-          scopedSlots: { customRender: 'projectManager' }
-        },
-        { label: '邮箱', prop: 'email' },
-        { label: '创建时间', prop: 'gmtCreate' },
-        { label: '性别', prop: 'sex', scopedSlots: { customRender: 'sex' } },
-        { label: '联系方式', prop: 'mobile' }
-      ],
-      searchConfigs: [{ type: 'Const', value: 'projectId', sign: 'EQ', initValue: this.detailData.id }],
-      params: {
-        page: 1,
-        rows: 10
-      }
-    }
-  },
-  computed: {
-    handleVisibility() {
-      return function (visibility) {
-        if (visibility === 'visible') {
-          return '查看权限'
-        } else if (visibility === 'invisible') {
-          return '无权限'
-        } else if (visibility === 'manageable') {
-          return '管理权限'
-        }
-      }
-    },
-    projectManager() {
-      return function (val) {
-        return val ? this.$store.getters.systemConfig.projectConfigLabel + '经理' : '成员'
-      }
-    }
-  },
-  methods: {
-    generalStatusFilter,
-    sexFilter,
-    async getList() {
-      this.loading = true
-      const res = await getUser(this.params)
-      if (res.success) {
-        this.list = res.data.rows
-        this.total = res.data.total
-      }
-      this.loading = false
-    },
-    goBack() {
-      this.detailData.visible = false
-    }
+interface DetailData {
+  id: number | string
+  name?: string
+  visibility?: string
+  code?: string
+  managerName?: string
+  businessName?: string
+  gmtCreate?: string
+  remark?: string
+  visible?: boolean
+  [key: string]: unknown
+}
+
+const props = defineProps<{ detailData: DetailData }>()
+
+const appStore = useAppStore()
+
+// TODO: type - 成员行类型后续补 interface
+const list = ref<any[]>([])
+const loading = ref(false)
+const total = ref(0)
+
+const columns = [
+  { label: '登录账号', prop: 'account' },
+  { label: '用户姓名', prop: 'name' },
+  { label: '状态', prop: 'status', scopedSlots: { customRender: 'status' } },
+  { label: '角色', prop: 'projectManager', scopedSlots: { customRender: 'projectManager' } },
+  { label: '邮箱', prop: 'email' },
+  { label: '创建时间', prop: 'gmtCreate' },
+  { label: '性别', prop: 'sex', scopedSlots: { customRender: 'sex' } },
+  { label: '联系方式', prop: 'mobile' }
+]
+
+const searchConfigs = [{ type: 'Const', value: 'projectId', sign: 'EQ', initValue: props.detailData.id }]
+const params = reactive<Record<string, any>>({ page: 1, rows: 10 })
+
+function handleVisibility(visibility?: string): string {
+  if (visibility === 'visible') return '查看权限'
+  if (visibility === 'invisible') return '无权限'
+  if (visibility === 'manageable') return '管理权限'
+  return ''
+}
+
+function projectManager(val: any): string {
+  return val ? appStore.systemConfig.projectConfigLabel + '经理' : '成员'
+}
+
+async function getList() {
+  loading.value = true
+  const res = await getUser(params)
+  if (res.success) {
+    list.value = res.data.rows
+    total.value = res.data.total
   }
+  loading.value = false
+}
+
+function goBack() {
+  props.detailData.visible = false
 }
 </script>
 
@@ -116,7 +105,7 @@ export default {
   }
 }
 .table {
-  ::v-deep .table-card {
+  :deep(.table-card) {
     border-bottom: 0 !important;
     .search-row {
       height: 0;

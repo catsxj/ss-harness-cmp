@@ -1,4 +1,3 @@
-/** * Created by HaijunZhang on 2019/12/16. */
 <template>
   <div>
     <el-tabs type="border-card" v-model="activeName" v-if="radio == 'old'">
@@ -21,28 +20,16 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from 'vue'
 import Host from './components/Host.vue'
 import Service from './components/Service.vue'
 // import Plug from './components/Plug.vue'
 // import Components from './components/Component.vue'
 import Next from './components/next.vue'
 
-export default {
-  components: {
-    Host,
-    Service,
-    // Plug,
-    // Components,
-    Next
-  },
-  data() {
-    return {
-      activeName: 'server',
-      radio: 'old'
-    }
-  }
-}
+const activeName = ref('server')
+const radio = ref('old')
 </script>
 
 <style scoped></style>

@@ -1,37 +1,27 @@
 <template>
-  <el-dialog width="1160px" :close-on-click-modal="false" :visible.sync="dialog.visible">
+  <el-dialog width="1160px" :close-on-click-modal="false" v-model="props.dialog.visible">
     <div class="left-title">
       <div class="left-title__header">
-        <h3>{{ dialog.title }}</h3>
-        <p>{{ dialog.des }}</p>
+        <h3>{{ props.dialog.title }}</h3>
+        <p>{{ props.dialog.des }}</p>
       </div>
       <el-steps :active="activeStep" align-center class="m-b" direction="vertical">
-        <el-step :title="item" v-for="item in dialog.leftStepList" :key="item"></el-step>
+        <el-step :title="item" v-for="item in props.dialog.leftStepList" :key="item"></el-step>
       </el-steps>
     </div>
     <div class="right-content">
-      <!-- <div :span="24" v-show="activeStep === index" v-for="{ item, index } in dialog.rightContentList" :key="index">
-        <div class="title">{{ item.title }}</div>
+      <div v-show="activeStep === 0">
+        <div class="title">{{ props.dialog.rightContent[0].title }}</div>
         <div class="wrapper">
-          {{ `<${BasicInfo} ref="basicInfo" />` }}
-        </div>
-        <div class="footer">
-          <el-button class="clear" @click="clear">取消</el-button>
-          <el-button class="pull-right" type="primary" @click="nextStep()">下一步</el-button>
-        </div>
-      </div> -->
-      <div :span="24" v-show="activeStep === 0">
-        <div class="title">{{ dialog.rightContent[0].title }}</div>
-        <div class="wrapper">
-          <slot name="first" ref="sss"></slot>
+          <slot name="first"></slot>
         </div>
         <div class="footer">
           <el-button class="pull-right m-r" type="primary" @click="nextStep()">下一步</el-button>
           <el-button class="pull-right m-r clear" @click="clear">取消</el-button>
         </div>
       </div>
-      <div :span="24" v-show="activeStep === 1">
-        <div class="title">{{ dialog.rightContent[1].title }}</div>
+      <div v-show="activeStep === 1">
+        <div class="title">{{ props.dialog.rightContent[1].title }}</div>
         <div class="wrapper">
           <slot name="second"></slot>
         </div>
@@ -41,8 +31,8 @@
           <el-button class="pull-right m-r clear" @click="clear">取消</el-button>
         </div>
       </div>
-      <div :span="24" v-show="activeStep === 2">
-        <div class="title">{{ dialog.rightContent[2].title }}</div>
+      <div v-show="activeStep === 2">
+        <div class="title">{{ props.dialog.rightContent[2].title }}</div>
         <div class="wrapper">
           <slot name="third"></slot>
         </div>
@@ -55,73 +45,86 @@
     </div>
   </el-dialog>
 </template>
-<script>
+
+<script setup lang="ts">
+import { ref, getCurrentInstance } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { createTenant } from 'services/system/tenant'
 import { createProject } from 'services/system/project'
 
-export default {
-  props: {
-    dialog: {
-      type: Object
-    }
-  },
-  data() {
-    return {
-      activeStep: 0,
-      postData: {},
-      loading: false
-    }
-  },
-  created() {},
-  methods: {
-    async nextStep() {
-      if (this.activeStep === 0) {
-        const data = await this.$parent.$refs[this.dialog.rightContent[0].ref].getPostData()
-        console.log(data)
-        if (data) this.postData = data
-        else return false
-      }
-      ++this.activeStep
-    },
-    prevStep() {
-      --this.activeStep
-    },
-    async create() {
-      const list = this.$parent.$refs[this.dialog.rightContent[1].ref].getPostData()
-      const data = this.$parent.$refs[this.dialog.rightContent[2].ref].getPostData()
-      this.loading = true
-      let res = null
-      console.log('111111', this.$route, this.$route.path.indexOf('tenants'))
-      if (this.$route.path.indexOf('tenants') !== -1) {
-        res = await createTenant({
-          ...this.postData,
-          ...list,
-          ...data
-        })
-      } else if (this.$route.path.indexOf('project') !== -1) {
-        res = await createProject({
-          ...this.postData,
-          ...list,
-          ...data
-        })
-      }
-      if (res.success) {
-        this.dialog.visible = false
-        this.$message.success(res.message)
-        this.$emit('getData')
-      }
-      this.loading = false
-    },
-    clear() {
-      this.$emit('clearAddDialog')
-    }
+interface RightContentItem {
+  title: string
+  ref: string
+}
+interface AddDialogItem {
+  visible: boolean
+  title: string
+  des: string
+  leftStepList: string[]
+  rightContent: RightContentItem[]
+  parentId?: number
+}
+
+const props = defineProps<{ dialog: AddDialogItem }>()
+const emit = defineEmits<{
+  getData: []
+  clearAddDialog: []
+}>()
+
+const activeStep = ref(0)
+const postData = ref<any>({})
+const loading = ref(false)
+const route = useRoute()
+
+// 保留 $parent 访问叶子 ref 的行为（外部通过具名 slot 传入，父级在 refs 中注册）
+const instance = getCurrentInstance()
+
+function getParentRef(name: string): any {
+  const parentRefs = (instance?.parent as any)?.refs
+  return parentRefs?.[name]
+}
+
+async function nextStep() {
+  if (activeStep.value === 0) {
+    const data = await getParentRef(props.dialog.rightContent[0].ref)?.getPostData()
+    if (data) postData.value = data
+    else return false
   }
+  ++activeStep.value
+}
+
+function prevStep() {
+  --activeStep.value
+}
+
+async function create() {
+  const list = getParentRef(props.dialog.rightContent[1].ref)?.getPostData()
+  const data = getParentRef(props.dialog.rightContent[2].ref)?.getPostData()
+  loading.value = true
+  let res: any = null
+  if (route.path.indexOf('tenants') !== -1) {
+    res = await createTenant({ ...postData.value, ...list, ...data })
+  } else if (route.path.indexOf('project') !== -1) {
+    res = await createProject({ ...postData.value, ...list, ...data })
+  }
+  if (res?.success) {
+    props.dialog.visible = false
+    ElMessage.success(res.message)
+    emit('getData')
+  }
+  loading.value = false
+}
+
+function clear() {
+  emit('clearAddDialog')
 }
 </script>
+
 <style scoped lang="scss">
 @import 'index';
 .el-dialog__wrapper {
-  ::v-deep .el-dialog {
+  :deep(.el-dialog) {
     .el-dialog__header {
       padding: 0 !important;
       background-color: #fff !important;

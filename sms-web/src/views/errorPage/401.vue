@@ -4,22 +4,23 @@
       <img src="/web-common-resource/img/error/401.png" alt="" />
       <div class="zSorry">抱歉，你无权访问该页面！</div>
       <div>
-        <el-button type="primary" @click="go" icon="el-icon-back">返回</el-button>
+        <el-button type="primary" @click="go">
+          <el-icon><Back /></el-icon>
+          返回
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {}
-  },
-  methods: {
-    go() {
-      this.$router.push({ name: 'Home' })
-    }
-  }
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { Back } from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+function go(): void {
+  router.push({ name: 'Home' })
 }
 </script>
 

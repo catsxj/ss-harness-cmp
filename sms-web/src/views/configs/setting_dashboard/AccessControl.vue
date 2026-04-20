@@ -2,6 +2,7 @@
   <div>
     <div class="control-wrapper">
       <div class="control-cell">
+        <!-- TODO: i18n -->
         <span>用户数</span>
         <router-link :to="{ name: 'SystemUserManager' }">
           <span class="cell-value">{{ data.userNum }}</span>
@@ -9,6 +10,7 @@
       </div>
 
       <div class="control-cell">
+        <!-- TODO: i18n -->
         <span>租户数</span>
         <router-link :to="{ name: 'TenantManager' }">
           <span class="cell-value">{{ data.tenantNum }}</span>
@@ -16,63 +18,70 @@
       </div>
 
       <div class="control-cell">
-        <span>{{ $store.getters.systemConfig.serviceConfigLabel }}</span>
+        <span>{{ appStore.systemConfig.serviceConfigLabel }}</span>
         <router-link :to="{ name: 'BusinessSetting' }">
           <span class="cell-value">{{ data.businessNum }}</span>
         </router-link>
       </div>
 
       <div class="control-cell">
-        <span>{{ $store.getters.systemConfig.projectConfigLabel }}</span>
+        <span>{{ appStore.systemConfig.projectConfigLabel }}</span>
         <router-link :to="{ name: 'ProjectAdmin' }">
           <span class="cell-value">{{ data.projectNum }}</span>
         </router-link>
       </div>
     </div>
     <div class="m-t-md">
+      <!-- TODO: i18n -->
       <span>控制台登录链接：</span>
       <a class="console-url" :href="consoleUrl" target="_blank">{{ consoleUrl }}</a>
-      <img class="copy-icon" :src="require('@/assets/copy.png')" alt="" @click="copyUrl(consoleUrl, $event)" />
+      <img class="copy-icon" :src="copyIcon" alt="" @click="copyUrl(consoleUrl, $event)" />
     </div>
   </div>
 </template>
-<script lang="ts">
-import { ref, defineComponent, PropType } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 import { copyText } from 'utils/index'
-import { Message } from 'element-ui'
+import { ElMessage } from 'element-plus'
 import { getSystemCount } from 'services/system/portal'
+import { useAppStore } from '@/stores'
+import copyIcon from '@/assets/copy.png'
 
-export default defineComponent({
-  props: {
-    itemData: {
-      type: Object as PropType<{ config: any }>,
-      required: true
-    }
-  },
-  setup(props) {
-    const { hostname, protocol } = location
-    const data = ref({
-      userNum: 0,
-      tenantNum: 0,
-      businessNum: 0,
-      projectNum: 0
-    })
-    ;(async function () {
-      const res = await getSystemCount()
-      data.value = res.data
-    })()
-    function copyUrl(url: string, event: any) {
-      copyText(url, event, () => {
-        Message.success('控制台地址复制成功')
-      })
-    }
-    return {
-      data,
-      consoleUrl: `${protocol}//${hostname}:60008`,
-      copyUrl
-    }
-  }
+interface CountData {
+  userNum: number
+  tenantNum: number
+  businessNum: number
+  projectNum: number
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+defineProps<{
+  itemData: { config?: any }
+}>()
+
+const appStore = useAppStore()
+
+const { hostname, protocol } = location
+const data = ref<CountData>({
+  userNum: 0,
+  tenantNum: 0,
+  businessNum: 0,
+  projectNum: 0
 })
+
+;(async function () {
+  const res = await getSystemCount()
+  data.value = res.data
+})()
+
+const consoleUrl = `${protocol}//${hostname}:60008`
+
+function copyUrl(url: string, event: Event) {
+  copyText(url, event, () => {
+    // TODO: i18n
+    ElMessage.success('控制台地址复制成功')
+  })
+}
 </script>
 <style lang="scss" scoped>
 .control-wrapper {

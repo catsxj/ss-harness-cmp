@@ -1,6 +1,6 @@
-/** * Created by HaijunZhang on 2019/8/30. */
 <template>
-  <basic-form :model="addData" ref="addData" label-width="120px" width="100%">
+  <!-- TODO: cmp-element basic-form -->
+  <basic-form :model="addData" ref="addDataRef" label-width="120px" width="100%">
     <el-row :gutter="10">
       <el-col :span="12">
         <basic-form-item label="租户名称：" prop="name" validate="required">
@@ -71,98 +71,86 @@
   </basic-form>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import crypto from 'utils/crypto'
 import { checkedTenant } from 'services/system/tenant'
 import { getDepart } from 'services/system/depart'
+import { useAppStore } from '@/stores'
 
-export default {
-  props: {
-    infoData: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
-  },
-  data() {
-    return {
-      addData: {
-        discount: '1.00'
-      },
-      userList: [],
-      provinceList: [],
-      townList: [],
-      pickerOptions: {
-        disabledDate(time) {
-          return time.getTime() <= Date.now()
-        }
-      },
-      departmentList: [],
-      departProps: {
-        value: 'id',
-        label: 'name',
-        checkStrictly: true
-      }
-    }
-  },
-  computed: {
-    pwdRule() {
-      return this.$store.state.app.systemConfig.pwdStrength + ',pswNoSpace'
-    }
-  },
-  created() {
-    this.getDepartList()
-    if (this.infoData.departIds && this.infoData.departIds.length) {
-      this.infoData.departIds = JSON.parse(this.infoData.departIds)
-    }
-    this.addData = Object.assign({}, this.addData, this.infoData)
-  },
-  methods: {
-    async getDepartList() {
-      const res = await getDepart({ parentId: 0 })
-      if (res.success) {
-        this.departmentList = res.data
-      }
-    },
-    async checkedAccount() {
-      const reg = /^[a-zA-Z0-9]*$/
-      if (!reg.test(this.addData.account)) return
-      const res = await checkedTenant(this.addData.account)
-    },
-    async getPostData() {
-      let data = false
-      this.$refs.addData.validate((valid) => {
-        if (valid) {
-          const { password, confirmPassword, id, departIds } = this.addData
-          if (departIds && departIds.length) {
-            this.addData.departId = this.addData.departIds[this.addData.departIds.length - 1]
-          } else if (departIds && !departIds.length) {
-            this.addData.departId = null
-          }
-          if (id) {
-            data = this.addData
-          } else {
-            if (password !== confirmPassword) return this.$message.error('两次密码输入不一致')
-            const { confirmPassword: p, ...other } = this.addData
-            data = {
-              ...other,
-              password: crypto.encrypt(password)
-            }
-          }
-        }
-      })
-      if (data && !data.id) {
-        // 数据校验通过且创建界面 检查租户账号是否存在
-        const result = await checkedTenant(this.addData.account)
-        if (!result.success) {
-          data = false
-        }
-      }
-      return data
-    }
-  }
+const props = defineProps<{
+  infoData?: Record<string, any>
+}>()
+
+const appStore = useAppStore()
+
+const addData = reactive<any>({ discount: '1.00' })
+const departmentList = ref<any[]>([])
+const departProps = {
+  value: 'id',
+  label: 'name',
+  checkStrictly: true
 }
-</script>
+const addDataRef = ref<any>(null)
 
-<style scoped></style>
+const pwdRule = computed(() => (appStore.systemConfig as any).pwdStrength + ',pswNoSpace')
+
+onMounted(() => {
+  getDepartList()
+  const info = props.infoData || {}
+  if (info.departIds && info.departIds.length) {
+    info.departIds = JSON.parse(info.departIds)
+  }
+  Object.assign(addData, info)
+})
+
+async function getDepartList() {
+  const res = await getDepart({ parentId: 0 })
+  if (res.success) departmentList.value = res.data
+}
+
+async function checkedAccount() {
+  const reg = /^[a-zA-Z0-9]*$/
+  if (!reg.test(addData.account)) return
+  await checkedTenant(addData.account)
+}
+
+async function getPostData(): Promise<any> {
+  let data: any = false
+  await new Promise<void>((resolve) => {
+    addDataRef.value?.validate((valid: boolean) => {
+      if (valid) {
+        const { password, confirmPassword, id, departIds } = addData
+        if (departIds && departIds.length) {
+          addData.departId = addData.departIds[addData.departIds.length - 1]
+        } else if (departIds && !departIds.length) {
+          addData.departId = null
+        }
+        if (id) {
+          data = addData
+        } else {
+          if (password !== confirmPassword) {
+            ElMessage.error('两次密码输入不一致')
+            resolve()
+            return
+          }
+          const { confirmPassword: _p, ...other } = addData
+          data = {
+            ...other,
+            password: crypto.encrypt(password)
+          }
+        }
+      }
+      resolve()
+    })
+  })
+  if (data && !data.id) {
+    const result = await checkedTenant(addData.account)
+    if (!result.success) data = false
+  }
+  return data
+}
+
+defineExpose({ getPostData })
+</script>

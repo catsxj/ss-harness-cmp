@@ -7,16 +7,23 @@
       </div>
     </el-col>
     <el-col :span="16" class="full-height">
+      <!-- TODO: i18n -->
       <span class="chart-title">近七日告警趋势统计</span>
       <div style="height: calc(100% - 15px)">
+        <!-- TODO: cmp-echarts - 后续用本地 echarts 组件替换 -->
         <line-charts :ref="`line${itemData.i}`" :data="lineData" width="100%" height="100%" :setting="chartSetting"></line-charts>
       </div>
     </el-col>
   </el-row>
 </template>
-<script lang="ts">
-import { ref, defineComponent, PropType } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 import { getAlarmCount } from 'services/system/portal'
+
+interface CountItem {
+  name: string
+  value: number | string
+}
 
 const chartSetting = {
   color: ['#E03B3B', '#F09C2B', '#049BD3', '#1E54DE'],
@@ -26,34 +33,27 @@ const chartSetting = {
     }
   }
 }
-export default defineComponent({
-  props: {
-    itemData: {
-      type: Object as PropType<{ data: any }>,
-      required: true
-    }
-  },
-  setup(props, context) {
-    const countData = ref([])
-    ;(async function () {
-      const res = await getAlarmCount({ action: 'pieChart' })
-      countData.value = res.data
-    })()
-    const lineData = ref({})
-    ;(async function () {
-      const end = new Date().setHours(0, 0, 0, 0) / 1000
-      // 一天是86400秒
-      const res = await getAlarmCount({ action: 'barChart', start: end - 86400 * 7, end })
-      lineData.value = res.data
-    })()
-    return {
-      colorMap: chartSetting.color,
-      chartSetting,
-      countData,
-      lineData
-    }
-  }
-})
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+defineProps<{
+  itemData: { data?: any; i?: string }
+}>()
+
+const countData = ref<CountItem[]>([])
+;(async function () {
+  const res = await getAlarmCount({ action: 'pieChart' })
+  countData.value = res.data
+})()
+
+const lineData = ref<Record<string, any>>({})
+;(async function () {
+  const end = new Date().setHours(0, 0, 0, 0) / 1000
+  // 一天是86400秒
+  const res = await getAlarmCount({ action: 'barChart', start: end - 86400 * 7, end })
+  lineData.value = res.data
+})()
+
+const colorMap = chartSetting.color
 </script>
 <style lang="scss" scoped>
 .cell {

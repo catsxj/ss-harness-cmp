@@ -1,69 +1,78 @@
 <template>
-  <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" :visible.sync="userDefindVisible" append-to-body>
+  <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" :model-value="userDefindVisible" @update:model-value="handleUpdateVisible" append-to-body>
+    <!-- TODO: cmp-element -->
     <basic-form>
       <basic-form-item label="选择时间：">
-        <el-date-picker v-model="time" type="datetimerange" size="mini" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="timestamp" :picker-options="pickerOptions"></el-date-picker>
+        <el-date-picker v-model="time" type="datetimerange" size="small" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="x" :disabled-date="disabledDate" @calendar-change="onCalendarChange"></el-date-picker>
       </basic-form-item>
     </basic-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="ghost" @click.native="close">取消</el-button>
-      <el-button type="primary" @click.native="userDefindSubmit">确定</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="ghost" @click="close">取消</el-button>
+        <el-button type="primary" @click="userDefindSubmit">确定</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
-<script>
-export default {
-  props: {
-    userDefindVisible: {
-      type: Boolean
-    },
-    userDefindTime: {
-      type: Array
-    }
-  },
-  data() {
-    return {
-      time: [],
-      pickerMinDate: '',
-      dateRange: [],
-      pickerOptions: {
-        onPick: ({ maxDate, minDate }) => {
-          this.pickerMinDate = minDate.getTime()
-          if (maxDate) {
-            this.pickerMinDate = ''
-          }
-        },
-        disabledDate: (time) => {
-          if (this.pickerMinDate !== '') {
-            const day14 = (14 - 1) * 24 * 3600 * 1000
-            let maxTime = this.pickerMinDate + day14
-            const minTime = this.pickerMinDate - day14
-            if (maxTime > new Date()) {
-              maxTime = new Date()
-            }
-            return time.getTime() > maxTime || time.getTime() < minTime
-          }
-          return time.getTime() > Date.now()
-        }
-      }
-    }
-  },
-  created() {
-    this.time = []
-    this.time.push(this.userDefindTime[0], this.userDefindTime[1])
-  },
-  methods: {
-    userDefindSubmit() {
-      if (this.time && this.time.length && this.time[0] != undefined) {
-        this.$emit('getData', this.time)
-      } else {
-        return this.$message.error('请选择自定义时间！')
-      }
-    },
-    close() {
-      this.$emit('getData')
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+
+const props = defineProps<{
+  userDefindVisible: boolean
+  userDefindTime: number[]
+}>()
+
+const emit = defineEmits<{
+  getData: [value?: number[]]
+}>()
+
+const time = ref<number[]>([])
+const pickerMinDate = ref<number | ''>('')
+
+function handleUpdateVisible(val: boolean): void {
+  if (!val) emit('getData')
+}
+
+function onCalendarChange(dates: [Date, Date] | null): void {
+  if (dates && dates[0]) {
+    pickerMinDate.value = dates[0].getTime()
+    if (dates[1]) {
+      pickerMinDate.value = ''
     }
   }
 }
+
+function disabledDate(date: Date): boolean {
+  if (pickerMinDate.value !== '') {
+    const day14 = (14 - 1) * 24 * 3600 * 1000
+    let maxTime = (pickerMinDate.value as number) + day14
+    const minTime = (pickerMinDate.value as number) - day14
+    if (maxTime > new Date().getTime()) {
+      maxTime = new Date().getTime()
+    }
+    return date.getTime() > maxTime || date.getTime() < minTime
+  }
+  return date.getTime() > Date.now()
+}
+
+function userDefindSubmit(): void {
+  if (time.value && time.value.length && time.value[0] !== undefined) {
+    emit('getData', time.value)
+  } else {
+    ElMessage.error('请选择自定义时间！')
+  }
+}
+
+function close(): void {
+  emit('getData')
+}
+
+onMounted(() => {
+  time.value = []
+  if (props.userDefindTime) {
+    time.value.push(props.userDefindTime[0], props.userDefindTime[1])
+  }
+})
 </script>
