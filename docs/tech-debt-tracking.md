@@ -47,11 +47,17 @@ echo "总 TODO:"; grep -rn "// TODO" src/ --include="*.vue" --include="*.ts" | w
 | ECharts v4 语法 | ~20+ | DEPRECATED 警告，功能不受影响，后续统一清理 |
 | any 残留 | 待统计 | tsconfig 中 noImplicitAny: false（过渡期） |
 
-### sms-web
+### sms-web（代码迁移完成 2026-04-20）
 
 | 类型 | 数量 | 说明 |
 |------|------|------|
-| 待记录 | | |
+| TODO: cmp-element | 82 | basic-form/basic-table/AdvanceTable/common-detail 等自研组件标签保留，等 compat 层统一处理 |
+| TODO: cmp-echarts | 7 | setting_dashboard 10 个卡片中的图表封装（line-charts/bar-reverse-charts 等） |
+| TODO: i18n | ~200 | 全部 `$t(...)` 硬编码为中文，vue-i18n@9 后续启用 |
+| TODO: type | 55 | 主要是自研组件 ref 实例（basic-form/AdvanceTable）、G6 Graph/Node、后端动态返回 |
+| any 残留 | 473 | 含 interface 字段类型（`data: any`），后续 compat 层 + API 类型化后递减 |
+| 临时 parent.refs | 3 | configs/AddDialog、component/AddDialog、tenant/AddDialog 用 `getCurrentInstance().parent.refs` 过渡 |
+| 未验证运行时 | — | 需 npm install + build + 浏览器逐页验收 |
 
 ### cmp-web
 

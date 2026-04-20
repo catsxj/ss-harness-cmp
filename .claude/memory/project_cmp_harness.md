@@ -14,7 +14,7 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 |------|---------|--------|------|
 | main-web | Vue 3 ✓ | 32 | 已完成，不需迁移 |
 | scr-web | Vue 2 | 68 | 待迁移（试点） |
-| sms-web | Vue 2 | 125 | 待迁移 |
+| sms-web | Vue 2 | 125 | 代码迁移完成 🟡（待 npm install + build + 浏览器验收）|
 | cmp-web | Vue 2 | 521 | 待迁移 |
 | cms-web | Vue 2 | 521 | 待迁移 |
 | cos-web | Vue 2 | 567 | 待迁移 |
