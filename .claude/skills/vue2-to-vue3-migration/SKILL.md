@@ -182,17 +182,64 @@ this.$loading()                   → ElLoading.service()
 el-radio-button label=            → el-radio-button value=
 ```
 
-## Stage 3: 构建验证
+## Stage 3: Lint + 代码质量审查（提交前必须通过）
+
+### 3.1 Lint 检查（硬性门禁）
+
+```bash
+# 必须 0 errors 才能进入下一步
+npx eslint src/ --ext .ts,.vue
+npx vue-cli-service lint --no-fix
+
+# 自动修复可修复的问题
+npx eslint src/ --ext .ts,.vue --fix
+```
+
+**lint 不通过 → 不允许提交。**
+
+### 3.2 代码质量审查（/simplify）
+
+迁移完成后、提交前，运行 `/simplify` 审查：
+
+```
+检查项：
+- 重复代码（>10 行相似 → 抽取共享函数或 composable）
+- 过大组件（>300 行 → 拆分）
+- 未使用的导入和变量（删除）
+- any 类型残留（补充具体类型）
+- 空 catch 块（添加错误处理）
+- 可复用逻辑（抽取 useXxx）
+```
+
+## Stage 4: 构建验证
 
 ```bash
 vue-cli-service build  # 或项目原有的构建命令
 ```
 
-## Stage 4: 浏览器验证
+## Stage 5: 浏览器验证
 
 **迁移完成 = 浏览器中所有功能正常运行，不是编译通过。**
 
 启动 dev server，在浏览器中逐页验证。发现问题修复后重新验证，直到全部正常。
+
+## 提交前完整流程
+
+```
+迁移 .vue 文件完成
+  ↓
+① eslint 0 errors
+  ↓
+② /simplify 代码质量审查通过
+  ↓
+③ vue-cli-service build 通过
+  ↓
+④ 浏览器功能验证通过
+  ↓
+⑤ git commit
+```
+
+**跳过任何一步都不允许提交。**
 
 ---
 
