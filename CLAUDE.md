@@ -33,6 +33,7 @@
 | 19 | [agent-parallel-all-apps.md](agent-parallel-all-apps.md) | 各子应用并行拆分方案（cmp/cms/cos） | 迁移具体子应用时参考 |
 | 20 | [agent-parallel-sms-web.md](agent-parallel-sms-web.md) | sms-web 三路并行细化方案 | 迁移 sms-web 时参考 |
 | 21 | [agent-auto-parallel.md](agent-auto-parallel.md) | 全自动无人工 Review 并行方案 | 试点验证后使用 |
+| 22 | [docs/knowledge-base/](docs/knowledge-base/) | 知识库：问题排查、资料整理、解决方案 | 遇到问题时查阅和补充 |
 
 ---
 
@@ -278,6 +279,7 @@ npx prettier --check src/
 7. CSS 类名和结构保持一致
 8. 迁完后必须在浏览器中验证功能
 9. 提交前必须 eslint 0 errors + /simplify 审查通过
+10. 遇到问题查阅资料后，将问题和解决方案保存到 docs/knowledge-base/（自动执行，无需用户提醒）
 ```
 
 ### 禁止
