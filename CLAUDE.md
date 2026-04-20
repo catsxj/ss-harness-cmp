@@ -26,6 +26,9 @@
 | 12 | [docs/performance-baseline.md](docs/performance-baseline.md) | 性能基线对比（包体积、加载时间、内存） | 迁移前后记录对比 |
 | 13 | [docs/browser-compatibility.md](docs/browser-compatibility.md) | 浏览器兼容性（Vue 3 不支持 IE11） | 迁移前确认 |
 | 14 | [docs/developer-guide.md](docs/developer-guide.md) | 开发者迁移指南（人读版，代码风格变化） | 新成员入手 |
+| 15 | [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) | Pre-commit Hook（husky + lint-staged 自动拦截） | 项目初始化时配置 |
+| 16 | [docs/architecture-lint-rules.md](docs/architecture-lint-rules.md) | 分层依赖 ESLint 规则（自动拦截违规 import） | 项目初始化时配置 |
+| 17 | [docs/tech-debt-tracking.md](docs/tech-debt-tracking.md) | 技术债追踪（TODO 规范、扫描命令、偿还策略） | 每个子应用迁完后更新 |
 
 ---
 
@@ -69,6 +72,12 @@ types → constants → utils → api → stores → components → views → ro
 - api 不能 import store
 - components 不能 import views
 - stores 不能 import components
+
+**自动化执行：** 通过 `eslint-plugin-import` 的 `no-restricted-paths` 规则编码为 Linter 检查。
+详见 [docs/architecture-lint-rules.md](docs/architecture-lint-rules.md)。
+
+**技术债追踪：** 迁移中的 TODO / any 残留 / 兼容代码统一用 `// TODO: {type} - {描述}` 格式标记。
+详见 [docs/tech-debt-tracking.md](docs/tech-debt-tracking.md)。
 
 ---
 
