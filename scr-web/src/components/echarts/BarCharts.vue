@@ -3,74 +3,70 @@
    :setting="configs"
   ></bar-chart>
 </template>
-<script>
-import charts from 'cmp-echarts'
-const { BarCharts } = charts
-export default {
-  components: { BarChart: BarCharts },
-  props: {
-    setting: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
+<script setup lang="ts">
+import { computed } from 'vue'
+import BarChart from './bar-charts/BarCharts.vue'
+
+const props = defineProps({
+  setting: {
+    type: Object,
+    default() {
+      return {}
+    },
   },
-  setup(props, context) {
-    const { rotate = 0 } = props.setting
-    const configs = {
-      series: {
-        label: {
-          show: true,
-          color: '#fff',
-          position: 'top'
-        }
+})
+
+const configs = computed(() => {
+  const { rotate = 0 } = props.setting
+  return {
+    series: {
+      label: {
+        show: true,
+        color: '#fff',
+        position: 'top',
       },
-      legend: {
-        textStyle: {
-          color: '#fff'
-        },
-        pageIconColor: '#fff',
-        pageIconInactiveColor: '#2F4554'
+    },
+    legend: {
+      textStyle: {
+        color: '#fff',
       },
-      xAxis: {
-        axisLabel: {
-          color: '#fff',
-          interval: 0,
-          rotate
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#ffffff'
-          }
-        },
-        splitArea: {
-          show: false
-        }
+      pageIconColor: '#fff',
+      pageIconInactiveColor: '#2F4554',
+    },
+    xAxis: {
+      axisLabel: {
+        color: '#fff',
+        interval: 0,
+        rotate,
       },
-      yAxis: {
-        axisLabel: {
-          color: '#fff'
+      axisLine: {
+        lineStyle: {
+          color: '#ffffff',
         },
-        nameTextStyle: {
-          color: '#fff'
+      },
+      splitArea: {
+        show: false,
+      },
+    },
+    yAxis: {
+      axisLabel: {
+        color: '#fff',
+      },
+      nameTextStyle: {
+        color: '#fff',
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#ffffff',
         },
-        axisLine: {
-          lineStyle: {
-            color: '#ffffff'
-          }
+      },
+      splitLine: {
+        lineStyle: {
+          type: 'solid',
+          color: '#1B263D',
         },
-        splitLine: {
-          lineStyle: {
-            type: 'solid',
-            color: '#1B263D'
-          }
-        }
-      }
-    }
-    return {
-      configs
-    }
+      },
+    },
   }
-}
+})
 </script>

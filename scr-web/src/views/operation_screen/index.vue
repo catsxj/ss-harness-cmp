@@ -72,11 +72,11 @@
   </ScreenWrapper>
 </template>
 
-<script>
-import { reactive, toRefs, ref, onUnmounted, unref } from '@vue/composition-api'
-import CountItem from './CountItem'
-import OverviewState from 'components/OverviewState'
-import ScreenWrapper from 'components/ScreenWrapper'
+<script setup lang="ts">
+import { reactive, toRefs, ref, onUnmounted, unref } from 'vue'
+import CountItem from './CountItem.vue'
+import OverviewState from 'components/OverviewState/index.vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
 import { getTaskStat, getInstance } from 'services/screen/task'
 import { overviewConfigs } from './data'
 
@@ -87,133 +87,92 @@ const options1 = {
   color: ['#2e8cf0', '#54c54e', '#dc1a1a', '#5d59b4', '#ff9900']
 }
 
-export function taskExeStatusFilter(value, type = 'name') {
-  const obj = {
-    CREATED: {
-      name: '未执行',
-      color: 'normal'
-    },
-    NOREADY: {
-      name: '已跳过',
-      color: 'warning'
-    },
-    READY: {
-      name: '准备中',
-      color: 'normal'
-    },
-    WAITTING: {
-      name: '等待执行',
-      color: 'primary'
-    },
-    CANCELING: {
-      name: '取消中',
-      color: 'primary'
-    },
-    RUNNING: {
-      name: '正在执行',
-      color: 'normal'
-    },
-    SUCCESS: {
-      name: '执行成功',
-      color: 'success'
-    },
-    SUSPENDED: {
-      name: '已暂停',
-      color: 'warning'
-    },
-    FAILED: {
-      name: '执行失败',
-      color: 'danger'
-    },
-    CANCELED: {
-      name: '手动结束',
-      color: 'warning'
-    },
-    EXCEPTION: {
-      name: '执行异常',
-      color: 'danger'
-    }
-  }
-  return obj[value] && obj[value][type] // 容错处理（初始化值不存在）
+interface StatusInfo {
+  name: string
+  color: string
 }
-export default {
-  components: {
-    ScreenWrapper,
-    CountItem,
-    OverviewState
-  },
-  setup() {
-    const dashboardData = ref({})
-    const monthTaskData = ref([])
-    const overview = ref(overviewConfigs)
-    async function getData() {
-      const res = await getTaskStat()
-      if (res.success) {
-        dashboardData.value = res.data
-        const { runs, success, fails, cancels, suspends, approveds, develops, approvings, inactives, actives, pauses } = res.data.digit
-        monthTaskData.value = [
-          { name: '执行中', value: runs },
-          { name: '成功', value: success },
-          { name: '失败', value: fails },
-          { name: '取消', value: cancels },
-          { name: '暂停', value: suspends }
-        ];
-        const count = unref(overview)
-        // 常规作业
-        const tasks = count[0]
-        ;[approveds, develops, approvings].forEach(
-          (item, index) => {
-            tasks.data[index].value = item
-          }
-        );
-        // 定时作业
-        const cronTasks = count[1]
-        ;[inactives, actives, pauses].forEach(
-          (item, index) => {
-            cronTasks.data[index].value = item
-          }
-        )
+
+const statusMap: Record<string, StatusInfo> = {
+  CREATED: { name: '未执行', color: 'normal' },
+  NOREADY: { name: '已跳过', color: 'warning' },
+  READY: { name: '准备中', color: 'normal' },
+  WAITTING: { name: '等待执行', color: 'primary' },
+  CANCELING: { name: '取消中', color: 'primary' },
+  RUNNING: { name: '正在执行', color: 'normal' },
+  SUCCESS: { name: '执行成功', color: 'success' },
+  SUSPENDED: { name: '已暂停', color: 'warning' },
+  FAILED: { name: '执行失败', color: 'danger' },
+  CANCELED: { name: '手动结束', color: 'warning' },
+  EXCEPTION: { name: '执行异常', color: 'danger' }
+}
+
+function taskExeStatusFilter(value: string, type: 'name' | 'color' = 'name'): string | undefined {
+  return statusMap[value] && statusMap[value][type]
+}
+
+const dashboardData = ref<Record<string, unknown>>({})
+const monthTaskData = ref<unknown[]>([])
+const overview = ref(overviewConfigs)
+
+async function getData() {
+  const res = await getTaskStat()
+  if (res.success) {
+    dashboardData.value = res.data
+    const { runs, success, fails, cancels, suspends, approveds, develops, approvings, inactives, actives, pauses } = res.data.digit
+    monthTaskData.value = [
+      { name: '执行中', value: runs },
+      { name: '成功', value: success },
+      { name: '失败', value: fails },
+      { name: '取消', value: cancels },
+      { name: '暂停', value: suspends }
+    ]
+    const count = unref(overview)
+    // 常规作业
+    const tasks = count[0]
+    ;[approveds, develops, approvings].forEach(
+      (item: number, index: number) => {
+        tasks.data[index].value = item
       }
-    }
-    // 历史记录
-    const historyList = ref([])
-    async function getHistory() {
-      const res = await getInstance({ page: 1, rows: 10 })
-      if (res.success) {
-        historyList.value = res.data.rows;
+    )
+    // 定时作业
+    const cronTasks = count[1]
+    ;[inactives, actives, pauses].forEach(
+      (item: number, index: number) => {
+        cronTasks.data[index].value = item
       }
-    }
-    const state = reactive({
-      loading: true
-    })
-    const timer = setInterval(() => {
-      change()
-    }, 1000 * 20)
-    onUnmounted(() => {
-      clearInterval(timer)
-    })
-    const change = async () => {
-      try {
-        await Promise.all([
-          getData(),
-          getHistory()
-        ])
-      } catch (error) {}
-      state.loading = false
-    }
-    change()
-    return {
-      ...toRefs(state),
-      options,
-      options1,
-      overview,
-      dashboardData,
-      monthTaskData,
-      historyList,
-      taskExeStatusFilter
-    }
+    )
   }
 }
+
+// 历史记录
+const historyList = ref<Record<string, unknown>[]>([])
+async function getHistory() {
+  const res = await getInstance({ page: 1, rows: 10 })
+  if (res.success) {
+    historyList.value = res.data.rows
+  }
+}
+
+const loading = ref(true)
+
+const timer = setInterval(() => {
+  change()
+}, 1000 * 20)
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
+
+const change = async () => {
+  try {
+    await Promise.all([
+      getData(),
+      getHistory()
+    ])
+  } catch (error) { /* ignore */ }
+  loading.value = false
+}
+change()
 </script>
 <style lang="scss" scoped>
 .card-count-slot {

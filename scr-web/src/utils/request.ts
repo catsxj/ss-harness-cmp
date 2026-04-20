@@ -1,23 +1,11 @@
-/**
- * Created by Zhang Haijun on 2017/8/24.
- * axios#request(config)
- * axios#get(url[, config])
- * axios#delete(url[, config])
- * axios#head(url[, config])
- * axios#options(url[, config])
- * axios#post(url[, data[, config]])
- * axios#put(url[, data[, config]])
- * axios#patch(url[, data[, config]])
- */
 import axios from 'axios'
 import NProgress from 'nprogress'
 import qs from 'qs'
 import 'nprogress/nprogress.css'
-import { Notification, MessageBox } from 'element-ui'
+import { ElNotification } from 'element-plus'
 import { getToken } from 'utils/auth'
-import store from '@/store'
 
-const codeMessage = {
+const codeMessage: Record<number, string> = {
   200: '服务器成功返回请求的数据。',
   201: '新建或修改数据成功。',
   202: '一个请求已经进入后台排队（异步任务）。',
@@ -34,75 +22,70 @@ const codeMessage = {
   503: '服务不可用，服务器暂时过载或维护。',
   504: '网关超时。'
 }
+
 const axiosInstance = axios.create({
   baseURL: '/api',
-  headers: { 'Content-Type': 'application/json', BsmAjaxHeader: true },
+  headers: { 'Content-Type': 'application/json', BsmAjaxHeader: 'true' },
   timeout: 20000,
-  paramsSerializer: params => {
-    return qs.stringify(params, { arrayFormat: 'indices' })
+  paramsSerializer: {
+    serialize: (params) => qs.stringify(params, { arrayFormat: 'indices' })
   }
 })
-// 请求完成回调
-const finishCallback = function() {
+
+function finishCallback() {
   NProgress.done()
 }
-// 报错处理
-const handleError = function(response) {
-  if (!response) return // 容错处理
+
+function handleError(response: { status: number; statusText: string; config: { url: string } }) {
+  if (!response) return
   const errorText = codeMessage[response.status] || response.statusText
-  Notification({
+  ElNotification({
     type: 'error',
     title: `请求错误 ${response.status}: ${response.config.url}`,
     message: errorText
   })
-  const error = new Error(errorText)
-  error.name = response.status
+  const error = new Error(errorText) as Error & { name: string; response: unknown }
+  error.name = String(response.status)
   error.response = response
   throw error
 }
+
 axiosInstance.interceptors.request.use(
-  config => {
-    const {
-      headers,
-      headers: { options = {} }
-    } = config
+  (config) => {
+    const options = (config.headers as Record<string, unknown>)?.options as Record<string, unknown> || {}
     NProgress.start()
     if (config.method === 'get') {
-      // 清除get缓存
       config.url = `${config.url}?t=${new Date().getTime()}`
-    } else if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+    } else if (config.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
       config.data = qs.stringify(config.data || {})
     }
     config.headers.token = getToken()
-    delete config.headers.options
-    config.options = options;
+    delete (config.headers as Record<string, unknown>).options
+    ;(config as Record<string, unknown>).options = options
     return config
   },
-  error => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
+
 axiosInstance.interceptors.response.use(
-  data => {
-    // const requestKey = getRequestIdentify(data.config);
-    // removePending(requestKey);
+  (data) => {
     finishCallback()
     const responseData = data.data
-    const { options } = data.config
+    const options = (data.config as Record<string, unknown>).options as Record<string, unknown> || {}
     if (!responseData.success) {
       switch (responseData.status) {
         case '402':
           location.href = '/#/license'
           break
         case '401':
-        case '509':
-          const { protocol, hostname } = location;
+        case '509': {
+          const { protocol, hostname } = location
           location.href = `${protocol}//${hostname}:60006/#/login`
           break
-        default:
+        }
       }
       if (!options.ignoreError) {
-        Notification({
+        ElNotification({
           message: responseData.message || responseData.data,
           type: 'error'
         })
@@ -110,10 +93,11 @@ axiosInstance.interceptors.response.use(
     }
     return responseData
   },
-  error => {
+  (error) => {
     finishCallback()
     handleError(error.response)
     return Promise.reject(error)
   }
 )
+
 export default axiosInstance

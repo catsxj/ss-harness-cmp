@@ -1,18 +1,14 @@
 <template>
   <i class="icon" :class="icon"></i>
 </template>
-<script>
-export default {
-  props: {
-    icon: {
-      type: String,
-      default: 'el-icon-success green'
-    }
-  },
-  setup(props) {
-    return {}
-  }
+<script setup lang="ts">
+interface Props {
+  icon?: string
 }
+
+withDefaults(defineProps<Props>(), {
+  icon: 'el-icon-success green'
+})
 </script>
 <style lang="scss" scoped>
 .icon {

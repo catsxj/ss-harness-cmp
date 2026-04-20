@@ -2,12 +2,20 @@
   <dv-flyline-chart-enhanced :config="configs" :dev="true" class="chart" />
 </template>
 
-<script>
-import { reactive, toRefs } from '@vue/composition-api';
+<script setup lang="ts">
+import { reactive, toRefs } from 'vue'
 import test, { points as aa } from './data'
-const handleMapData = (data = {}) => {
-  const { points = [], lines = [] } = data
-  const pointArr = [];
+
+interface PointItem {
+  name: string
+  coordinate: number[]
+  icon?: { src: string; width?: number; height?: number }
+  text?: { show: boolean }
+}
+
+const handleMapData = (data: Record<string, unknown> = {}) => {
+  const { points = [], lines = [] } = data as { points: PointItem[]; lines: unknown[] }
+  const pointArr: PointItem[] = []
   pointArr.push({
     name: 'sip',
     coordinate: [0.49, 0.26],
@@ -19,19 +27,19 @@ const handleMapData = (data = {}) => {
     text: {
       show: false
     }
-  });
-  aa.forEach((item, index) => {
+  })
+  aa.forEach((item: PointItem, index: number) => {
     const icon = index % 5
     pointArr.push({
       ...item,
       icon: {
         src: `/static/img/outside/three/${icon}.png`
       }
-    });
+    })
   })
   return {
     points: pointArr,
-    lines: aa.map((item) => {
+    lines: aa.map((item: PointItem) => {
       return {
         source: 'sip',
         target: item.name,
@@ -62,16 +70,8 @@ const handleMapData = (data = {}) => {
     bgImgSrc: '/static/img/outside/map.png'
   }
 }
-export default {
-  setup() {
-    const state = reactive({
-      configs: handleMapData()
-    })
-    return {
-      ...toRefs(state)
-    }
-  }
-}
+
+const configs = reactive(handleMapData())
 </script>
 <style lang="scss" scoped>
 .chart {

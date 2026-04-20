@@ -1,6 +1,6 @@
 <template>
   <div class="rack-container" :class="{screen: source === 'screen'}" id="three_rack">
-    <i class="rack-close el-icon-close" @click="$emit('closeRack')"></i>
+    <i class="rack-close el-icon-close" @click="emit('closeRack')"></i>
     <div class="info-container">
       <div class="card-header">{{ currentRack.name }}机柜</div>
       <div class="card-content">
@@ -38,22 +38,24 @@
           <span>
             <span class="name">{{ currentServer.name }}</span>
             <el-tooltip placement="top">
-              <div slot="content" class="table-container">
-                <el-table :data="currentServer.alarms" style="width: 800px">
-                  <el-table-column prop="name" label="告警名称" show-overflow-tooltip>
-                  </el-table-column>
-                  <el-table-column label="告警级别" show-overflow-tooltip width="90px">
-                    <template v-slot="scope">
-                      <AlarmStatusIcon :level="scope.row.level">
-                      </AlarmStatusIcon>
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="告警源" show-overflow-tooltip prop="targetName" width="80px"></el-table-column>
-                  <el-table-column label="告警内容" show-overflow-tooltip prop="remark"></el-table-column>
-                  <el-table-column label="告警触发时间" show-overflow-tooltip prop="gmtCreate"></el-table-column>
-                  <el-table-column label="已持续时长" show-overflow-tooltip prop="duration"></el-table-column>
-                </el-table>
-              </div>
+              <template #content>
+                <div class="table-container">
+                  <el-table :data="currentServer.alarms" style="width: 800px">
+                    <el-table-column prop="name" label="告警名称" show-overflow-tooltip>
+                    </el-table-column>
+                    <el-table-column label="告警级别" show-overflow-tooltip width="90px">
+                      <template #default="scope">
+                        <AlarmStatusIcon :level="scope.row.level">
+                        </AlarmStatusIcon>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="告警源" show-overflow-tooltip prop="targetName" width="80px"></el-table-column>
+                    <el-table-column label="告警内容" show-overflow-tooltip prop="remark"></el-table-column>
+                    <el-table-column label="告警触发时间" show-overflow-tooltip prop="gmtCreate"></el-table-column>
+                    <el-table-column label="已持续时长" show-overflow-tooltip prop="duration"></el-table-column>
+                  </el-table>
+                </div>
+              </template>
               <i class="el-icon-warning alarm-info" v-if="currentServer.alarm"></i>
             </el-tooltip>
           </span>
@@ -89,88 +91,119 @@
   </div>
 </template>
 
-<script>
-import { onMounted, onUnmounted, reactive, toRefs } from '@vue/composition-api'
-import Progress from 'components/SimpleProgress'
-import AlarmStatusIcon from './AlarmStatusIcon'
+<script setup lang="ts">
+import { onMounted, onUnmounted, reactive, toRefs } from 'vue'
+import { useRoute } from 'vue-router'
+import Progress from 'components/SimpleProgress/index.vue'
+import AlarmStatusIcon from './AlarmStatusIcon.vue'
 import ThreeRack from '@/three/ThreeRack'
 import { getHosts } from 'services/room'
-export default {
-  components: {
-    Progress,
-    AlarmStatusIcon
-  },
-  props: {
-    item: {
-      type: Object
-    },
-    scale: {
-      type: Number
-    }
-  },
-  setup(props, context) {
-    const state = reactive({
-      currentRack: {
-        ...props.item
-      },
-      currentServer: {},
-      source: context.root.$route.query.source
-    })
-    let threeRack = ''
-    const options = {
-      scale: props.scale,
-      needBindEvent: true,
-      camera: {
-        VIEW_ANGLE: 30,
-        position: {
-          x: 0,
-          y: 120,
-          z: 300
-        }
-      }
-    }
-    onMounted(() => {
-      threeRack = new ThreeRack(document.getElementById('three_rack'), options)
-      threeRack.createRack(props.item)
-      getHostList()
-    })
-    onUnmounted(() => {
-      threeRack && threeRack.destory()
-      context.emit('closeRack')
-    })
-    const getHostList = async () => {
-      const res = await getHosts(props.item.id)
-      if (res.success) {
-        const {
-          rackConfig: { position }
-        } = threeRack
-        const servers = res.data.rows.map((item, index) => {
-          const { start = 10, height = 2 } =
-            JSON.parse(item.props || null) || {}
-          return {
-            ...item,
-            threeConfig: {
-              height,
-              h: 2 * height,
-              y: position.py + start * 2 + 3.8
-            }
-          }
-        })
-        threeRack.createServer(servers, updateServerData)
-      }
-    }
-    const updateServerData = (data) => {
-      state.currentServer = data
-    }
-    const setScale = (value) => {
-      options.scale = value
-    }
-    return {
-      ...toRefs(state),
-      setScale
+
+interface RackItem {
+  id: number
+  name: string
+  dcname: string
+  roomname: string
+  typeName: string
+  usage: number
+  [key: string]: unknown
+}
+
+interface ServerData {
+  name?: string
+  dcname?: string
+  roomname?: string
+  manageIp?: string
+  category?: string
+  osCategory?: string
+  vendorName?: string
+  alarm?: boolean
+  alarms?: unknown[]
+  [key: string]: unknown
+}
+
+interface Props {
+  item: RackItem
+  scale?: number
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  closeRack: []
+}>()
+
+const route = useRoute()
+
+const state = reactive({
+  currentRack: {
+    ...props.item
+  } as RackItem,
+  currentServer: {} as ServerData,
+  source: route.query.source as string | undefined
+})
+
+const { currentRack, currentServer, source } = toRefs(state)
+
+let threeRack: InstanceType<typeof ThreeRack> | null = null
+
+const options = {
+  scale: props.scale,
+  needBindEvent: true,
+  camera: {
+    VIEW_ANGLE: 30,
+    position: {
+      x: 0,
+      y: 120,
+      z: 300
     }
   }
 }
+
+onMounted(() => {
+  threeRack = new ThreeRack(document.getElementById('three_rack'), options)
+  threeRack.createRack(props.item)
+  getHostList()
+})
+
+onUnmounted(() => {
+  threeRack && threeRack.destory()
+  emit('closeRack')
+})
+
+const getHostList = async () => {
+  const res = await getHosts(props.item.id)
+  if (res.success) {
+    const {
+      rackConfig: { position }
+    } = threeRack!
+    const servers = res.data.rows.map((item: Record<string, unknown>, index: number) => {
+      const { start = 10, height = 2 } =
+        JSON.parse((item.props as string) || 'null') || {}
+      return {
+        ...item,
+        threeConfig: {
+          height,
+          h: 2 * height,
+          y: position.py + start * 2 + 3.8
+        }
+      }
+    })
+    threeRack!.createServer(servers, updateServerData)
+  }
+}
+
+const updateServerData = (data: ServerData) => {
+  state.currentServer = data
+}
+
+const setScale = (value: number) => {
+  options.scale = value
+}
+
+defineExpose({
+  setScale
+})
 </script>
 <style lang="scss" scoped>
 .rack-container {
@@ -273,7 +306,7 @@ export default {
 }
 .table-container {
   background: #080e2b;
-  ::v-deep {
+  :deep() {
     .el-table {
       th,
       tr,

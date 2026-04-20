@@ -65,10 +65,10 @@
   </ScreenWrapper>
 </template>
 
-<script>
-import { reactive, toRefs, computed, onUnmounted } from '@vue/composition-api'
-import ScreenWrapper from 'components/ScreenWrapper'
-import OverviewState from 'components/OverviewState'
+<script setup lang="ts">
+import { reactive, toRefs, onUnmounted } from 'vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
+import OverviewState from 'components/OverviewState/index.vue'
 import { overviewConfigs } from './data'
 import {
   getDcList,
@@ -79,13 +79,34 @@ import {
   getDcResource,
   getDcLink
 } from 'services/screen/dc'
+
+interface MapPoint {
+  name: string
+  id: number
+  coordinate: number[]
+  icon?: { src: string; width: number; height: number }
+  text?: { fontSize: number; color: string; offset: number[] }
+}
+
+interface MapLine {
+  source: string
+  target: string
+  width: number
+}
+
+interface MapData {
+  points: MapPoint[]
+  lines: MapLine[]
+  [key: string]: unknown
+}
+
 // 处理map数据
-const handleMapData = (data, dcId) => {
-  const { points = [], lines = [] } = data
+const handleMapData = (data: Record<string, unknown>, dcId: number) => {
+  const { points = [], lines = [] } = data as { points: Array<Record<string, unknown>>; lines: Array<Record<string, unknown>> }
   return {
     points: points.map((item) => {
-      const { id, name, position, leader } = item
-      const obj = {
+      const { id, name, position, leader } = item as { id: number; name: string; position: string; leader: boolean }
+      const obj: Record<string, unknown> = {
         name,
         id,
         coordinate: JSON.parse(position)
@@ -98,11 +119,6 @@ const handleMapData = (data, dcId) => {
         }
       }
       if (leader) {
-        // obj.icon = {
-        //   src: '/scr-web/static/img/dc/mapPoint.png',
-        //   width: 90,
-        //   height: 90
-        // }
         obj.text = {
           fontSize: 18,
           color: '#42edf8',
@@ -112,7 +128,7 @@ const handleMapData = (data, dcId) => {
       return obj
     }),
     lines: lines.map((item) => {
-      const { source, target, weight } = item
+      const { source, target, weight } = item as { source: string; target: string; weight: number }
       return {
         source,
         target,
@@ -142,127 +158,128 @@ const handleMapData = (data, dcId) => {
     bgImgSrc: '/scr-web/static/img/dc/map.png'
   }
 }
-export default {
-  components: {
-    ScreenWrapper,
-    OverviewState
-  },
-  setup() {
-    const state = reactive({
-      overviewConfigs,
-      dcData: [],
-      dcItemData: [],
-      resourceTrend: {},
-      linkData: {},
-      mapConfigs: {},
-      loading: true
-    })
-    let dcIndex = -1
-    let dcId = 0
-    const timer = setInterval(() => {
-      const { points } = state.mapConfigs
-      dcIndex = dcIndex === points.length - 1 ? 0 : dcIndex + 1
-      dcId = points[dcIndex].id
-      change()
-      state.mapConfigs = handleMapData(mapData, dcId)
-    }, 1000 * 20)
-    onUnmounted(() => {
-      clearInterval(timer)
-    })
-    // 数据中心
-    let mapData = {}
-    const getDc = async () => {
-      const res = await getDcList()
-      if (res.success) {
-        mapData = res.data
-        state.mapConfigs = handleMapData(mapData, dcId)
-      }
-    }
-    // 总体情况
-    const getOverviewState = async () => {
-      const res = await getOverview(dcId)
-      if (res.success) {
-        // 处理数据对configs赋值
-        const { serverNumber, vmsNumber, onlineNumber, link } = res.data
-        const unit = state.overviewConfigs[0]
-        ;[serverNumber, vmsNumber, onlineNumber, link].forEach(
-          (item, index) => {
-            unit.data[index].value = item
-          }
-        )
-      }
-    }
-    // 使用情况
-    const getUsedState = async () => {
-      const res = await getUsed(dcId)
-      if (res.success) {
-        // 处理数据对configs赋值
-        const {
-          menUnused,
-          memTotal,
-          cpuUnused,
-          cpuTotal,
-          diskUnused,
-          diskTotal
-        } = res.data
-        const unit = state.overviewConfigs[1]
-        ;[
-          { used: cpuUnused, total: cpuTotal },
-          { used: menUnused, total: memTotal },
-          { used: diskUnused, total: diskTotal }
-        ].forEach((item, index) => {
-          unit.data[index].used = item.used
-          unit.data[index].total = item.total
-        })
-      }
-    }
-    // 数据中心概况
-    const getDcState = async () => {
-      const res = await getDcOverview()
-      if (res.success) {
-        state.dcData = res.data
-      }
-    }
-    const getDcItemState = async () => {
-      const res = await getDcItem(dcId)
-      if (res.success) {
-        state.dcItemData = res.data
-      }
-    }
-    // 使用趋势
-    const getResourceTrend = async () => {
-      const res = await getDcResource(dcId)
-      if (res.success) {
-        state.resourceTrend = res.data
-      }
-    }
-    // 存储
-    const getLink = async () => {
-      const res = await getDcLink(dcId)
-      if (res.success) {
-        state.linkData = res.data
-      }
-    }
-    // 切换数据中心
-    const change = async () => {
-      await Promise.all([
-        getOverviewState(),
-        getUsedState(),
-        getDcItemState(),
-        getResourceTrend(),
-        getLink()
-      ])
-    }
-    const init = async () => {
-      await Promise.all([getDc(), getDcState(), change()])
-      state.loading = false
-    }
-    init()
-    return {
-      ...toRefs(state)
-    }
+
+const state = reactive({
+  overviewConfigs,
+  dcData: [] as Record<string, unknown>[],
+  dcItemData: [] as Record<string, unknown>[],
+  resourceTrend: {} as Record<string, unknown>,
+  linkData: {} as Record<string, unknown>,
+  mapConfigs: {} as Record<string, unknown>,
+  loading: true
+})
+
+const { overviewConfigs: _oc, dcData, dcItemData, resourceTrend, linkData, mapConfigs, loading } = toRefs(state)
+
+let dcIndex = -1
+let dcId = 0
+const timer = setInterval(() => {
+  const { points } = state.mapConfigs as { points: Array<{ id: number }> }
+  dcIndex = dcIndex === points.length - 1 ? 0 : dcIndex + 1
+  dcId = points[dcIndex].id
+  change()
+  state.mapConfigs = handleMapData(mapData, dcId)
+}, 1000 * 20)
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
+
+// 数据中心
+let mapData: Record<string, unknown> = {}
+const getDc = async () => {
+  const res = await getDcList()
+  if (res.success) {
+    mapData = res.data
+    state.mapConfigs = handleMapData(mapData, dcId)
   }
 }
+
+// 总体情况
+const getOverviewState = async () => {
+  const res = await getOverview(dcId)
+  if (res.success) {
+    const { serverNumber, vmsNumber, onlineNumber, link } = res.data
+    const unit = state.overviewConfigs[0]
+    ;[serverNumber, vmsNumber, onlineNumber, link].forEach(
+      (item: number, index: number) => {
+        unit.data[index].value = item
+      }
+    )
+  }
+}
+
+// 使用情况
+const getUsedState = async () => {
+  const res = await getUsed(dcId)
+  if (res.success) {
+    const {
+      menUnused,
+      memTotal,
+      cpuUnused,
+      cpuTotal,
+      diskUnused,
+      diskTotal
+    } = res.data
+    const unit = state.overviewConfigs[1]
+    ;[
+      { used: cpuUnused, total: cpuTotal },
+      { used: menUnused, total: memTotal },
+      { used: diskUnused, total: diskTotal }
+    ].forEach((item, index) => {
+      unit.data[index].used = item.used
+      unit.data[index].total = item.total
+    })
+  }
+}
+
+// 数据中心概况
+const getDcState = async () => {
+  const res = await getDcOverview()
+  if (res.success) {
+    state.dcData = res.data
+  }
+}
+
+const getDcItemState = async () => {
+  const res = await getDcItem(dcId)
+  if (res.success) {
+    state.dcItemData = res.data
+  }
+}
+
+// 使用趋势
+const getResourceTrend = async () => {
+  const res = await getDcResource(dcId)
+  if (res.success) {
+    state.resourceTrend = res.data
+  }
+}
+
+// 存储
+const getLink = async () => {
+  const res = await getDcLink(dcId)
+  if (res.success) {
+    state.linkData = res.data
+  }
+}
+
+// 切换数据中心
+const change = async () => {
+  await Promise.all([
+    getOverviewState(),
+    getUsedState(),
+    getDcItemState(),
+    getResourceTrend(),
+    getLink()
+  ])
+}
+
+const init = async () => {
+  await Promise.all([getDc(), getDcState(), change()])
+  state.loading = false
+}
+init()
 </script>
 <style lang="scss" scoped>
 .left,
@@ -272,7 +289,7 @@ export default {
 .center {
   width: 46%;
 }
-::v-deep {
+:deep() {
   .dv-scroll-board .header,
   .row-item {
     font-size: 12px;

@@ -12,17 +12,10 @@
   </div>
 </template>
 
-<script>
-import useHeader from 'components/ScreenWrapper/useHeader'
-export default {
-  setup() {
-    const { currentTime, operateScreen } = useHeader()
-    return {
-      currentTime,
-      operateScreen
-    }
-  }
-}
+<script setup lang="ts">
+import useHeader from 'components/ScreenWrapper/useHeader.ts'
+
+const { currentTime, operateScreen } = useHeader()
 </script>
 <style lang="scss" scoped>
 .outside-header {

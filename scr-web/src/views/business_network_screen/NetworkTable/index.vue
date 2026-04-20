@@ -24,40 +24,33 @@
     </template>
   </scroll-table>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-import StatusIcon from './StatusIcon'
-import Progress from 'components/SimpleProgress'
-export default {
-  components: { StatusIcon, Progress },
-  props: {
-    data: {
-      type: Array
-    }
-  },
-  setup(props) {
-    function getStatusIcon(status) {
-      const map = {
-        true: 'el-icon-success green',
-        warning: 'el-icon-info yellow',
-        false: 'el-icon-info red'
-      }
-      return map[status]
-    }
-    function getHealthIcon(status) {
-      const map = {
-        RUNNING: 'el-icon-success green',
-        WARN: 'el-icon-info yellow',
-        EXCEPTION: 'el-icon-info red',
-        ERROR: 'el-icon-info red'
-      }
-      return map[status]
-    }
-    return {
-      getHealthIcon,
-      getStatusIcon
-    }
+<script setup lang="ts">
+import StatusIcon from './StatusIcon.vue'
+import Progress from 'components/SimpleProgress/index.vue'
+
+interface Props {
+  data: Record<string, unknown>[]
+}
+
+defineProps<Props>()
+
+function getStatusIcon(status: string): string {
+  const map: Record<string, string> = {
+    true: 'el-icon-success green',
+    warning: 'el-icon-info yellow',
+    false: 'el-icon-info red'
   }
+  return map[status]
+}
+
+function getHealthIcon(status: string): string {
+  const map: Record<string, string> = {
+    RUNNING: 'el-icon-success green',
+    WARN: 'el-icon-info yellow',
+    EXCEPTION: 'el-icon-info red',
+    ERROR: 'el-icon-info red'
+  }
+  return map[status]
 }
 </script>
 <style lang="scss" scoped>

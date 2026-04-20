@@ -17,8 +17,8 @@
         <div class="card">
           <div class="card-title">服务器资源利用率TOP10
             <el-radio-group v-model="deviceTopType" class="card-operate" @change="getServerTop10">
-              <el-radio-button label="cpu" size="small">CPU</el-radio-button>
-              <el-radio-button label="mem" size="small">内存</el-radio-button>
+              <el-radio-button value="cpu" size="small">CPU</el-radio-button>
+              <el-radio-button value="mem" size="small">内存</el-radio-button>
             </el-radio-group>
           </div>
           <div class="card-body">
@@ -61,20 +61,19 @@
     </el-row>
   </ScreenWrapper>
 </template>
-<script>
+<script setup lang="ts">
 import {
   reactive,
   toRefs,
-  computed,
   onUnmounted,
   nextTick
-} from '@vue/composition-api'
-import ThreeRoom from 'views/three_room/room'
-import ScreenWrapper from 'components/ScreenWrapper'
-import DeviceStatus from 'components/DeviceStatus'
-import AlarmList from './AlarmList'
-import DeviceTable from './DeviceTable'
-import OverviewState from 'components/OverviewState'
+} from 'vue'
+import ThreeRoom from 'views/three_room/room.vue'
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
+import DeviceStatus from 'components/DeviceStatus/index.vue'
+import AlarmList from './AlarmList.vue'
+import DeviceTable from './DeviceTable.vue'
+import OverviewState from 'components/OverviewState/index.vue'
 import { overviewConfigs } from './data'
 import {
   getRooms,
@@ -86,131 +85,144 @@ import {
   getDeviceList,
   getAlertList
 } from 'services/screen/room'
-export default {
-  components: {
-    ScreenWrapper,
-    DeviceStatus,
-    AlarmList,
-    DeviceTable,
-    OverviewState,
-    ThreeRoom
-  },
-  setup() {
-    const state = reactive({
-      scale: 1,
-      overviewConfigs,
-      deviceCount: {},
-      alarmCount: [],
-      equipmentCount: [],
-      serverTop10: {},
-      deviceList: [],
-      alarmList: [],
-      roomList: [],
-      loading: true,
-      roomId: 0,
-      deviceTopType: 'cpu'
+
+interface RoomItem {
+  id: number
+  name: string
+  config: string
+  rowNum?: number
+  colNum?: number
+}
+
+interface EquipmentItem {
+  name: string
+  onNum: number
+  offNum: number
+}
+
+const state = reactive({
+  scale: 1,
+  overviewConfigs,
+  deviceCount: {} as Record<string, unknown>,
+  alarmCount: [] as Record<string, unknown>[],
+  equipmentCount: [] as EquipmentItem[],
+  serverTop10: {} as Record<string, unknown>,
+  deviceList: [] as Record<string, unknown>[],
+  alarmList: [] as Record<string, unknown>[],
+  roomList: [] as RoomItem[],
+  loading: true,
+  roomId: 0,
+  deviceTopType: 'cpu'
+})
+
+const {
+  scale, overviewConfigs: _oc, deviceCount, alarmCount, equipmentCount,
+  serverTop10, deviceList, alarmList, roomList, loading, roomId, deviceTopType
+} = toRefs(state)
+
+const interval = 1000 * 30
+
+const getScale = (scaleVal: number) => {
+  state.scale = scaleVal
+}
+
+const changeRoom = (index: number) => {
+  state.roomId = state.roomList[index].id
+  change()
+}
+
+// 总体情况
+const getOverviewState = async () => {
+  const res = await getOverview()
+  if (res.success) {
+    const { centerNum, rackNum, loadRatio } = res.data
+    const unit = state.overviewConfigs[0]
+    ;[centerNum, rackNum, loadRatio * 100].forEach((item: number, index: number) => {
+      unit.data[index].value = item
     })
-    const getScale = (scale) => {
-      state.scale = scale
-    }
-    const changeRoom = (index) => {
-      state.roomId = state.roomList[index].id
-      change()
-    }
-    // 总体情况
-    const getOverviewState = async () => {
-      const res = await getOverview()
-      if (res.success) {
-        // 处理数据对configs赋值
-        const { centerNum, rackNum, loadRatio } = res.data
-        const unit = state.overviewConfigs[0]
-        ;[centerNum, rackNum, loadRatio * 100].forEach((item, index) => {
-          unit.data[index].value = item
-        })
-      }
-    }
-    // 设备信息
-    const getDeviceCount = async () => {
-      const res = await getCount(state.roomId)
-      if (res.success) {
-        state.deviceCount = res.data
-      }
-    }
-    // 告警次数统计
-    const getAlarmOverview = async () => {
-      const res = await getAlarmCount(state.roomId)
-      if (res.success) {
-        state.alarmCount = res.data
-      }
-    }
-    // 机房环境设备
-    const getEquipment = async () => {
-      const res = await getEquipmentCount(state.roomId)
-      if (res.success) {
-        state.equipmentCount = res.data
-      }
-    }
-    // top10
-    const getServerTop10 = async () => {
-      const res = await getServerCount(state.roomId, {
-        type: state.deviceTopType
-      })
-      if (res.success) {
-        state.serverTop10 = res.data
-      }
-    }
-    // 机房环境设备性能展示
-    const getDeviceData = async () => {
-      const res = await getDeviceList(state.roomId)
-      if (res.success) {
-        state.deviceList = res.data
-      }
-    }
-    // 机房设备实时告警
-    const getAlarmList = async () => {
-      const res = await getAlertList(state.roomId)
-      if (res.success) {
-        state.alarmList = res.data
-      }
-    }
-    const change = async () => {
-      await Promise.all([
-        getOverviewState(),
-        getDeviceCount(),
-        getAlarmOverview(),
-        getEquipment(),
-        getServerTop10(),
-        getDeviceData(),
-        getAlarmList()
-      ])
-      state.loading = false
-    }
-    const dcInfoConfigs = {
-      richCount: 60,
-      legend: {
-        itemGap: 10
-      },
-      center: ['50%', '40%']
-    }
-    const getRoomList = async () => {
-      const res = await getRooms()
-      if (res.success) {
-        state.roomList = res.data.rows
-        await nextTick()
-        changeRoom(0)
-      }
-    }
-    getRoomList()
-    return {
-      ...toRefs(state),
-      dcInfoConfigs,
-      interval: 1000 * 30,
-      getServerTop10,
-      getScale,
-      changeRoom
-    }
   }
 }
+
+// 设备信息
+const getDeviceCount = async () => {
+  const res = await getCount(state.roomId)
+  if (res.success) {
+    state.deviceCount = res.data
+  }
+}
+
+// 告警次数统计
+const getAlarmOverview = async () => {
+  const res = await getAlarmCount(state.roomId)
+  if (res.success) {
+    state.alarmCount = res.data
+  }
+}
+
+// 机房环境设备
+const getEquipment = async () => {
+  const res = await getEquipmentCount(state.roomId)
+  if (res.success) {
+    state.equipmentCount = res.data
+  }
+}
+
+// top10
+const getServerTop10 = async () => {
+  const res = await getServerCount(state.roomId, {
+    type: state.deviceTopType
+  })
+  if (res.success) {
+    state.serverTop10 = res.data
+  }
+}
+
+// 机房环境设备性能展示
+const getDeviceData = async () => {
+  const res = await getDeviceList(state.roomId)
+  if (res.success) {
+    state.deviceList = res.data
+  }
+}
+
+// 机房设备实时告警
+const getAlarmListData = async () => {
+  const res = await getAlertList(state.roomId)
+  if (res.success) {
+    state.alarmList = res.data
+  }
+}
+
+const change = async () => {
+  await Promise.all([
+    getOverviewState(),
+    getDeviceCount(),
+    getAlarmOverview(),
+    getEquipment(),
+    getServerTop10(),
+    getDeviceData(),
+    getAlarmListData()
+  ])
+  state.loading = false
+}
+
+const dcInfoConfigs = {
+  richCount: 60,
+  legend: {
+    itemGap: 10
+  },
+  center: ['50%', '40%']
+}
+
+const getRoomList = async () => {
+  const res = await getRooms()
+  if (res.success) {
+    state.roomList = res.data.rows
+    await nextTick()
+    changeRoom(0)
+  }
+}
+getRoomList()
 </script>
 <style lang="scss" scoped>
 .left,
@@ -219,21 +231,20 @@ export default {
 }
 .center {
   width: 50%;
-  ::v-deep {
+  :deep() {
     .el-carousel__container {
       height: 835px;
     }
   }
 }
-.device-status ::v-deep .title-icon {
+.device-status :deep(.title-icon) {
   width: 80px;
   height: 76px;
 }
 .card {
-  // height: calc((100vh - 170px) / 3 - 20px);
   .card-operate {
     float: right;
-    ::v-deep {
+    :deep() {
       .el-radio-button__inner {
         background: #0a1636;
         border-color: #66718c;

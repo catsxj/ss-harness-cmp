@@ -10,17 +10,18 @@
     </template>
   </scroll-table>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-export default {
-  props: {
-    data: {
-      type: Array
-    }
-  },
-  setup(props) {
-  }
+<script setup lang="ts">
+interface DeviceItem {
+  name: string
+  current: string | number
+  normal: string | number
 }
+
+interface Props {
+  data: DeviceItem[]
+}
+
+defineProps<Props>()
 </script>
 <style lang="scss" scoped>
 </style>

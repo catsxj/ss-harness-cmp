@@ -35,47 +35,50 @@
   </full-screen-container>
 </template>
 
-<script>
-import Header from 'components/ScreenWrapper/Header'
-import { reactive, toRefs, onUnmounted } from '@vue/composition-api'
+<script setup lang="ts">
+import Header from 'components/ScreenWrapper/Header.vue'
+import { reactive, toRefs } from 'vue'
 import { getDcs } from 'services/screen/dc'
 
-export default {
-  components: { Header },
-  setup() {
-    const state = reactive({
-      dcList: [],
-      loading: true
-    })
-    const timer = null
-    const getDcList = async () => {
-      const res = await getDcs()
-      if (res.success) {
-        state.dcList = res.data.rows.map(item => {
-          return {
-            ...item,
-            config: JSON.parse(item.config)
-          }
-        });
-        state.loading = false;
-      }
-    }
-    getDcList()
-    const getWrapperClass = (index) => {
-      const colorArr = ['dc_orange', 'dc_green', 'dc_blue', 'dc_cyan']
-      const key = index % 4
-      return colorArr[key]
-    }
-    // const getPos = () => {
+interface DcConfig {
+  position: Record<string, string>
+  logo: string
+}
 
-    // }
-    return {
-      ...toRefs(state),
-      getWrapperClass
-      // getPos
-      // operateScreen
-    }
+interface DcItem {
+  id: number
+  name: string
+  pmCount: number
+  vmCount: number
+  dsCount: number
+  config: DcConfig
+}
+
+const state = reactive({
+  dcList: [] as DcItem[],
+  loading: true
+})
+
+const { dcList, loading } = toRefs(state)
+
+const getDcList = async () => {
+  const res = await getDcs()
+  if (res.success) {
+    state.dcList = res.data.rows.map((item: Record<string, unknown>) => {
+      return {
+        ...item,
+        config: JSON.parse(item.config as string)
+      }
+    })
+    state.loading = false
   }
+}
+getDcList()
+
+const getWrapperClass = (index: number): string => {
+  const colorArr = ['dc_orange', 'dc_green', 'dc_blue', 'dc_cyan']
+  const key = index % 4
+  return colorArr[key]
 }
 </script>
 <style lang="scss" scoped>

@@ -1,30 +1,28 @@
 <template>
-  <div class="table-td" :title="value" :style="style">
+  <div class="table-td" :title="String(value)" :style="style">
     <slot>
-      <el-tooltip class="item" effect="dark" :content="value.toString()" placement="top-start">
+      <el-tooltip class="item" effect="dark" :content="String(value)" placement="top-start">
         <span>{{value}}</span>
       </el-tooltip>
     </slot>
   </div>
 </template>
-<script>
-import { computed } from '@vue/composition-api'
-export default {
-  props: {
-    value: {
-      type: [String, Number],
-      default: ''
-    },
-    width: {
-      type: String
-    }
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const props = defineProps({
+  value: {
+    type: [String, Number],
+    default: '',
   },
-  setup(props) {
-    return {
-      style: props.width ? { width: props.width, flex: 'none' } : {}
-    }
-  }
-}
+  width: {
+    type: String,
+  },
+})
+
+const style = computed(() => {
+  return props.width ? { width: props.width, flex: 'none' } : {}
+})
 </script>
 <style lang="scss" scoped>
 div.table-td {

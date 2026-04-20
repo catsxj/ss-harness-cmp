@@ -99,11 +99,11 @@
   </full-screen-container>
 </template>
 
-<script>
-import Header from 'components/ScreenWrapper/Header'
-import { reactive, toRefs } from '@vue/composition-api'
-import OneCenter from './OneCenter'
-import ResourceCount from './ResourceCount'
+<script setup lang="ts">
+import Header from 'components/ScreenWrapper/Header.vue'
+import { reactive, toRefs } from 'vue'
+import OneCenter from './OneCenter.vue'
+import ResourceCount from './ResourceCount.vue'
 import {
   getOverview,
   getVmApplyTrend,
@@ -113,80 +113,81 @@ import {
   getBusinessResource
 } from 'services/screen/outside'
 
-export default {
-  components: { Header, ResourceCount, OneCenter },
-  setup() {
-    const state = reactive({
-      loading: true,
-      overviewData: {},
-      vmApplyTrend: {},
-      resourceApplyTrend: {},
-      tenantCount: [],
-      projectCount: [],
-      businessCount: []
-    })
-    let dcId = ''
-    // 资源概览
-    const getOverviewData = async () => {
-      const res = await getOverview(dcId)
-      if (res.success) {
-        state.overviewData = res.data
-      }
-    }
-    // 云主机申请趋势
-    const getVmTrend = async () => {
-      const res = await getVmApplyTrend(dcId)
-      if (res.success) {
-        state.vmApplyTrend = res.data
-      }
-    }
-    // 云资源申请趋势
-    const getResourceTrend = async () => {
-      const res = await getResourceApplyTrend(dcId)
-      if (res.success) {
-        state.resourceApplyTrend = res.data
-      }
-    }
-    // 租户资源统计
-    const getTenantCount = async () => {
-      const res = await getTenantResource(dcId)
-      if (res.success) {
-        state.tenantCount = res.data
-      }
-    }
-    // 应用系统资源统计
-    const getProjectCount = async () => {
-      const res = await getProjectResource(dcId)
-      if (res.success) {
-        state.projectCount = res.data
-      }
-    }
-    // 业务资源
-    const getBusinessCount = async () => {
-      const res = await getBusinessResource(dcId)
-      if (res.success) {
-        state.businessCount = res.data
-      }
-    }
-    const change = async (id) => {
-      dcId = id
-      try {
-        await Promise.all([
-          getOverviewData(),
-          getVmTrend(),
-          getResourceTrend(),
-          getTenantCount(),
-          getProjectCount(),
-          getBusinessCount()
-        ])
-      } catch (error) {}
-      state.loading = false
-    }
-    return {
-      ...toRefs(state),
-      change
-    }
+const state = reactive({
+  loading: true,
+  overviewData: {} as Record<string, unknown>,
+  vmApplyTrend: {} as Record<string, unknown>,
+  resourceApplyTrend: {} as Record<string, unknown>,
+  tenantCount: [] as Record<string, unknown>[],
+  projectCount: [] as Record<string, unknown>[],
+  businessCount: [] as Record<string, unknown>[]
+})
+
+const { loading, overviewData, vmApplyTrend, resourceApplyTrend, tenantCount, projectCount, businessCount } = toRefs(state)
+
+let dcId: string | number = ''
+
+// 资源概览
+const getOverviewData = async () => {
+  const res = await getOverview(dcId)
+  if (res.success) {
+    state.overviewData = res.data
   }
+}
+
+// 云主机申请趋势
+const getVmTrend = async () => {
+  const res = await getVmApplyTrend(dcId)
+  if (res.success) {
+    state.vmApplyTrend = res.data
+  }
+}
+
+// 云资源申请趋势
+const getResourceTrend = async () => {
+  const res = await getResourceApplyTrend(dcId)
+  if (res.success) {
+    state.resourceApplyTrend = res.data
+  }
+}
+
+// 租户资源统计
+const getTenantCount = async () => {
+  const res = await getTenantResource(dcId)
+  if (res.success) {
+    state.tenantCount = res.data
+  }
+}
+
+// 应用系统资源统计
+const getProjectCount = async () => {
+  const res = await getProjectResource(dcId)
+  if (res.success) {
+    state.projectCount = res.data
+  }
+}
+
+// 业务资源
+const getBusinessCount = async () => {
+  const res = await getBusinessResource(dcId)
+  if (res.success) {
+    state.businessCount = res.data
+  }
+}
+
+const change = async (id: string | number) => {
+  dcId = id
+  try {
+    await Promise.all([
+      getOverviewData(),
+      getVmTrend(),
+      getResourceTrend(),
+      getTenantCount(),
+      getProjectCount(),
+      getBusinessCount()
+    ])
+  } catch (error) { /* ignore */ }
+  state.loading = false
 }
 </script>
 <style lang="scss" scoped>

@@ -5,186 +5,180 @@
   </div>
 </template>
 
-<script>
-import mixins, { getLinerColor } from '../mixins'
+<script setup lang="ts">
+import { computed, onMounted } from 'vue'
+import { useEcharts, getLinerColor, defaultEchartsProps } from '../useEcharts'
 import { yAxis, xAxis, grid } from '../defaultSetting'
-import Axios from 'axios'
+import type { EChartsType } from 'echarts'
 
-export default {
-  props: {
-    is3d: {
-      type: Boolean,
-      default: false
-    }
+const props = defineProps({
+  ...defaultEchartsProps,
+  is3d: {
+    type: Boolean,
+    default: false,
   },
-  mixins: [mixins],
-  data () {
-    return {}
-  },
-  computed: {
-    isNoData() {
-      return !this.data.keys || !this.data.keys.length;
-    }
-  },
-  mounted () {
-    this.eveSet()
-  },
-  methods: {
-    // 对画布绑定事件
-    eveSet () {
-      this.chart.on('click', (params) => {
-        const event = params.event.event
-        event.stopPropagation()
-        this.$emit('goToPage', params)
-      })
-    },
-    updateChart () {
-      const legends = []
-      const series = []
-      const { colorMap = {}, linerColor, axisLabel = {}, showSeriesLabel = true } = this.setting;
-      const color = (linerColor && linerColor.map(item => {
-        return getLinerColor(item[0], item[1])
-      }));
-      //  [getLinerColor('#0089FF', '#A057A1')];
-      const { values = [], keys = [] } = this.data;
-      const { showLegend = false } = this.setting;
-      values.forEach((item, index) => {
-        legends.push(item.name)
-        const data = item.data.map(cell => {
-          return {
-            value: cell,
-            itemStyle: {
-              color: colorMap[item.name]
-            }
-          }
-        })
-        series.push({
-          name: item.name,
-          type: 'bar',
-          smooth: true,
-          stack: 'all',
-          barMaxWidth: 30,
-          label: {
-            show: showSeriesLabel,
-            position: 'top',
-            color: '#fff'
-          },
-          itemStyle: {
-            // normal: {
-            //   areaStyle: { type: 'default' },
-            //   color: new this.echarts.graphic.LinearGradient(
-            //     0, 0, 1, 1, [{
-            //       offset: 0,
-            //       color: startColor
-            //     },
-            //     {
-            //       offset: 1,
-            //       color: endColor
-            //     }
-            //     ]
-            //   )
-            // }
-          },
-          data,
-          zlevel: 11
-        });
-        if (this.is3d) {
-          series.push({
-            type: 'bar',
-            barWidth: 8,
-            itemStyle: {
-              normal: {
-                color
-              }
-            },
-            barGap: 0,
-            data
-          }, {
-            name: 'b',
-            tooltip: {
-              show: false
-            },
-            type: 'pictorialBar',
-            itemStyle: {
-              borderWidth: 1,
-              borderColor: color[0],
-              color: color[0]
-            },
-            symbol: 'path://M 0,0 l 120,0 l -30,60 l -120,0 z',
-            symbolSize: ['30', '12'],
-            symbolOffset: ['0', '-8'],
-            symbolRotate: 5,
-            symbolPosition: 'end',
-            data,
-            z: 3
-          })
-        }
-      })
-      const options = {
-        color,
-        legend: {
-          show: showLegend,
-          top: 0,
-          textStyle: {
-            color: '#fff'
-          }
+})
+
+const emit = defineEmits<{
+  (e: 'goToPage', params: Record<string, unknown>): void
+}>()
+
+const isNoData = computed(() => {
+  const d = props.data as Record<string, unknown[]>
+  return !d?.keys || !d.keys.length
+})
+
+function updateChart(chartInstance: EChartsType) {
+  if (!props.data) return
+  const legends: string[] = []
+  const series: Record<string, unknown>[] = []
+  const setting = props.setting as Record<string, unknown>
+  const { colorMap = {}, linerColor, axisLabel = {}, showSeriesLabel = true } = setting as Record<string, unknown>
+  const color = (linerColor as string[][] | undefined)?.map((item: string[]) => {
+    return getLinerColor(item[0], item[1])
+  })
+  const d = props.data as Record<string, unknown>
+  const { values = [], keys = [] } = d
+  const { showLegend = false } = setting
+  ;(values as Array<{ name: string; data: unknown[] }>).forEach((item) => {
+    legends.push(item.name)
+    const data = item.data.map((cell) => {
+      return {
+        value: cell,
+        itemStyle: {
+          color: (colorMap as Record<string, string>)[item.name],
         },
-        title: {
-          text: this.data.title
-        },
-        tooltip: {
-          trigger: 'axis',
-          ...(this.setting.tooltip || {})
-        },
-        toolbox: this.setting.toolbox,
-        grid: {
-          ...grid,
-          top: 30,
-          left: '1%',
-          right: '5%',
-          bottom: 1
-        },
-        xAxis: [{
-          ...xAxis,
-          type: 'category',
-          name: this.unit,
-          splitLine: {
-            show: false
-          },
-          axisLabel: {
-            color: '#fff',
-            interval: 0,
-            ...axisLabel
-          },
-          axisTick: {
-            show: false
-          },
-          data: this.data.keys.map(item => {
-            return item.replace(' ', '\n')
-          })
-        }],
-        yAxis: [{
-          ...yAxis,
-          type: 'value',
-          splitLine: {
-            show: false
-          },
-          axisLabel: {
-            color: '#fff'
-          },
-          splitArea: {
-            show: false,
-            areaStyle: {
-              color: ['rgba(255,255,255,1)', 'rgba(248,251,255,1)']
-            }
-          }
-        }],
-        series: series
       }
-      this.chart.setOption(options, true)
+    })
+    series.push({
+      name: item.name,
+      type: 'bar',
+      smooth: true,
+      stack: 'all',
+      barMaxWidth: 30,
+      label: {
+        show: showSeriesLabel,
+        position: 'top',
+        color: '#fff',
+      },
+      itemStyle: {},
+      data,
+      zlevel: 11,
+    })
+    if (props.is3d) {
+      series.push(
+        {
+          type: 'bar',
+          barWidth: 8,
+          itemStyle: {
+            normal: {
+              color,
+            },
+          },
+          barGap: 0,
+          data,
+        },
+        {
+          name: 'b',
+          tooltip: {
+            show: false,
+          },
+          type: 'pictorialBar',
+          itemStyle: {
+            borderWidth: 1,
+            borderColor: (color as unknown[])?.[0],
+            color: (color as unknown[])?.[0],
+          },
+          symbol: 'path://M 0,0 l 120,0 l -30,60 l -120,0 z',
+          symbolSize: ['30', '12'],
+          symbolOffset: ['0', '-8'],
+          symbolRotate: 5,
+          symbolPosition: 'end',
+          data,
+          z: 3,
+        }
+      )
     }
+  })
+  const options = {
+    color,
+    legend: {
+      show: showLegend,
+      top: 0,
+      textStyle: {
+        color: '#fff',
+      },
+    },
+    title: {
+      text: (d as Record<string, unknown>).title,
+    },
+    tooltip: {
+      trigger: 'axis',
+      ...((setting.tooltip as Record<string, unknown>) || {}),
+    },
+    toolbox: setting.toolbox,
+    grid: {
+      ...grid,
+      top: 30,
+      left: '1%',
+      right: '5%',
+      bottom: 1,
+    },
+    xAxis: [
+      {
+        ...xAxis,
+        type: 'category',
+        name: props.unit,
+        splitLine: {
+          show: false,
+        },
+        axisLabel: {
+          color: '#fff',
+          interval: 0,
+          ...(axisLabel as Record<string, unknown>),
+        },
+        axisTick: {
+          show: false,
+        },
+        data: (keys as string[]).map((item) => {
+          return item.replace(' ', '\n')
+        }),
+      },
+    ],
+    yAxis: [
+      {
+        ...yAxis,
+        type: 'value',
+        splitLine: {
+          show: false,
+        },
+        axisLabel: {
+          color: '#fff',
+        },
+        splitArea: {
+          show: false,
+          areaStyle: {
+            color: ['rgba(255,255,255,1)', 'rgba(248,251,255,1)'],
+          },
+        },
+      },
+    ],
+    series: series,
   }
+  chartInstance.setOption(options, true)
 }
+
+const { chart } = useEcharts(props, updateChart)
+
+onMounted(() => {
+  if (chart.value) {
+    chart.value.on('click', (params: Record<string, unknown>) => {
+      const event = (params.event as Record<string, unknown>)?.event as Event
+      event?.stopPropagation()
+      emit('goToPage', params)
+    })
+  }
+})
 </script>
 <style lang="scss" scoped>
 @import '../index';

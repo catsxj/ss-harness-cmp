@@ -4,12 +4,8 @@
   </ScreenWrapper>
 </template>
 
-<script>
-import ScreenWrapper from 'components/ScreenWrapper'
-
-export default {
-  components: { ScreenWrapper }
-}
+<script setup lang="ts">
+import ScreenWrapper from 'components/ScreenWrapper/index.vue'
 </script>
 <style lang="scss">
 .iframe{

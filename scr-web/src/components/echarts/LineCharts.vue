@@ -3,58 +3,48 @@
    :setting="setting"
   ></line-chart>
 </template>
-<script>
-import charts from 'cmp-echarts'
-import 'cmp-echarts/lib/cmp-echarts.css'
+<script setup lang="ts">
+import LineChart from './line-charts/LineCharts.vue'
 
-const { LineCharts } = charts
 const setting = {
   legend: {
     textStyle: {
-      color: '#fff'
+      color: '#fff',
     },
     pageIconColor: '#fff',
-    pageIconInactiveColor: '#2F4554'
+    pageIconInactiveColor: '#2F4554',
   },
   xAxis: {
     axisLabel: {
-      color: '#fff'
+      color: '#fff',
     },
     axisLine: {
       lineStyle: {
-        color: '#ffffff'
-      }
+        color: '#ffffff',
+      },
     },
     splitArea: {
-      show: false
-    }
+      show: false,
+    },
   },
   yAxis: {
     axisLabel: {
-      color: '#fff'
+      color: '#fff',
     },
     nameTextStyle: {
-      color: '#fff'
+      color: '#fff',
     },
     axisLine: {
       lineStyle: {
-        color: '#ffffff'
-      }
+        color: '#ffffff',
+      },
     },
     splitLine: {
       lineStyle: {
         type: 'solid',
-        color: '#1B263D'
-      }
-    }
-  }
-}
-export default {
-  components: { LineChart: LineCharts },
-  setup(props, context) {
-    return {
-      setting
-    }
-  }
+        color: '#1B263D',
+      },
+    },
+  },
 }
 </script>

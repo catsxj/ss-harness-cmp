@@ -43,168 +43,179 @@
   </div>
 </template>
 
-<script>
-import { onMounted, onUnmounted, reactive, toRefs, watch, ref } from '@vue/composition-api'
-import Progress from 'components/SimpleProgress'
+<script setup lang="ts">
+import { onMounted, onUnmounted, reactive, toRefs, watch, ref } from 'vue'
+import Progress from 'components/SimpleProgress/index.vue'
 import ThreeRoom from '@/three/ThreeRoom'
-import ThreeRack from './rack'
+import ThreeRack from './rack.vue'
 import { generateRackLocation, generateRacks } from '@/three/components/tools'
 import { getRacks } from 'services/screen/room'
-// import test from '@/three/data/room1'
-export default {
-  components: { Progress, ThreeRack },
-  props: {
-    item: {
-      type: Object
-    },
-    isScreen: {
-      type: Boolean
-    },
-    // 页面缩放比例
-    scale: {
-      type: Number,
-      default: 1
-    }
-  },
-  setup(props, context) {
-    const state = reactive({
-      rackInfoStyle: {},
-      currentRack: {},
-      rackVisible: false,
-      loading: true,
-      status: ''
-    });
-    const rackRef = ref(null)
-    // 机柜概要信息展示
-    const showRackInfo = (e, item) => {
-      const dom = document.getElementById('three_room');
-      // 大屏机房不是全部容器且出在缩放
-      const { left, top } = dom.getBoundingClientRect();
-      state.rackInfoStyle = {
-        top: `${(e.y - top) / props.scale - 100}px`,
-        left: `${(e.x - left) / props.scale + 20}px`,
-        display: 'block'
-      }
-      state.currentRack = item.userData
-    }
-    const closeRackInfo = () => {
-      state.rackInfoStyle.display = 'none'
-    }
-    let threeRoom = null;
-    let location = {};
-    const options = {
-      showRackInfo,
-      closeRackInfo,
-      needBindEvent: true,
-      scale: props.scale,
-      test: props.item.name,
-      rackOptions: {
-        clickRack: () => {
-          // 打开机柜3d时移除机房的事件
-          threeRoom && threeRoom.removeEvent()
-          closeRackInfo()
-          state.rackVisible = true
-        }
-      }
-    };
-    watch(
-      () => props.scale,
-      value => {
-        options.scale = value;
-        if (rackRef.value) {
-          rackRef.value.setScale(value)
-        }
-      }
-    );
-    onMounted(() => {
-      const { id, config, rowNum = 2, colNum = 2 } = props.item
-      // 大屏展示的配置
-      if (props.isScreen) {
-        options.camera = {
-          VIEW_ANGLE: 50,
-          position: {
-            x: 0,
-            y: 800,
-            z: 1000
-          }
-        }
-      }
-      threeRoom = new ThreeRoom(document.getElementById('three_room'), options)
-      threeRoom.createRoom(JSON.parse(config));
-      // threeRoom.createRoom(test)
-      // 空调占了一列， 所以列数+1
-      location = generateRackLocation(700, 500, colNum, rowNum);
-      console.log(location)
-      // console.log(generateRacks(1, 9, 600, 460, 0, -300))
-      getRackList(id)
-    })
-    let racks = []
-    const getRackList = async (roomId) => {
-      state.loading = true
-      const res = await getRacks(roomId)
-      if (res.success) {
-        racks = res.data.rows.map((item) => {
-          const { config, axisX, axisY } = item
-          const configObj = JSON.parse(config);
-          console.log(item.name, location[`${axisY},${axisX}`])
-          const res = {
-            ...item,
-            servers: [],
-            config:
-              (configObj && configObj.position) ||
-              location[`${axisY},${axisX}`]
-          }
-          if (item.usage > 0.9) {
-            res.alarmLevel = 'danger';
-          } else if (props.percent > 0.75) {
-            res.alarmLevel = 'warning';
-          }
-          return res;
-        })
-        threeRoom.createRack(racks);
-        state.loading = false
-      }
-    }
-    // 展示使用率
-    const showRackUsage = () => {
-      if (state.status === 'usage') return;
-      state.status = 'usage';
-      threeRoom.createRackUsage(racks);
-    }
-    // 机柜容量
-    const showRackCapacity = () => {
-      if (state.status === 'capacity') return;
-      state.status = 'capacity';
-      threeRoom.createRackCapacity(racks);
-    }
-    // 重置
-    const resetRack = () => {
-      state.status = '';
-      threeRoom.resetRack();
-    }
-    // 温度云
-    const operateTemperature = () => {
-      threeRoom.operateTemperature();
-    }
-    onUnmounted(() => {
-      threeRoom && threeRoom.destory();
-      threeRoom = null;
-    })
-    const closeRack = () => {
-      // 关闭机柜3d时新加机房的事件
-      threeRoom && threeRoom.bindEvent()
-      state.rackVisible = false
-    }
-    return {
-      ...toRefs(state),
-      closeRack,
-      rackRef,
-      showRackUsage,
-      resetRack,
-      operateTemperature,
-      showRackCapacity
+
+interface RackData {
+  name: string
+  dcname: string
+  roomname: string
+  typeName: string
+  usage: number
+  [key: string]: unknown
+}
+
+interface RoomItem {
+  id: number
+  name: string
+  config: string
+  rowNum?: number
+  colNum?: number
+}
+
+interface Props {
+  item: RoomItem
+  isScreen?: boolean
+  scale?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isScreen: false,
+  scale: 1
+})
+
+const state = reactive({
+  rackInfoStyle: {} as Record<string, string>,
+  currentRack: {} as RackData,
+  rackVisible: false,
+  loading: true,
+  status: ''
+})
+
+const { rackInfoStyle, currentRack, rackVisible, loading, status } = toRefs(state)
+
+const rackRef = ref<InstanceType<typeof ThreeRack> | null>(null)
+
+// 机柜概要信息展示
+const showRackInfo = (e: MouseEvent, item: { userData: RackData }) => {
+  const dom = document.getElementById('three_room')!
+  const { left, top } = dom.getBoundingClientRect()
+  state.rackInfoStyle = {
+    top: `${(e.y - top) / props.scale - 100}px`,
+    left: `${(e.x - left) / props.scale + 20}px`,
+    display: 'block'
+  }
+  state.currentRack = item.userData
+}
+
+const closeRackInfo = () => {
+  state.rackInfoStyle.display = 'none'
+}
+
+let threeRoom: InstanceType<typeof ThreeRoom> | null = null
+let location: Record<string, unknown> = {}
+
+const options: Record<string, unknown> = {
+  showRackInfo,
+  closeRackInfo,
+  needBindEvent: true,
+  scale: props.scale,
+  test: props.item.name,
+  rackOptions: {
+    clickRack: () => {
+      threeRoom && threeRoom.removeEvent()
+      closeRackInfo()
+      state.rackVisible = true
     }
   }
+}
+
+watch(
+  () => props.scale,
+  (value) => {
+    options.scale = value
+    if (rackRef.value) {
+      rackRef.value.setScale(value)
+    }
+  }
+)
+
+onMounted(() => {
+  const { id, config, rowNum = 2, colNum = 2 } = props.item
+  if (props.isScreen) {
+    options.camera = {
+      VIEW_ANGLE: 50,
+      position: {
+        x: 0,
+        y: 800,
+        z: 1000
+      }
+    }
+  }
+  threeRoom = new ThreeRoom(document.getElementById('three_room'), options)
+  threeRoom.createRoom(JSON.parse(config))
+  location = generateRackLocation(700, 500, colNum, rowNum)
+  console.log(location)
+  getRackList(id)
+})
+
+let racks: Record<string, unknown>[] = []
+
+const getRackList = async (roomId: number) => {
+  state.loading = true
+  const res = await getRacks(roomId)
+  if (res.success) {
+    racks = res.data.rows.map((item: Record<string, unknown>) => {
+      const { config, axisX, axisY } = item
+      const configObj = JSON.parse(config as string)
+      console.log(item.name, location[`${axisY},${axisX}`])
+      const result: Record<string, unknown> = {
+        ...item,
+        servers: [],
+        config:
+          (configObj && configObj.position) ||
+          location[`${axisY},${axisX}`]
+      }
+      if ((item.usage as number) > 0.9) {
+        result.alarmLevel = 'danger'
+      } else if ((item.usage as number) > 0.75) {
+        result.alarmLevel = 'warning'
+      }
+      return result
+    })
+    threeRoom!.createRack(racks)
+    state.loading = false
+  }
+}
+
+// 展示使用率
+const showRackUsage = () => {
+  if (state.status === 'usage') return
+  state.status = 'usage'
+  threeRoom!.createRackUsage(racks)
+}
+
+// 机柜容量
+const showRackCapacity = () => {
+  if (state.status === 'capacity') return
+  state.status = 'capacity'
+  threeRoom!.createRackCapacity(racks)
+}
+
+// 重置
+const resetRack = () => {
+  state.status = ''
+  threeRoom!.resetRack()
+}
+
+// 温度云
+const operateTemperature = () => {
+  threeRoom!.operateTemperature()
+}
+
+onUnmounted(() => {
+  threeRoom && threeRoom.destory()
+  threeRoom = null
+})
+
+const closeRack = () => {
+  threeRoom && threeRoom.bindEvent()
+  state.rackVisible = false
 }
 </script>
 <style lang="scss" scoped>

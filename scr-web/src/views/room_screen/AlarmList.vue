@@ -1,5 +1,5 @@
 <template>
-  <vue-seamless-scroll :data="data" class="alarm-wrapper" :class-option="{step: 1, singleHeight: 46}">
+  <Vue3SeamlessScroll :list="data" class="alarm-wrapper" :step="1" :single-height="46">
     <div class="alarm-list m-t-sm">
       <div class="alarm-item" v-for="(item, index) in data" :key="index">
         <div class="item-time">{{item.time}}</div>
@@ -10,36 +10,34 @@
       </div>
     </div>
     <NoData v-if="!data.length" icon="el-icon-message-solid" text="暂无告警数据"></NoData>
-  </vue-seamless-scroll>
+  </Vue3SeamlessScroll>
 </template>
-<script>
-import { ref, computed, onMounted, onUnmounted } from '@vue/composition-api'
-import vueSeamlessScroll from 'vue-seamless-scroll'
-import NoData from 'components/NoData'
-function alarmColorFilter(value) {
-  const map = {
+<script setup lang="ts">
+import { Vue3SeamlessScroll } from 'vue3-seamless-scroll'
+import NoData from 'components/NoData/index.vue'
+
+interface AlarmItem {
+  level: string
+  name: string
+  ip: string
+  info: string
+  time: string
+}
+
+interface Props {
+  data: AlarmItem[]
+}
+
+defineProps<Props>()
+
+function alarmColorFilter(value: string): string {
+  const map: Record<string, string> = {
     致命: '#F84540',
     严重: '#FF9900',
     警告: '#19BE6B',
     正常: '#2D8CF0'
   }
   return map[value]
-}
-export default {
-  components: {
-    vueSeamlessScroll,
-    NoData
-  },
-  props: {
-    data: {
-      type: Array
-    }
-  },
-  setup(props) {
-    return {
-      alarmColorFilter
-    }
-  }
 }
 </script>
 <style lang="scss" scoped>

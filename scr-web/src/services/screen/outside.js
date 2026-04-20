@@ -8,7 +8,7 @@ export function getDcs () {
 }
 
 export function getMapToken () {
-  return request.post(`${process.env.VUE_APP_MAPURL}/SIPGIS/auth/jwt/token`, {
+  return request.post(`${import.meta.env.VITE_MAP_URL}/SIPGIS/auth/jwt/token`, {
     username: 'guest',
     password: 'guest',
     appId: 'BASE-ADMIN'
@@ -24,7 +24,7 @@ export function getMapToken () {
     }
   })
 }
-export const mapUrl = `${process.env.VUE_APP_MAPURL}${process.env.VUE_APP_MAPTILE}`
+export const mapUrl = `${import.meta.env.VITE_MAP_URL}${import.meta.env.VITE_MAP_TILE}`
 export function getMapConfig (token) {
   return request.get(mapUrl, {
     params: {

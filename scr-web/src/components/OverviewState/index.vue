@@ -1,6 +1,5 @@
 <template>
   <el-row class="stat-container">
-    <!-- <dv-border-box-8 :reverse="true" style="height: 74px"> -->
       <div class="stat-border" style="top: -2px"></div>
       <div class="stat-border" style="top: -2px; right: 1px"></div>
       <div class="stat-border" style="bottom: 0; right: 1px"></div>
@@ -23,27 +22,43 @@
           </template>
         </div>
       </el-col>
-    <!-- </dv-border-box-8> -->
   </el-row>
 </template>
-<script>
-import Progress from 'components/progress'
-export default {
-  components: { Progress },
-  props: {
-    configs: {
-      type: Array,
-      required: true
-    }
-  }
+<script setup lang="ts">
+import Progress from 'components/progress/index.vue'
+
+interface ConfigCell {
+  title: string
+  value?: string | number
+  unit?: string
+  className?: string
+  style?: Record<string, string>
+  used?: number
+  total?: number
+  color?: string
 }
+
+interface ConfigItem {
+  title: string
+  icon: string
+  type: string
+  titleStyle?: Record<string, string>
+  data: ConfigCell[]
+}
+
+defineProps({
+  configs: {
+    type: Array as () => ConfigItem[],
+    required: true,
+  },
+})
 </script>
 <style lang="scss" scoped>
 .stat-container {
   position: relative;
   height: 74px;
   width: 100%;
-  background: url('~assets/img/stat_bg.png');
+  background: url('@/assets/img/stat_bg.png');
   border-bottom: 1px solid #0391d8;
   border-top: 1px solid #0391d8;
   margin: 10px 0;

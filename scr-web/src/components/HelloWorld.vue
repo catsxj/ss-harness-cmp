@@ -29,15 +29,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue';
-
-export default Vue.extend({
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-});
+<script setup lang="ts">
+defineProps({
+  msg: {
+    type: String,
+    default: '',
+  },
+})
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
