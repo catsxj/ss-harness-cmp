@@ -1,11 +1,18 @@
 <template>
-  <div :id="id" ref="rootRef" :style="{ width, height }"></div>
+  <div ref="rootRef" :style="{ width, height }"></div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import type { EChartsOption } from 'echarts'
-import { useChart, DEFAULT_COLORS } from './useChart'
+import {
+  useChart,
+  DEFAULT_COLORS,
+  AXIS_LINE,
+  AXIS_LABEL,
+  AXIS_NAME_TEXT,
+  SPLIT_LINE_DASHED,
+  type ChartSetting
+} from './useChart'
 
 interface BarData {
   keys?: string[]
@@ -19,55 +26,39 @@ const props = withDefaults(
     unit?: string
     height?: string
     width?: string
-    setting?: Record<string, any>
+    setting?: ChartSetting
     options?: EChartsOption
   }>(),
   { height: '300px', width: '200px', setting: () => ({}), options: () => ({}) }
 )
 
-const rootRef = ref<HTMLElement | null>(null)
+const { rootRef } = useChart(
+  (): EChartsOption | null => {
+    const d = props.data
+    if (!d?.keys || !d?.values) return null
+    const { color = DEFAULT_COLORS, legend = {}, xAxis = {}, yAxis = {}, grid = {}, series: seriesSetting = {} } = props.setting || {}
+    const multiSeries = d.values.length > 1
 
-const { render } = useChart(rootRef, () => {
-  const d = props.data
-  if (!d || !d.keys || !d.values) return null
-  const { color = DEFAULT_COLORS, legend = {}, xAxis = {}, yAxis = {}, grid = {}, series: seriesSetting = {} } = props.setting || {}
-
-  const series = d.values.map((v) => ({
-    name: v.name,
-    type: 'bar' as const,
-    data: v.data,
-    barMaxWidth: 20,
-    ...(seriesSetting as any)
-  }))
-
-  return {
-    color,
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: { show: d.values.length > 1, top: 0, ...legend },
-    grid: { left: '3%', right: '4%', bottom: '3%', top: d.values.length > 1 ? 40 : 20, containLabel: true, ...grid },
-    xAxis: {
-      type: 'value',
-      name: props.unit,
-      nameTextStyle: { color: '#94a3b8', fontSize: 11 },
-      axisLine: { show: false },
-      axisTick: { show: false },
-      splitLine: { lineStyle: { color: '#e4e7eb', type: 'dashed' } },
-      axisLabel: { color: '#475569', fontSize: 11 },
-      ...xAxis
-    },
-    yAxis: {
-      type: 'category',
-      data: d.keys,
-      axisLine: { lineStyle: { color: '#cbd2da' } },
-      axisLabel: { color: '#475569', fontSize: 11 },
-      ...yAxis
-    },
-    series,
-    ...(props.options as any)
-  } as EChartsOption
-})
-
-watch(() => props.data, render, { deep: true })
-watch(() => props.setting, render, { deep: true })
-watch(() => props.options, render, { deep: true })
+    return {
+      color,
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      legend: { show: multiSeries, top: 0, ...legend },
+      grid: { left: '3%', right: '4%', bottom: '3%', top: multiSeries ? 40 : 20, containLabel: true, ...grid },
+      xAxis: {
+        type: 'value',
+        name: props.unit,
+        nameTextStyle: AXIS_NAME_TEXT,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: SPLIT_LINE_DASHED,
+        axisLabel: AXIS_LABEL,
+        ...xAxis
+      },
+      yAxis: { type: 'category', data: d.keys, axisLine: AXIS_LINE, axisLabel: AXIS_LABEL, ...yAxis },
+      series: d.values.map((v) => ({ name: v.name, type: 'bar', data: v.data, barMaxWidth: 20, ...seriesSetting })),
+      ...props.options
+    }
+  },
+  [() => props.data, () => props.setting, () => props.options]
+)
 </script>

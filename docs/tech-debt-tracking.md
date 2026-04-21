@@ -47,17 +47,24 @@ echo "总 TODO:"; grep -rn "// TODO" src/ --include="*.vue" --include="*.ts" | w
 | ECharts v4 语法 | ~20+ | DEPRECATED 警告，功能不受影响，后续统一清理 |
 | any 残留 | 待统计 | tsconfig 中 noImplicitAny: false（过渡期） |
 
-### sms-web（代码迁移完成 2026-04-20）
+### sms-web（基座联调完成 2026-04-21）
 
-| 类型 | 数量 | 说明 |
+| 类型 | 数量 | 状态 / 说明 |
 |------|------|------|
-| TODO: cmp-element | 82 | basic-form/basic-table/AdvanceTable/common-detail 等自研组件标签保留，等 compat 层统一处理 |
-| TODO: cmp-echarts | 7 | setting_dashboard 10 个卡片中的图表封装（line-charts/bar-reverse-charts 等） |
-| TODO: i18n | ~200 | 全部 `$t(...)` 硬编码为中文，vue-i18n@9 后续启用 |
-| TODO: type | 55 | 主要是自研组件 ref 实例（basic-form/AdvanceTable）、G6 Graph/Node、后端动态返回 |
-| any 残留 | 473 | 含 interface 字段类型（`data: any`），后续 compat 层 + API 类型化后递减 |
-| 临时 parent.refs | 3 | configs/AddDialog、component/AddDialog、tenant/AddDialog 用 `getCurrentInstance().parent.refs` 过渡 |
-| 未验证运行时 | — | 需 npm install + build + 浏览器逐页验收 |
+| TODO: cmp-element | 82 | **已由 compat 层解决**（`src/common/compat/` 全量注册），业务代码 TODO 标记可渐进删除 |
+| TODO: cmp-echarts | 7 | **已由 compat 层解决**（echarts@5 + echarts-liquidfill），TODO 标记可渐进删除 |
+| TODO: i18n | 199 | vue-i18n@8 不兼容 Vue 3；业务硬编码中文，需升级 vue-i18n@9 统一处理 |
+| TODO: type | 55 | 自研组件 ref 实例（BasicForm ref 的 validate/resetFields 已有推断，可进一步细化） |
+| `: any` | 515 | 部分来自接口返回、cmp-socket/vuedraggable 无类型；可逐步用 zod 或 io-ts 推断 |
+| `@ts-expect-error` | 1 | crypto-js 缺 @types |
+| 临时 parent.refs | 3 | configs/AddDialog、component/AddDialog、tenant/AddDialog `getCurrentInstance().parent.refs` 过渡 |
+
+**清理优先级**：
+1. 批量删除 `TODO: cmp-element` / `TODO: cmp-echarts` 注释（compat 层已接管）
+2. 补齐核心表单 ref 类型（BasicForm 的 validate/resetFields 已有类型可推断）
+3. vue-i18n@9 迁移（单独任务）
+
+**运行时验证** ✅：eslint 0 errors / build 通过 / dev server / Qiankun 基座挂载全过
 
 ### cmp-web
 
