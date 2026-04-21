@@ -26,10 +26,10 @@
               {{ getStatus('text', status) }}
             </status-icon>
           </template>
-          <template #percent="val, record">
+          <template #percent="{ val, record }">
             <el-progress :percentage="getProgress(record)"></el-progress>
           </template>
-          <template #operate="val, record">
+          <template #operate="{ val, record }">
             <el-button type="text" :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
           </template>
         </AdvanceTable>

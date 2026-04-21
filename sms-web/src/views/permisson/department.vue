@@ -15,7 +15,7 @@
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('add', record)">
           <el-icon><Plus /></el-icon> 新增
         </el-button>

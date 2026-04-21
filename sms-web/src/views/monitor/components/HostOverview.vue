@@ -15,7 +15,7 @@
       <el-col :span="8">
         <el-button-group>
           <el-button size="small" :type="item.value === step ? 'primary' : ''" v-for="item in intervalData" :key="item.value" @click="changeInterval(item.value)">{{ item.name }}</el-button>
-          <el-button size="small" :type="step === 0 ? 'primary' : ''" @click="userDefind()">自定义</el-button>
+          <el-button size="small" :type="step === 0 ? 'primary' : ''" @click="handleUserDefind()">自定义</el-button>
         </el-button-group>
       </el-col>
     </el-row>
@@ -223,7 +223,7 @@ function changeInterval(value: string): void {
   setTimer()
 }
 
-function userDefind(): void {
+function handleUserDefind(): void {
   userDefindVisible.value = true
 }
 

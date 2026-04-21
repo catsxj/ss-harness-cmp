@@ -1,8 +1,2 @@
-/* 改变主题色变量 */
-
+/* 保留 common-var（项目变量）；Element Plus 主题已在 main.ts 通过 'element-plus/dist/index.css' 全量引入 */
 @import './common-var';
-
-/* 改变 icon 字体路径变量，必需 */
-
-$--font-path: '~element-ui/lib/theme-chalk/fonts';
-@import '~element-ui/packages/theme-chalk/src/index';

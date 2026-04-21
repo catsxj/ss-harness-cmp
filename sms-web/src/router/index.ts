@@ -8,7 +8,7 @@ export const asyncRouterMap: Record<string, () => Promise<unknown>> = {
   ...systemMap
 }
 
-let router: Router = build()
+const router: Router = build()
 
 function build(): Router {
   return createRouter({

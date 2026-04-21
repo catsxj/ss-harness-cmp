@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import dayjs from 'utils/day.js'
+import dayjs from 'utils/day'
 import { createNotice, modifyNotice } from 'services/system/notice'
 
 interface NoticeAddData {

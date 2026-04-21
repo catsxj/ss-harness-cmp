@@ -12,7 +12,7 @@
           {{ tag }}
         </el-tag>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('edit', record)" :disabled="record.personal"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="remove(record.id)" :disabled="record.personal"> <el-icon><Delete /></el-icon> 删除 </el-button>

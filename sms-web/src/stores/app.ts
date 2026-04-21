@@ -29,9 +29,7 @@ interface Theme {
   sidebarColor: string
 }
 
-interface SideMenuItem {
-  [key: string]: unknown
-}
+type SideMenuItem = Record<string, any>
 
 const initialSystemConfig = (): SystemConfig => {
   try {
@@ -85,7 +83,7 @@ export const useAppStore = defineStore('app', () => {
     isCollapsed.value = !isCollapsed.value
   }
   function settingSideMenu(data: SideMenuItem[]) {
-    sideMenuData.value = data
+    sideMenuData.value = data as SideMenuItem[]
   }
   function settingBasePath(data: string) {
     basePath.value = data

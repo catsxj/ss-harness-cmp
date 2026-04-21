@@ -22,10 +22,10 @@
             <ImportData url="/api/sms/v1/projects/import" @getData="getList" template-url="/sms/v1/projects/import/template"></ImportData>
             <el-button type="" @click="exportData"> <el-icon><Download /></el-icon> 导出 </el-button>
           </template>
-          <template #name="val, record">
+          <template #name="{ val, record }">
             <span class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
           </template>
-          <template #operate="val, record">
+          <template #operate="{ val, record }">
             <el-button type="text" @click="handleCreate('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
             <div class="action-divider"></div>
             <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
@@ -62,7 +62,7 @@
           <template #action>
             <el-button type="" @click="exportData"> <el-icon><Download /></el-icon> 导出 </el-button>
           </template>
-          <template #name="val, record">
+          <template #name="{ val, record }">
             <span class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
           </template>
         </AdvanceTable>
@@ -162,7 +162,6 @@ const appStore = useAppStore()
 
 const activeName = ref('manage')
 const detailComponent = reactive<{ visible: boolean }>({ visible: false })
-void detailComponent
 const detailData = reactive<Record<string, any>>({ visible: false })
 
 const searchConfigs1 = [
@@ -240,10 +239,6 @@ const addFormRef = ref<any>(null)
 const relaFormRef = ref<any>(null)
 const basicInfo = ref<any>(null)
 const memberInfoRef = ref<any>(null)
-void basicInfo
-void memberInfoRef
-void addFormRef
-void relaFormRef
 
 function tabClick() {
   ids.value = []

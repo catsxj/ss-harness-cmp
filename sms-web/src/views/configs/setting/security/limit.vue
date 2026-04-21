@@ -10,7 +10,7 @@
         <!-- TODO: i18n -->
         <el-button @click="handleBatchRemove()" :disabled="!selectedKeys.length">批量删除</el-button>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <!-- TODO: i18n -->
         <el-button text @click="handleDelete(record)">
           <el-icon><Delete /></el-icon>

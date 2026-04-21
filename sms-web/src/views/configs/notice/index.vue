@@ -25,7 +25,7 @@
       <template #action>
         <el-button type="primary" @click="handleCreate('add')"> <el-icon><Plus /></el-icon> 新增 </el-button>
       </template>
-      <template #title="val, record">
+      <template #title="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
       <template #status="status">
@@ -39,7 +39,7 @@
       <template #sendWays="sendWays">
         <el-tag style="margin-right: 10px" v-for="item in sendWays.split(',')" :key="item" type="success">{{ sendWayMap[item] }}</el-tag>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('edit', record)" :disabled="record.status === 'SEND'"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="handleSend(record.id)" :disabled="record.status === 'SEND'"> <el-icon><Promotion /></el-icon> 发布 </el-button>

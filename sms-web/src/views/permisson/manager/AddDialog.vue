@@ -198,5 +198,4 @@ const pickerOptions = {
     return time.getTime() <= Date.now()
   }
 }
-void pickerOptions
 </script>

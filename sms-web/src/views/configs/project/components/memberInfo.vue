@@ -48,7 +48,6 @@ interface MemberConfig {
 
 const props = defineProps<{ config?: MemberConfig }>()
 const emit = defineEmits<{ success: [] }>()
-void emit
 
 const appStore = useAppStore()
 
@@ -123,7 +122,6 @@ async function handleSubmit() {
     props.config.visibility = false
   }
 }
-void handleSubmit
 
 onMounted(() => {
   getLeft()

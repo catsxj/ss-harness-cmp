@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C D:/harnes-test/ss-harness-cmp diff main..HEAD --stat)",
+      "Bash(git -C D:/harnes-test/ss-harness-cmp diff main..HEAD --stat -- sms-web/)",
+      "Bash(git -C D:/harnes-test/ss-harness-cmp tag)",
+      "Bash(git -C D:/harnes-test/ss-harness-cmp status -uall sms-web/)",
+      "Bash(grep -rn \"this\\\\.\\\\$\" src/layouts/ src/common/components/)",
+      "Bash(grep -rn \"@vue/composition-api\\\\|element-ui\\\\|mapState\\\\|mapActions\\\\|vue-class-component\\\\|this\\\\.\\\\$\" src/layouts/ src/common/components/)",
+      "Bash(grep -lc '@vue/composition-api\\\\|this\\\\.$store' src/views)",
+      "Bash(xargs grep *)",
+      "Bash(git -C D:/harnes-test/ss-harness-cmp status -s sms-web/)",
+      "Bash(git *)"
+    ]
+  }
+}

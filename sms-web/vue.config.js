@@ -15,6 +15,7 @@ module.exports = {
   outputDir: 'sms-web',
   lintOnSave: process.env.NODE_ENV !== 'production',
   productionSourceMap: false,
+  parallel: false,
   devServer: {
     headers: {
       'Access-Control-Allow-Origin': '*'
@@ -40,6 +41,10 @@ module.exports = {
     loaderOptions: {
       sass: {
         additionalData: '@import "@/common/css/common-var.scss";'
+      },
+      css: {
+        // 绝对路径（如 /web-common-resource/*）走后端 proxy，webpack 不解析
+        url: { filter: (url) => !url.startsWith('/') }
       }
     }
   },
@@ -64,6 +69,7 @@ module.exports = {
     }
   },
   chainWebpack: (config) => {
+
     config.module.rule('svg').exclude.add(resolve('src/icons')).end()
     config.module
       .rule('icons')

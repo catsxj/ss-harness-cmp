@@ -11,7 +11,7 @@
           </template>
           <!-- TODO: i18n -->
           <template #isEvent="val"> {{ !!val ? '是' : '否' }} </template>
-          <template #operate="val, record">
+          <template #operate="{ val, record }">
             <!-- TODO: i18n -->
             <el-button text @click="open(record)">编辑</el-button>
             <!-- TODO: i18n -->

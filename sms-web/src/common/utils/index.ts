@@ -26,10 +26,10 @@ export const copyText = (
     errorCallback?.()
     clipboard.destroy()
   })
-  clipboard.onClick(event as any)
+  ;(clipboard as any).onClick(event)
 }
 
-export const downloadFile = (url: string, params: Record<string, unknown> = {}): void => {
+export const downloadFile = (url: string, params: Record<string, any> = {}): void => {
   let str = ''
   Object.keys(params).forEach((key) => {
     str += `&${key}=${params[key]}`

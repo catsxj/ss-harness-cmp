@@ -119,10 +119,4 @@ function handleTab(tab: any) {
 // 暴露给模板（通过 toRefs 保持响应性）
 const { logList, logTotal, logParams } = toRefs(logState)
 const { loginList, loginTotal, loginParams } = toRefs(loginState)
-void logList
-void logTotal
-void logParams
-void loginList
-void loginTotal
-void loginParams
 </script>

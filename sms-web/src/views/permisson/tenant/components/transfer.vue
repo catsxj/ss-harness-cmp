@@ -104,8 +104,6 @@ function getPostData() {
 
 defineExpose({ getPostData })
 
-// 避免未使用警告
-void emit
 </script>
 
 <style scoped lang="scss">

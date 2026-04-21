@@ -13,10 +13,10 @@
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
-      <template #diskDelShow="val, record">
+      <template #diskDelShow="{ val, record }">
         <el-switch v-model="record.diskDelShow" @change="handleDiskDelShow(record)" active-text="展示" inactive-text="隐藏"></el-switch>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate(record)">
           <el-icon><Edit /></el-icon> 编辑
         </el-button>

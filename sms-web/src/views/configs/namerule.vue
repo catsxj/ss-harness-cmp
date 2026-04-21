@@ -7,20 +7,20 @@
           <el-icon><Plus /></el-icon> 新增
         </el-button>
       </template>
-      <template #composition="val, record">
+      <template #composition="{ val, record }">
         {{ record.hasUser ? '用户' : '' }} {{ record.customize ? '自定义' : '' }} {{ record.hasProject ? appStore.systemConfig.projectConfigLabel + '名称' : '' }} {{ record.hasProjectCode ? appStore.systemConfig.projectConfigLabel + '编号' : '' }} {{ record.hasIp ? 'IP地址' : '' }}
         {{ record.hasProjectAbbreviation ? appStore.systemConfig.projectConfigLabel + '简称' : '' }}
       </template>
-      <template #suffixType="val, record">
+      <template #suffixType="{ val, record }">
         {{ suffixTypeFilter(record.suffixType) }}
       </template>
-      <template #suffixLength="val, record">
+      <template #suffixLength="{ val, record }">
         {{ record.suffixType === 'RandomString' ? record.suffixLength : '无' }}
       </template>
-      <template #currentNum="val, record">
+      <template #currentNum="{ val, record }">
         {{ record.suffixType === 'Number' ? record.currentNum : '无' }}
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
@@ -221,7 +221,6 @@ function handleSearch(searchParams?: any) {
   params.params = searchParams
   getList()
 }
-void handleSearch
 </script>
 
 <style scoped lang="scss">

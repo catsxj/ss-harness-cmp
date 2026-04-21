@@ -7,10 +7,10 @@
           <el-icon><Plus /></el-icon> 新增
         </el-button>
       </template>
-      <template #name="val, record">
+      <template #name="{ val, record }">
         <span class="detail-href" @click="getDetail(record.id)">{{ record.name }}</span>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
@@ -107,7 +107,6 @@ const detailData = computed(() => {
   const data = detail.value
   return Object.assign({}, data.server, data.serverConfig)
 })
-void detailData
 
 function getDetail(id: number | string) {
   detailEnvironments(id as any).then((data: any) => {

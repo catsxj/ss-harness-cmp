@@ -64,7 +64,4 @@ function generateRule() {
 generateRule()
 
 const { first, second, third, four, suffix } = toRefs(ipParts)
-void second
-void third
-void four
 </script>

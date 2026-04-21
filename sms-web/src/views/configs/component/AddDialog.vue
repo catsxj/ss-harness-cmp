@@ -9,15 +9,15 @@
       <div v-for="(item, index) in dialogData.steps" :key="index" v-show="index === currentStepIndex">
         <slot :name="item.slot"></slot>
       </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogData.visible = false">取 消</el-button>
-          <el-button @click="prev" v-if="currentStepIndex !== 0">上一步</el-button>
-          <el-button @click="next" v-if="currentStepIndex !== dialogData.steps.length - 1">下一步</el-button>
-          <el-button type="primary" @click="submit()">确 定</el-button>
-        </span>
-      </template>
     </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogData.visible = false">取 消</el-button>
+        <el-button @click="prev" v-if="currentStepIndex !== 0">上一步</el-button>
+        <el-button @click="next" v-if="currentStepIndex !== dialogData.steps.length - 1">下一步</el-button>
+        <el-button type="primary" @click="submit()">确 定</el-button>
+      </span>
+    </template>
   </el-dialog>
 </template>
 

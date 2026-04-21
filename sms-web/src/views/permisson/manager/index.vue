@@ -20,7 +20,7 @@
           <el-icon><Delete /></el-icon>批量删除
         </el-button>
       </template>
-      <template #account="val, record">
+      <template #account="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
       <template #sex="val">
@@ -32,7 +32,7 @@
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate(record)">
           <el-icon><Edit /></el-icon> 编辑
         </el-button>
@@ -170,7 +170,4 @@ function downloadUser() {
 
 const { selectionIds, handleSelectionChange } = useSelection()
 
-// 显式暴露给模板（仅用于保持静态分析可见）
-void sexData
-void columns
 </script>

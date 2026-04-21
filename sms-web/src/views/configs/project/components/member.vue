@@ -86,7 +86,6 @@ const loadLoading = ref(false)
 
 // TODO: type - basic-form 实例类型由 compat 层提供
 const addFormRef = ref<any>(null)
-void addFormRef
 
 const getProjectManger = computed<MemberItem[]>(() =>
   addData.data.filter(({ id }) => addData.value.includes(id))

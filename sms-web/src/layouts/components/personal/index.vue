@@ -54,7 +54,7 @@
 import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Lock, Back } from '@element-plus/icons-vue'
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { changePassword } from 'services/system/manager'
 import { logout } from 'services/system'
 import { useAppStore, usePermissionStore } from '@/stores'

@@ -20,7 +20,7 @@
           <el-icon><Delete /></el-icon>批量删除
         </el-button>
       </template>
-      <template #account="val, record">
+      <template #account="{ val, record }">
         <span class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
       </template>
       <template #status="status">
@@ -39,7 +39,7 @@
         <span v-if="Array.isArray(val)">{{ val.map((item: string) => paymentModeFilter(item)).join('，') }}</span>
         <span v-else>--</span>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('edit', record)">
           <el-icon><Edit /></el-icon>编辑
         </el-button>
@@ -266,9 +266,6 @@ const transferRef = ref<any>(null)
 const pwdRule = computed(() => (appStore.systemConfig as any).pwdStrength)
 const ids = computed(() => tenantIds.value.join(','))
 
-void textMap
-void dialogStatus
-void transferRef
 
 function exportData() {
   const p = JSON.parse(params.params)
@@ -542,7 +539,6 @@ function apiGrantSubmit() {
   })
 }
 
-void getModulesData
 </script>
 
 <style scoped>

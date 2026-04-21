@@ -18,7 +18,7 @@
         <ImportData url="/api/sms/v1/bizs/import" @getData="getList" template-url="/sms/v1/bizs/import/template"></ImportData>
         <el-button type="" @click="exportData"> <el-icon><Download /></el-icon> 导出 </el-button>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handle('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>

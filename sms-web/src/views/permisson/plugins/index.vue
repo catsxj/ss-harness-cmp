@@ -7,7 +7,7 @@
         <el-button type="default" @click="removeAll">批量删除</el-button>
       </template>
       <template #status="val">{{ val ? '已开启' : '已关闭' }}</template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="update(record)">编辑 </el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="remove(record.id)">删除 </el-button>

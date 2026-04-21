@@ -8,7 +8,7 @@
         </el-button>
       </template>
       <template #pagination><div></div></template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" @click="handleCreate('create', record)"><el-icon><Plus /></el-icon> 新增</el-button>
         <div class="action-divider"></div>
         <el-button type="text" @click="handleCreate('edit', record)"><el-icon><Edit /></el-icon> 编辑</el-button>

@@ -145,7 +145,7 @@ export const usePermissionStore = defineStore('permission', () => {
       resultRoutes.length = 0
       const asyncRouter = handleAsyncRouter(getAppRoutes(permission), asyncRouterMap, router)
       setRoutes(asyncRouter)
-      appStore.settingSideMenu(asyncRouter)
+      appStore.settingSideMenu(asyncRouter as any[])
       return asyncRouter
     }
     if (permissions) return callback(permissions)

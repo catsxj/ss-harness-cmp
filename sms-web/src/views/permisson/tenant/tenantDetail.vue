@@ -56,7 +56,7 @@
                 {{ generalStatusFilter(status, 'status') }}
               </status-icon>
             </template>
-            <template #operate="val, record">
+            <template #operate="{ val, record }">
               <el-button type="text" @click="removeUser(record.id)">
                 <el-icon><Delete /></el-icon>移除
               </el-button>

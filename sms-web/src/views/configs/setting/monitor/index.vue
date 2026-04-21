@@ -3,32 +3,18 @@
     <AdvanceTable :columns="columns" :data="listData" :search-configs="searchConfigs" :params="params" :get-list="getList" :total="total" @selection-change="selectionChange">
       <template #action>
         <!-- TODO: i18n -->
-        <el-button
-          type="primary"
-          @click="
-            visible = true
-            dialogData = {}
-          "
-          >新增</el-button
-        >
+        <el-button type="primary" @click="handleCreateNew">新增</el-button>
         <!-- TODO: i18n -->
         <el-button type="primary" @click="removeAll">批量删除</el-button>
       </template>
-      <template #name="val, record">
+      <template #name="{ val, record }">
         <span class="detail-href" @click="createBind(record)">{{ val }}</span>
       </template>
       <!-- TODO: i18n -->
       <template #isTenant="val">{{ val ? '是' : '否' }}</template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <!-- TODO: i18n -->
-        <el-button
-          text
-          @click="
-            visible = true
-            dialogData = record
-          "
-          >编辑</el-button
-        >
+        <el-button text @click="handleEdit(record)">编辑</el-button>
         <!-- TODO: i18n -->
         <el-button text @click="remove(record.id)">删除</el-button>
       </template>
@@ -145,6 +131,15 @@ const visible = ref(false)
 const dialogData = ref<MonitorRecord>({})
 // TODO: type - basic-form 组件实例无公开类型
 const formRef = ref<any>(null)
+
+const handleCreateNew = () => {
+  visible.value = true
+  dialogData.value = {}
+}
+const handleEdit = (record: MonitorRecord) => {
+  visible.value = true
+  dialogData.value = { ...record }
+}
 
 const confirmCreate = () => {
   formRef.value.validate(async (valid: boolean) => {

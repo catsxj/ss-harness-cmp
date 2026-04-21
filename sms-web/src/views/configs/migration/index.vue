@@ -26,7 +26,7 @@
       </el-row>
     </basic-form>
     <AdvanceTable :style="{ marginTop: '20px' }" v-if="!detail.visible" :card-border="false" title="迁移记录列表" :show-tools="false" :data="list" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading">
-      <template #id="val, record">
+      <template #id="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
       <template #status="status">
@@ -34,10 +34,10 @@
           {{ getStatus('text', status) }}
         </status-icon>
       </template>
-      <template #percent="val, record">
+      <template #percent="{ val, record }">
         <el-progress :percentage="getProgress(record)"></el-progress>
       </template>
-      <template #operate="val, record">
+      <template #operate="{ val, record }">
         <el-button type="text" :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
       </template>
     </AdvanceTable>
