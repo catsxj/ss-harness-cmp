@@ -21,7 +21,7 @@
     <el-tabs value="task">
       <el-tab-pane name="task">
         <AdvanceTable title="任务列表" :search-configs="searchConfigs" :data="list" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading">
-          <template #status="status">
+          <template #status="{ val: status, record }">
             <status-icon :type="getStatus('color', status)">
               {{ getStatus('text', status) }}
             </status-icon>
@@ -30,7 +30,7 @@
             <el-progress :percentage="getProgress(record)"></el-progress>
           </template>
           <template #operate="{ val, record }">
-            <el-button type="text" :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
+            <el-button link :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
           </template>
         </AdvanceTable>
       </el-tab-pane>

@@ -85,7 +85,7 @@ const props = defineProps<{
 
 const appStore = useAppStore()
 
-const addData = reactive<any>({ discount: '1.00' })
+const addData = reactive<any>({ discount: 1 })
 const departmentList = ref<any[]>([])
 const departProps = {
   value: 'id',

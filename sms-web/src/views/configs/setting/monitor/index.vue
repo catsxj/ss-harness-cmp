@@ -11,7 +11,7 @@
         <span class="detail-href" @click="createBind(record)">{{ val }}</span>
       </template>
       <!-- TODO: i18n -->
-      <template #isTenant="val">{{ val ? '是' : '否' }}</template>
+      <template #isTenant="{ val, record }">{{ val ? '是' : '否' }}</template>
       <template #operate="{ val, record }">
         <!-- TODO: i18n -->
         <el-button text @click="handleEdit(record)">编辑</el-button>

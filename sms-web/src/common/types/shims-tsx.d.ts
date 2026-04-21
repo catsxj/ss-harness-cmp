@@ -1,13 +1,12 @@
-import Vue, { VNode } from 'vue'
-
+// Vue 3 JSX 兜底声明（项目几乎不用 TSX，仅保留宽松定义）
 declare global {
   namespace JSX {
-    // tslint:disable no-empty-interface
-    interface Element extends VNode {}
-    // tslint:disable no-empty-interface
-    interface ElementClass extends Vue {}
+    interface Element {}
+    interface ElementClass {}
     interface IntrinsicElements {
       [elem: string]: any
     }
   }
 }
+
+export {}

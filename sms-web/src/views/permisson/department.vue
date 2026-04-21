@@ -9,22 +9,22 @@
         </el-button>
       </template>
       <template #pagination><div></div></template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(status, 'color')">
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate('add', record)">
+        <el-button link @click="handleCreate('add', record)">
           <el-icon><Plus /></el-icon> 新增
         </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleCreate('edit', record)">
+        <el-button link @click="handleCreate('edit', record)">
           <el-icon><Edit /></el-icon> 编辑
         </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleDelete(record)">
+        <el-button link @click="handleDelete(record)">
           <el-icon><Delete /></el-icon> 删除
         </el-button>
       </template>

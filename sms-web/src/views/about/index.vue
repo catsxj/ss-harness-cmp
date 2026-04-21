@@ -22,8 +22,8 @@
       <span class="right">{{ certData.expireDate }}</span>
     </p>
     <div class="link">
-      <el-button class="pull-right m-t-n-xs m-r-xs" type="text" @click="active()">证书激活</el-button>
-      <el-button class="pull-right m-t-n-xs" type="text" @click="handleGetSid()">获取SID</el-button>
+      <el-button class="pull-right m-t-n-xs m-r-xs" link @click="active()">证书激活</el-button>
+      <el-button class="pull-right m-t-n-xs" link @click="handleGetSid()">获取SID</el-button>
     </div>
     <LogActive v-if="activeObject.visible" :activeObject="activeObject" @getData="getData()"></LogActive>
     <el-dialog title="SID" v-model="dialogVisible" width="30%">

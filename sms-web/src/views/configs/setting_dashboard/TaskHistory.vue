@@ -1,6 +1,6 @@
 <template>
   <AdvanceTable height="230" :card-border="false" :border="false" :show-tools="false" :data="itemData.data.rows" :columns="historyColumns">
-    <template #status="status">
+    <template #status="{ val: status, record }">
       <status-icon :type="taskExeStatusFilter(status, 'color')">
         {{ taskExeStatusFilter(status) }}
       </status-icon>

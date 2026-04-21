@@ -28,23 +28,23 @@
       <template #title="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <status-icon :type="statusFilter('color', status)">
           {{ statusFilter('text', status) }}
         </status-icon>
       </template>
-      <template #sendGroups="sendGroups">
+      <template #sendGroups="{ val: sendGroups, record }">
         <el-tag style="margin-right: 10px" v-for="item in sendGroups.split(',')" :key="item" type="success">{{ sendGroupMap[item] }}</el-tag>
       </template>
-      <template #sendWays="sendWays">
+      <template #sendWays="{ val: sendWays, record }">
         <el-tag style="margin-right: 10px" v-for="item in sendWays.split(',')" :key="item" type="success">{{ sendWayMap[item] }}</el-tag>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate('edit', record)" :disabled="record.status === 'SEND'"> <el-icon><Edit /></el-icon> 编辑 </el-button>
+        <el-button link @click="handleCreate('edit', record)" :disabled="record.status === 'SEND'"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleSend(record.id)" :disabled="record.status === 'SEND'"> <el-icon><Promotion /></el-icon> 发布 </el-button>
+        <el-button link @click="handleSend(record.id)" :disabled="record.status === 'SEND'"> <el-icon><Promotion /></el-icon> 发布 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="remove(record.id)" :disabled="record.status === 'SEND'"> <el-icon><Delete /></el-icon> 删除 </el-button>
+        <el-button link @click="remove(record.id)" :disabled="record.status === 'SEND'"> <el-icon><Delete /></el-icon> 删除 </el-button>
       </template>
     </AdvanceTable>
     <Dialog v-if="addData.visible" :addData="addData" @getList="getList"></Dialog>

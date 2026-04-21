@@ -12,7 +12,7 @@
             <template #header>
               <div class="message-header">
                 <span>我的消息</span>
-                <el-button type="text">查看更多</el-button>
+                <el-button link>查看更多</el-button>
               </div>
             </template>
             <div v-for="item in messageList" :key="item.id" class="list-group-item">

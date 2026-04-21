@@ -23,21 +23,21 @@
       <template #account="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
-      <template #sex="val">
+      <template #sex="{ val, record }">
         <span>{{ sexFilter(val) }}</span>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(status, 'color')">
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate(record)">
+        <el-button link @click="handleCreate(record)">
           <el-icon><Edit /></el-icon> 编辑
         </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleDelete(record)">
+        <el-button link @click="handleDelete(record)">
           <el-icon><Delete /></el-icon> 删除
         </el-button>
         <div class="action-divider"></div>

@@ -6,7 +6,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 const httpType = 'https://'
-const proxyUrl = '23.33.3.22:60006/'
+const proxyUrl = '192.168.4.111:60006/'
 
 const publicPath = process.env.NODE_ENV === 'production' ? '/sms-web/' : '/'
 module.exports = {
@@ -21,6 +21,9 @@ module.exports = {
       'Access-Control-Allow-Origin': '*'
     },
     port: 8085,
+    client: {
+      overlay: { errors: true, warnings: false, runtimeErrors: false }
+    },
     proxy: {
       '/api/sms/messageService': {
         target: 'ws://' + proxyUrl,

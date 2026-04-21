@@ -19,11 +19,11 @@
         <el-button type="" @click="exportData"> <el-icon><Download /></el-icon> 导出 </el-button>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handle('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
+        <el-button link @click="handle('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
+        <el-button link @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="relationProject(record.id)"> <el-icon><Share /></el-icon> 关联{{ appStore.systemConfig.projectConfigLabel }} </el-button>
+        <el-button link @click="relationProject(record.id)"> <el-icon><Share /></el-icon> 关联{{ appStore.systemConfig.projectConfigLabel }} </el-button>
       </template>
     </AdvanceTable>
     <el-dialog :title="textMap[dialogStatus]" width="700px" :close-on-click-modal="false" v-if="addDialogVisible" v-model="addDialogVisible">

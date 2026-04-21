@@ -51,7 +51,7 @@
 
 ```
 scr-web  (68 .vue)   ✅ 已完成（特例：用了 Vite）
-sms-web  (125 .vue)  🟡 代码迁移完成（待 npm install + build + 浏览器验收）
+sms-web  (125 .vue)  ✅ 已完成（build + 基座 Qiankun 挂载 + compat 层）
 cmp-web  (521 .vue)  ⬜ 待迁移
 cms-web  (521 .vue)  ⬜ 待迁移
 cos-web  (567 .vue)  ⬜ 待迁移

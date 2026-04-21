@@ -6,13 +6,13 @@
         <el-button type="primary" @click="create">新增</el-button>
         <el-button type="default" @click="removeAll">批量删除</el-button>
       </template>
-      <template #status="val">{{ val ? '已开启' : '已关闭' }}</template>
+      <template #status="{ val, record }">{{ val ? '已开启' : '已关闭' }}</template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="update(record)">编辑 </el-button>
+        <el-button link @click="update(record)">编辑 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="remove(record.id)">删除 </el-button>
+        <el-button link @click="remove(record.id)">删除 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="editStatus(record.id, record.status)">{{ record.status ? '关闭' : '开启' }} </el-button>
+        <el-button link @click="editStatus(record.id, record.status)">{{ record.status ? '关闭' : '开启' }} </el-button>
         <div class="action-divider"></div>
         <el-dropdown @command="(cmd: string) => handleCommand(cmd, record.code)">
           <span class="el-dropdown-link">

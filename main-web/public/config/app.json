@@ -1,19 +1,9 @@
 {
-    "configs": [{
-            "name": "cmp-web"
-        },
+    "deployAddress": "//localhost:8091/",
+    "configs": [
         {
-            "name": "cos-web",
-            "activeRule": ["/cos", "/soa", "/screen", "/personal"]
-        },
-        {
-            "name": "cms-web"
-        },
-        {
-            "name": "sms-web"
-        },
-        {
-            "name": "cop-web"
+            "name": "sms-web",
+            "entry": "//localhost:8091"
         }
     ]
 }

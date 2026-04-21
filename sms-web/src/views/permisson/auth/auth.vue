@@ -63,11 +63,11 @@
               <el-table-column show-overflow-tooltip label="编码" prop="meta"> </el-table-column>
               <el-table-column show-overflow-tooltip label="操作" width="160px">
                 <template #default="scope">
-                  <el-button type="text" @click="handleCreate('update', scope.row.id, 'button')">
+                  <el-button link @click="handleCreate('update', scope.row.id, 'button')">
                     <el-icon><Edit /></el-icon> 编辑
                   </el-button>
                   <div class="action-divider"></div>
-                  <el-button type="text" @click="remove(scope.row.id, 1)">
+                  <el-button link @click="remove(scope.row.id, 1)">
                     <el-icon><Delete /></el-icon> 删除
                   </el-button>
                 </template>

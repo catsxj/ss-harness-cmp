@@ -24,7 +24,6 @@ declare module 'vue' {
     ARow: typeof import('ant-design-vue/es')['Row']
     ASubMenu: typeof import('ant-design-vue/es')['SubMenu']
     ASwitch: typeof import('ant-design-vue/es')['Switch']
-    ATextarea: typeof import('ant-design-vue/es')['Textarea']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
     Empty: typeof import('./src/components/empty/Empty.vue')['default']

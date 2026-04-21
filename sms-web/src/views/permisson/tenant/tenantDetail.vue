@@ -50,14 +50,14 @@
               </el-button>
               <ImportData url="/api/sms/v1/users/import" @get-data="getTenantUser" template-url="/sms/v1/users/import/template" :params="{ tenantId: detailData.id }"></ImportData>
             </template>
-            <template #status="status">
+            <template #status="{ val: status, record }">
               <!-- TODO: cmp-element status-icon -->
               <status-icon :type="generalStatusFilter(status, 'color')">
                 {{ generalStatusFilter(status, 'status') }}
               </status-icon>
             </template>
             <template #operate="{ val, record }">
-              <el-button type="text" @click="removeUser(record.id)">
+              <el-button link @click="removeUser(record.id)">
                 <el-icon><Delete /></el-icon>移除
               </el-button>
             </template>

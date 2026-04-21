@@ -52,7 +52,7 @@
           </div>
           <grid-layout
             v-if="layoutData && layoutData.length"
-            :layout="layoutData"
+            v-model:layout="layoutData"
             :col-num="12"
             :row-height="16"
             :is-draggable="isSetting"
@@ -128,7 +128,7 @@
                     :unit="item.config.unit"
                     :setting="topSetting"
                   ></bar-reverse-charts>
-                  <component v-else :is="getComponent(item.config)" :item-data="item" :is-setting="isSetting"></component>
+                  <component v-else-if="getComponent(item.config)" :is="getComponent(item.config)" :item-data="item" :is-setting="isSetting"></component>
                 </div>
               </div>
             </grid-item>
@@ -168,27 +168,32 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import VueGridLayout from 'vue-grid-layout'
+import { GridLayout, GridItem } from 'grid-layout-plus'
 import draggable from 'vuedraggable'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CircleCheck, Plus, Setting } from '@element-plus/icons-vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import CommonOperation from './CommonOperation.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AccessControl from './AccessControl.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DataCenterOverview from './DataCenterOverview.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import CountCard from './CountCard.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DataView from './DataView.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import ResUsed from './ResUsed.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AlarmCount from './AlarmCount.vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import TaskHistory from './TaskHistory.vue'
 import SelectVendor from './SelectVendor.vue'
+
+// 卡片类型 → 组件对象映射（Vue 3 script setup 下字符串无法 resolve）
+const cardComponents: Record<string, any> = {
+  CommonOperation,
+  AccessControl,
+  DataCenterOverview,
+  CountCard,
+  DataView,
+  ResUsed,
+  AlarmCount,
+  TaskHistory,
+  SelectVendor
+}
 import { getPanel, getPool, savePanel, getConfig, resetPanel } from 'services/system/portal'
 import request from 'utils/request'
 import { wrapperParams } from 'utils'
@@ -196,8 +201,6 @@ import { getCardData } from './utils'
 import { topSetting } from './data'
 import { useAppStore } from '@/stores'
 
-const GridLayout = VueGridLayout.GridLayout
-const GridItem = VueGridLayout.GridItem
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const colorMap = ['#1890FF', '#F84540', '#18BE6A', '#696BD8', '#FE9900', '#01b3eb']
@@ -386,8 +389,8 @@ async function handleCreate(x: number, y: number, data: PoolItem) {
 }
 
 function getComponent(config: { code: string; type: string }) {
-  const map: Record<string, string> = {}
-  return map[config.code] || config.type
+  // 优先按 code 查找自定义映射，否则按 type 查找组件；找不到返回占位
+  return cardComponents[config.code] || cardComponents[config.type] || null
 }
 
 // 保存配置
@@ -620,6 +623,19 @@ function getChartConfig(item: LayoutItem) {
 .grid-item {
   touch-action: none;
   box-sizing: border-box;
+}
+// 仪表盘 CSS Grid 容器（vue-grid-layout 替代方案）
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+.dashboard-cell {
+  background: #fff;
+  border: 1px solid #e4e7eb;
+  border-radius: 6px;
+  overflow: hidden;
 }
 .setting-main {
   padding: 0;

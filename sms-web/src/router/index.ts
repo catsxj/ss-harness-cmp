@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type Router } from 'vue-router'
 import constantRouter from './modules/constant'
 import systemMap from './modules/system'
+import { baseUrl } from '@/config'
 
 export const asyncRouterMap: Record<string, () => Promise<unknown>> = {
   Home: () => import('@/layouts/home.vue'),
@@ -8,11 +9,15 @@ export const asyncRouterMap: Record<string, () => Promise<unknown>> = {
   ...systemMap
 }
 
+// Qiankun 下使用 baseUrl (/sms-web) 作为 router base 匹配 activeRule
+// 独立运行时也保留 /sms-web 前缀以保持路径一致
+const routerBase = (window as any).__POWERED_BY_QIANKUN__ ? baseUrl : (process.env.VUE_APP_BASEURL || '/')
+
 const router: Router = build()
 
 function build(): Router {
   return createRouter({
-    history: createWebHistory(process.env.VUE_APP_BASEURL || '/'),
+    history: createWebHistory(routerBase),
     scrollBehavior: () => ({ top: 0 }),
     routes: constantRouter
   })

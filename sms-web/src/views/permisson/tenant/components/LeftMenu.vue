@@ -3,7 +3,7 @@
     <el-card class="service-menu">
       <template #header>
         <span>服务目录</span>
-        <el-button class="reset-btn" type="text" @click="handleNodeClick('')">全部</el-button>
+        <el-button class="reset-btn" link @click="handleNodeClick('')">全部</el-button>
       </template>
       <el-menu class="el-menu-vertical-demo" :default-active="nodeId" @select="handleNodeClick">
         <el-menu-item v-for="item in menuData" :key="item.code" :index="`${item.id}`">

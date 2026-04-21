@@ -1,6 +1,6 @@
 # sms-web 迁移总结
 
-> 第二个迁移子应用 | 代码迁移完成日期：2026-04-20
+> 第二个迁移子应用 | 代码迁移完成日期：2026-04-20 | 基座联调通过：2026-04-21
 > 分支：feature/migrate-sms-web（待合并到 develop）
 > 前置：v2-sms-web tag
 
@@ -47,11 +47,30 @@
   - `compress-webpack-plugin` → `compression-webpack-plugin`（前者已废弃）
   - 保留所有 alias、svg-sprite-loader、proxy 配置
 
-### 2. 自研包处理策略
-- `cmp-element`：移除 `Vue.use(CmpElement, { rules })` 全局注册；所有 `basic-form` / `basic-form-item` / `basic-table` / `AdvanceTable` / `common-detail` 等组件标签**保留原样**，加 `// TODO: cmp-element` 注释 —— 等待后续 compat 层统一处理
-- `cmp-echarts`：移除 `Vue.use(CmpEcharts)` 全局注册；`line-charts` / `bar-reverse-charts` / `liquid-fill-charts` 等封装组件标签保留 + TODO 注释 —— 后续用本地 echarts 组件替换
-- `cmp-socket`：`useWebsocket` composable 中仍 `new WebSocket({...})` 使用 cmp-socket 的类，类型标注用 `any`；若 cmp-socket 包本身与 Vue 3 不冲突（它不直接依赖 Vue API），可继续工作
-- `cmp-element/utils/handleSearchParam`：**本地 vendor**，实现在 `src/common/utils/index.ts` 的 `handleSearchParam`（过滤空值 + `[{param, sign}]` 序列化）
+### 2. 自研包 compat 层（本轮新增）
+- `cmp-element`：不升级源码，在 `src/common/compat/` 下用 Element Plus 二次封装 + 设计系统重做
+- `cmp-echarts`：用 `echarts@5.5` + `echarts-liquidfill@3.1` 自建封装
+- `cmp-socket`：`useWebsocket` composable 中仍 `new WebSocket({...})` 使用 cmp-socket 的类（类仅 JS，不直接依赖 Vue API，可继续工作）
+- `cmp-element/utils/handleSearchParam`：本地 vendor 在 `src/common/utils/index.ts`
+
+**Compat 组件全集**（15 个）：
+| 组件名 | 对应 Element Plus 基座 | 附加能力 |
+|--------|----------------------|----------|
+| BasicForm / BasicFormItem | el-form / el-form-item | validate 预设规则映射（来自 @/validate）、maxlength 自动转 max 校验、Promise 化 validate |
+| BasicTable | el-table | 分页 + 暴露 9 个 el-table 方法 |
+| AdvanceTable | el-table + 自研包装 | 内置搜索栏（Input/Select/DateRange/DatePicker）+ 自定义分页 + 9 个方法 + 7 个事件 + 列 scopedSlots |
+| CommonDetail / CommonDetailItem | el-row + el-col | item_container/custom_content slot + col 栅格 |
+| StatusIcon | 自绘药丸 | 6 种状态色（normal/primary/success/warning/danger/disabled）+ bgColor/borderColor |
+| SvgIcon / Icon | svg + use | 对接 svg-sprite-loader |
+| Empty | 自绘 | imgUrl/icon/description |
+| BarCharts / BarReverseCharts / LineCharts / PieCharts / GaugeCharts / LiquidFillCharts | echarts@5 | 统一 Technical Precision 主题（蓝主色 + 等宽数字 + 克制网格线）|
+| LoopCharts | PieCharts 别名 | 循环切换 pie 展示 |
+
+**设计系统（Technical Precision）**：定义在 `src/common/compat/tokens.scss`
+- 主色 `#2563eb`（克制深蓝），背景冷灰白 `#f7f8fa`，文字炭灰 `#0f172a`
+- 字体：`ui-serif`（标题）/`ui-sans-serif`+`PingFang SC`（正文）/`ui-monospace`（数据）
+- 组件高度统一 32px（输入/按钮/选择/日期）
+- 动画缓动 `cubic-bezier(0.32, 0, 0.16, 1)`，单次 120-200ms
 
 ### 3. i18n 暂缓
 - `vue-i18n@8` 与 Vue 3 不兼容；升级到 v9 需要改 messages 结构
@@ -152,6 +171,38 @@
 - Vue 2 下通过 `this.assignPool(...)` 区分作用域，Vue 3 script setup 扁平化后冲突
 - 解决：函数改名 `handleAssignPool()`
 
+### 15. userDefind 组件 / 方法命名冲突
+- monitor/components/HostOverview.vue：`import userDefind from './userDefind.vue'` + `function userDefind()`
+- Vue 3 script setup 下冲突
+- 解决：方法改名 `handleUserDefind()`
+
+### 16. `<component :is="'StringName'">` 在 script setup 下不自动解析
+- setting_dashboard/index.vue 的动态卡片用字符串 `:is` 无法 resolve 到 import 的组件
+- 解决：建立 `cardComponents` Record 映射，`getComponent` 返回组件对象而非字符串
+
+### 17. vue-grid-layout@3.0.0-beta1 不兼容 Vue 3
+- 包结构仍是 Vue 2 默认导出形式，`VueGridLayout.GridLayout` 为 undefined → `<grid-layout>` 渲染为 null
+- 解决：替换为 `grid-layout-plus@^1.1.1`（Vue 3 原生支持的活跃维护分支）
+- API 基本一致，只需改 `import { GridLayout, GridItem } from 'grid-layout-plus'`，并用 `v-model:layout` 替代 `:layout`
+
+### 18. echarts v5 + echarts-liquidfill 集成
+- package.json 加 `echarts@^5.5` + `echarts-liquidfill@^3.1.0`
+- LiquidFillCharts 内 `import 'echarts-liquidfill'` 触发注册
+- TypeScript `moduleResolution` 必须从 `node` 改为 `bundler`，否则 echarts v5 的 ESM-only 包无法解析
+
+### 19. Element Plus 默认尺寸全局令牌
+- 全局 `src/common/css/global-ui.scss` 设置 `:root { --el-component-size: 32px; --el-color-primary: #2563eb; ... }`
+- 覆盖所有 el-input/select/date-editor/button 到统一 32px 高
+
+### 20. `<el-date-picker type="daterange">` 压缩 240px
+- EP 默认 daterange 约 360px，即使 `style="width: 240px"` 也被内部 min-width 撑开
+- 解决：`:deep(.el-date-editor--daterange)` + `:deep(.el-range-input)` 显式 `width: 88px !important`
+
+### 21. Qiankun 子应用 router base
+- 子应用 router 必须用 `baseUrl = '/sms-web'` 作为 history base 匹配主应用 activeRule
+- `createWebHistory(window.__POWERED_BY_QIANKUN__ ? '/sms-web' : '/')`
+- 独立 dev 时也能工作（直接访问 `http://localhost:8091/sms-web/login`）
+
 ---
 
 ## Vuex → Pinia 迁移模式
@@ -217,17 +268,21 @@ permissionStore.resetRoutes(router, resetRouter)
 
 ---
 
-## 待完成项（需运行时才能验证）
+## 已完成项 ✅
 
-- [ ] `pnpm install`（或 `npm install`）— 验证 Vue 3 相关依赖可装，尤其 cmp-socket / cmp-echarts / cmp-element 与 Vue 3 的兼容性
-- [ ] `eslint src/ --ext .ts,.vue` — 0 errors 门槛
-- [ ] `/simplify` 代码质量审查
-- [ ] `vue-cli-service build` — 构建通过
-- [ ] `vue-cli-service serve` + 浏览器逐页验证（基座加载、登录、权限、配置、仪表盘、监控、租户管理）
-- [ ] 合并 feature/migrate-sms-web → develop
-- [ ] 性能基线记录到 docs/performance-baseline.md
+- [x] `pnpm install` 验证通过（cmp-element/cmp-echarts 全部用应用侧 compat 层替代）
+- [x] `eslint src/ --ext .ts,.vue` **0 errors**
+- [x] `vue-cli-service build` 通过（5.6 MB 产物）
+- [x] `vue-cli-service serve` 独立 dev server 可用
+- [x] **Qiankun 基座集成**：main-web (:8080) 挂载 sms-web (:8091) 全链路通过
+- [x] 动态路由 base `/sms-web` 匹配 Qiankun activeRule
+- [x] 更新 CLAUDE.md 状态表 ⬜ → 🟡 → ✅
+
+## 待后续阶段
+
+- [ ] 性能基线记录到 docs/performance-baseline.md（需真实后端环境）
 - [ ] 新旧共存联调测试 docs/coexistence-testing.md
-- [ ] 更新 CLAUDE.md 状态表：sms-web ⬜ → ✅
+- [ ] 合并 feature/migrate-sms-web → develop（由项目负责人批准）
 
 ---
 

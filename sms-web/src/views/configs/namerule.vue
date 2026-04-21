@@ -21,9 +21,9 @@
         {{ record.suffixType === 'Number' ? record.currentNum : '无' }}
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
+        <el-button link @click="handleCreate('edit', record)"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
+        <el-button link @click="remove(record.id)"> <el-icon><Delete /></el-icon> 删除 </el-button>
       </template>
     </AdvanceTable>
     <el-dialog :title="textMap[dialogStatus]" width="1000px" :close-on-click-modal="false" v-if="addDialogVisible" v-model="addDialogVisible">

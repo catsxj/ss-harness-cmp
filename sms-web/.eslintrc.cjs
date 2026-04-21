@@ -25,6 +25,8 @@ module.exports = {
     'vue/attributes-order': 'off',
     'vue/require-default-prop': 'off',
     'vue/no-mutating-props': 'warn',
+    'vue/no-unused-vars': 'warn',
+    'vue/no-unused-components': 'warn',
     'vue/html-self-closing': 'off',
     'vue/max-attributes-per-line': 'off',
     'vue/singleline-html-element-content-newline': 'off',

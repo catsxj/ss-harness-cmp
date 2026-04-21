@@ -14,7 +14,7 @@
           </el-input>
         </basic-form-item>
       </el-form>
-      <el-button class="switch-button" type="text" @click="switchUser()">
+      <el-button class="switch-button" link @click="switchUser()">
         <el-icon><ArrowLeft /></el-icon>
         切换账户
       </el-button>

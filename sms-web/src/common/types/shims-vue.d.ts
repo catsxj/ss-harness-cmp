@@ -1,10 +1,5 @@
-import Vue from 'vue'
-
 declare module '*.vue' {
-  export default Vue
-}
-declare module 'vue/types/vue' {
-  interface Vue {
-    $tools: any
-  }
+  import type { DefineComponent } from 'vue'
+  const component: DefineComponent<{}, {}, any>
+  export default component
 }

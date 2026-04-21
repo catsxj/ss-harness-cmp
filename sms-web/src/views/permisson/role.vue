@@ -7,7 +7,7 @@
           <el-icon><Plus /></el-icon>新增
         </el-button>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(status, 'color')">
           {{ generalStatusFilter(status, 'status') }}
@@ -17,11 +17,11 @@
         <el-switch v-model="record.diskDelShow" @change="handleDiskDelShow(record)" active-text="展示" inactive-text="隐藏"></el-switch>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate(record)">
+        <el-button link @click="handleCreate(record)">
           <el-icon><Edit /></el-icon> 编辑
         </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleDelete(record.id)">
+        <el-button link @click="handleDelete(record.id)">
           <el-icon><Delete /></el-icon> 删除
         </el-button>
         <div class="action-divider"></div>

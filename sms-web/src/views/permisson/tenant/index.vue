@@ -23,28 +23,28 @@
       <template #account="{ val, record }">
         <span class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(status, 'color')">
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
-      <template #openFlow="val">
+      <template #openFlow="{ val, record }">
         {{ booleanFilter(val) }}
       </template>
-      <template #isInstallSoftware="val">
+      <template #isInstallSoftware="{ val, record }">
         {{ booleanFilter(val) }}
       </template>
-      <template #paymentMode="val">
+      <template #paymentMode="{ val, record }">
         <span v-if="Array.isArray(val)">{{ val.map((item: string) => paymentModeFilter(item)).join('，') }}</span>
         <span v-else>--</span>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate('edit', record)">
+        <el-button link @click="handleCreate('edit', record)">
           <el-icon><Edit /></el-icon>编辑
         </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleRemove(record.id)" :disabled="record.status !== 'LOGOUT'">
+        <el-button link @click="handleRemove(record.id)" :disabled="record.status !== 'LOGOUT'">
           <el-icon><Delete /></el-icon>删除
         </el-button>
         <div class="action-divider"></div>

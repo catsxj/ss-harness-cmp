@@ -13,13 +13,13 @@
     <el-tabs value="second">
       <el-tab-pane label="成员列表" name="second">
         <AdvanceTable :card-border="false" class="table" title="" :data="list" :search-configs="searchConfigs" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading">
-          <template #status="status">
+          <template #status="{ val: status, record }">
             <status-icon :type="generalStatusFilter(status, 'color')">
               {{ generalStatusFilter(status, 'status') }}
             </status-icon>
           </template>
-          <template #sex="val"> {{ sexFilter(val) }} </template>
-          <template #projectManager="val">
+          <template #sex="{ val, record }"> {{ sexFilter(val) }} </template>
+          <template #projectManager="{ val, record }">
             {{ projectManager(val) }}
           </template>
         </AdvanceTable>

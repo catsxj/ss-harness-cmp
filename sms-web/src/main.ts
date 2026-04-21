@@ -11,6 +11,7 @@ import setupPermissionGuard from './permission'
 import { registerErrorHandlers } from './errorLog'
 import { registerDirectives } from './common/directive'
 import { registerGlobalComponents } from './common/components'
+import { registerCompatComponents } from './common/compat'
 import { useAppStore, usePermissionStore } from './stores'
 import actions from './shared/action'
 import './icons'
@@ -34,6 +35,7 @@ function render(props: Record<string, any> = {}): void {
   })
   registerDirectives(instance)
   registerGlobalComponents(instance)
+  registerCompatComponents(instance)
   registerErrorHandlers(instance)
   setupPermissionGuard(router)
 

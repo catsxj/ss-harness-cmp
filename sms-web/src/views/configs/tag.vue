@@ -7,15 +7,15 @@
           <el-icon><Plus /></el-icon> 新增
         </el-button>
       </template>
-      <template #values="values">
+      <template #values="{ val: values, record }">
         <el-tag type="success" :key="index" v-for="(tag, index) in values" :disable-transitions="false">
           {{ tag }}
         </el-tag>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" @click="handleCreate('edit', record)" :disabled="record.personal"> <el-icon><Edit /></el-icon> 编辑 </el-button>
+        <el-button link @click="handleCreate('edit', record)" :disabled="record.personal"> <el-icon><Edit /></el-icon> 编辑 </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="remove(record.id)" :disabled="record.personal"> <el-icon><Delete /></el-icon> 删除 </el-button>
+        <el-button link @click="remove(record.id)" :disabled="record.personal"> <el-icon><Delete /></el-icon> 删除 </el-button>
       </template>
     </AdvanceTable>
     <el-dialog :title="textMap[dialogStatus]" width="700px" :close-on-click-modal="false" v-if="addDialogVisible" v-model="addDialogVisible">

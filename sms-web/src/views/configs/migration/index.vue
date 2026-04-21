@@ -29,7 +29,7 @@
       <template #id="{ val, record }">
         <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
         <status-icon :type="getStatus('color', status)">
           {{ getStatus('text', status) }}
         </status-icon>
@@ -38,7 +38,7 @@
         <el-progress :percentage="getProgress(record)"></el-progress>
       </template>
       <template #operate="{ val, record }">
-        <el-button type="text" :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
+        <el-button link :disabled="record.status !== 'FAILED'" @click="refreshItem(detail.id, record.id)">重试</el-button>
       </template>
     </AdvanceTable>
     <Detail v-if="detail.visible" :detail="detail" @goBack="detail.visible = false"></Detail>
