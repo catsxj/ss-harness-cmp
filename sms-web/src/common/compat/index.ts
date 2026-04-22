@@ -3,6 +3,7 @@ import BasicForm from './BasicForm.vue'
 import BasicFormItem from './BasicFormItem.vue'
 import BasicTable from './BasicTable.vue'
 import AdvanceTable from './AdvanceTable.vue'
+import TableSearch from './TableSearch.vue'
 import CommonDetail from './CommonDetail.vue'
 import CommonDetailItem from './CommonDetailItem.vue'
 import StatusIcon from './StatusIcon.vue'
@@ -22,6 +23,7 @@ const COMPONENTS = {
   BasicTable,
   AdvanceTable,
   SmartTable: AdvanceTable,
+  TableSearch,
   CommonDetail,
   CommonDetailItem,
   CommonDetailRight: CommonDetail,
