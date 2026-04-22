@@ -1,0 +1,86 @@
+export const versionMap = {
+  'rds.mysql': 'MYSQL-VERSION',
+  'rds.sqlserver': 'SQLSERVER-VERSION',
+  'rds.postgresql': 'POSTGRESQL-VERSION',
+  'cms.kafka': 'KAFKA-VERSION'
+}
+
+export const configsMap = {
+  'rds.mysql': {
+    mysql_username: 'root',
+    mysql_userhome: '/root',
+    mysql_password: 'meYFYTi9nzUAvo8bRrh3RA==',
+    mysql_root_password_update: 'true',
+    mysql_slow_query_log_enabled: true,
+    mysql_port: 3306,
+    mysql_bind_address: '0.0.0.0',
+    mysql_datadir: '/var/lib/mysql',
+    mysql_slow_query_time: 2,
+    mysql_key_buffer_size: '256M',
+    mysql_max_allowed_packet: '64M',
+    mysql_table_open_cache: 256,
+    mysql_sort_buffer_size: '1M',
+    mysql_read_buffer_size: '1M',
+    mysql_read_rnd_buffer_size: '4M',
+    mysql_myisam_sort_buffer_size: '64M',
+    mysql_thread_cache_size: 8,
+    mysql_query_cache_type: 0,
+    mysql_query_cache_size: '16M',
+    mysql_query_cache_limit: '1M',
+    mysql_max_connections: 1024,
+    mysql_tmp_table_size: '16M',
+    mysql_max_heap_table_size: '16M',
+    mysql_group_concat_max_len: 1024,
+    mysql_join_buffer_size: 262144,
+    mysql_lower_case_table_names: 0,
+    mysql_wait_timeout: 28800,
+    mysql_event_scheduler_state: 'OFF',
+    mysql_innodb_file_per_table: 1,
+    mysql_innodb_buffer_pool_size: '256M',
+    mysql_innodb_log_file_size: '64M',
+    mysql_innodb_log_buffer_size: '8M',
+    mysql_innodb_flush_log_at_trx_commit: 1,
+    mysql_innodb_lock_wait_timeout: 50,
+    mysql_innodb_large_prefix: 1,
+    mysql_innodb_file_format: 'barracuda',
+    mysql_mysqldump_max_allowed_packet: '64M',
+    mysql_max_binlog_size: '100M',
+    mysql_binlog_format: 'ROW',
+    mysql_expire_logs_days: 10
+  },
+  'rds.sqlserver': {
+    // mssql_installation_source: 'https://go.microsoft.com/fwlink/?linkid=853016',
+    mssql_installation_path: 'C:\\\\SQLInstall',
+    mssql_temp_download_path: 'C:\\\\tmp',
+    mssql_instance_name: 'Test',
+    mssql_drive: 'C',
+    mssql_userdbvol_name: 'Userdbvol01',
+    mssql_port: 1433,
+    mssql_max_server_memory: 1024,
+    mssql_os_memory_reservation: 512,
+    mssql_suppress_reboot: 'false',
+    // mssql_sqlsvc_account: 'sql_svc',
+    // mssql_sqlsvc_account_pass: 'MyPlainTextPassWord01',
+    // mssql_agentsvc_account: 'sql_agt',
+    // mssql_agentsvc_account_pass: 'MyPlainTextPassWord01',
+    mssql_sa_pass: 'yq6CAP+QAMgxN+uYFKR8pw==',
+    mssql_installshared_path: 'C:\\\\Program Files\\\\Microsoft SQL Server',
+    mssql_installsharedwow_path: 'C:\\\\Program Files (x86)\\\\Microsoft SQL Server',
+    mssql_features: 'SQLENGINE,FULLTEXT,CONN',
+    mssql_browsersvc_mode: 'Automatic'
+  },
+  'rds.postgresql': {
+    postgresql_encoding: 'UTF-8',
+    postgresql_locale: 'en_US.UTF-8',
+    postgresql_ctype: 'en_US.UTF-8',
+    postgresql_admin_user: 'postgres',
+    postgresql_port: 5432,
+    postgresql_cluster_name: 'main'
+  },
+  'cms.kafka': {
+    data_dir: '/var/kafka',
+    log_dir: '/var/log/kafka',
+    port: 9092
+  }
+
+}

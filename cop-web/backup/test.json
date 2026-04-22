@@ -1,0 +1,25 @@
+{
+    "deploy": {
+        "default": "cluster",
+        "cluster": {
+            "icon": "iscsi-cluster",
+            "topo": [{
+                    "role": "iscsi_servers",
+                    "name": "Server(1)",
+                    "code": "task.software.iscsi",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "Server主机数量必须为1"
+                },
+                {
+                    "role": "iscsi_client",
+                    "name": "Client(2)",
+                    "code": "task.software.iscsi",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "Client主机数量必须为2"
+                }
+            ]
+        }
+    }
+}

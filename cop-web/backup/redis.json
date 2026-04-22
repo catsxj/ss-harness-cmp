@@ -1,0 +1,78 @@
+{
+    "limits": {
+        "standalone": {
+            "limits": "^[1-9][0-9]*$$",
+            "limits_message": "主机数量必须大于等于1"
+        }
+    },
+    "deploy": {
+        "standalone": {
+            "icon": "redis",
+            "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+            "limits": "^[1-9][0-9]*$",
+            "limits_message": "主机数量必须大于等于1"
+        },
+        "cluster": {
+            "icon": "redis-cluster",
+            "omts": [{
+                    "role": "redis_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主节点主机数量必须为1"
+                },
+                {
+                    "role": "redis_slave",
+                    "name": "从节点(2)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "从节点主机数量必须为2"
+                }
+            ],
+            "omtsts": [{
+                    "role": "redis_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主节点主机数量必须为1"
+                },
+                {
+                    "role": "redis_slave",
+                    "name": "从节点(2)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "从节点主机数量必须为2"
+                },
+                {
+                    "role": "redis_sentinel",
+                    "name": "哨兵节点(3)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^3$",
+                    "limits_message": "哨兵节点主机数量必须为3"
+                }
+            ],
+            "tmts": [{
+                    "role": "redis_master",
+                    "name": "主节点(3)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^3$",
+                    "limits_message": "主机连接数量必须为3"
+                },
+                {
+                    "role": "redis_slave",
+                    "name": "从节点(3)",
+                    "code": "task.software.redis",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^3$",
+                    "limits_message": "从节点主机连接数量必须为3"
+                }
+            ]
+        }
+    }
+}

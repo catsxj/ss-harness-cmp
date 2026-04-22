@@ -1,0 +1,37 @@
+{
+    "deploy": {
+        "standalone": {
+            "icon": "mongodb",
+            "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+            "limits": "1"
+        },
+        "cluster": {
+            "icon": "mongodb-cluster",
+            "topo": [{
+                    "role": "mongo_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.mongodb",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主节点主机数量必须为1"
+                },
+                {
+                    "role": "mongo_replicas",
+                    "name": "从节点(2)",
+                    "code": "task.software.mongodb",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "主机数量必须为2"
+                },
+                {
+                    "role": "mongo_arbiter",
+                    "name": "仲裁节点(1)",
+                    "code": "task.software.mongodb",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "仲裁节点主机数量必须为1"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,91 @@
+{
+    "limits": {
+        "cluster": {
+            "limits": "^[357]$",
+            "limits_message": "主机数量必须为3、5或者7"
+        },
+        "standalone": {
+            "limits": "^[1-9][0-9]*$$",
+            "limits_message": "主机数量必须大于等于1"
+        }
+    },
+    "deploy": {
+        "standalone": {
+            "icon": "mysql",
+            "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+            "limits": "^[1-9][0-9]*$",
+            "limits_message": "主机数量必须大于等于1"
+        },
+        "cluster": {
+            "icon": "mysql-cluster",
+            "msv": [{
+                    "role": "mysql_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主节点主机数量必须为1"
+                },
+                {
+                    "role": "mysql_slave",
+                    "name": "从节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "从节点主机数量必须为1"
+                }
+            ],
+            "msb": [{
+                    "role": "mysql_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主节点主机数量必须为1"
+                },
+                {
+                    "role": "mysql_slave",
+                    "name": "从节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "从节点主机数量必须为1"
+                }
+            ],
+            "mha": [{
+                    "role": "mysql_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主机连接数量必须为1"
+                },
+                {
+                    "role": "mysql_slave",
+                    "name": "从节点(2)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "从节点主机连接数量必须为2"
+                }
+            ],
+            "mgr.single": [{
+                    "role": "mysql_master",
+                    "name": "主节点(1)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^1$",
+                    "limits_message": "主机连接数量必须为1"
+                },
+                {
+                    "role": "mysql_slave",
+                    "name": "从节点(2)",
+                    "code": "task.software.mysql",
+                    "depend": "^task[.]resource[.]cvm[.][a-z]{1,20}$",
+                    "limits": "^2$",
+                    "limits_message": "从节点主机连接数量必须为2"
+                }
+            ]
+        }
+    }
+}
