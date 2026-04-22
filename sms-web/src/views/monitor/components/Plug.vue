@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-row type="flex" :gutter="20" class="component-container">
+    <el-row v-show="!detailVisible" type="flex" :gutter="20" class="component-container">
       <el-col v-for="(item, key) in dataList" :key="key" :span="24" :class="colorMap[item.status]">
         <div class="cell">
           <div class="cell-title">{{ item.name }}</div>

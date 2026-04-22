@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- TODO: cmp-element AdvanceTable -->
-    <AdvanceTable title="租户列表" :search-configs="searchConfigs" :data="listData" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading" @selection-change="selectionChange">
+    <AdvanceTable v-show="!detailComponent.visible" title="租户列表" :search-configs="searchConfigs" :data="listData" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading" @selection-change="selectionChange">
       <template #action>
         <el-button type="primary" @click="handleCreate()">
           <el-icon><Plus /></el-icon>新增

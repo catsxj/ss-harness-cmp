@@ -1,7 +1,7 @@
 <template>
   <el-card class="wrapper">
     <!-- TODO: cmp-element - 自研包在 compat 层处理：AdvanceTable / basic-form / basic-form-item / basic-table / common-detail / common-detail-item -->
-    <AdvanceTable title="环境列表" :search-configs="searchConfigs" :data="tableData" :params="params" :columns="columns" :get-list="getData" :total="total" :loading="loading">
+    <AdvanceTable v-show="!detailFlag" title="环境列表" :search-configs="searchConfigs" :data="tableData" :params="params" :columns="columns" :get-list="getData" :total="total" :loading="loading">
       <template #action>
         <el-button type="primary" @click="handleCreate()">
           <el-icon><Plus /></el-icon> 新增

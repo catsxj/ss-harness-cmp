@@ -54,11 +54,12 @@ git checkout main -- sms-web/
 
 ---
 
-## sms-web 回滚确认（2026-04-21）
+## sms-web 回滚确认（更新：2026-04-22，合并入 develop @ b057cff）
 
 - [x] **Vue 2 tag 已打**：`v2-sms-web`
 - [x] **旧版可从 tag 复建**：`git checkout v2-sms-web -- sms-web/` 可恢复到 5.6.0 版本
-- [x] **feature 分支提交可追溯**：5 个 commit 在 `feature/migrate-sms-web` 上（8e33414 / 81a7a1a / 06155c3 / 450dc9e / a47f42b）
+- [x] **feature 分支提交可追溯**：7 个 commit 在 `feature/migrate-sms-web` 上（8e33414 / 81a7a1a / 06155c3 / 450dc9e / a47f42b / d55055a / 17d9833）
+- [x] **已合入 develop**：merge commit `b057cff`（--no-ff），可整体 revert
 - [x] **基座 app.json 切换可用**：main-web `public/config/app.json` 的 sms-web 条目支持覆盖 `entry`
 - [ ] **构建产物双版本部署**（需运维配合）
 - [ ] **测试环境回滚演练**（上线前）
@@ -66,14 +67,18 @@ git checkout main -- sms-web/
 ### 快速回滚命令
 
 ```bash
-# 方案 1: feature 分支弃用，回到 main 基线
+# 方案 1: 整体 revert merge commit（develop 已合并情况下首选）
+git revert -m 1 b057cff
+git push origin develop
+
+# 方案 2: feature 分支弃用，回到 main 基线（破坏性，仅限未发布场景）
 git checkout main -- sms-web/
 git commit -m "revert(sms-web): rollback to Vue 2 baseline"
 
-# 方案 2: develop 上已合并的情况下反向 revert
-git revert a47f42b 450dc9e 06155c3 81a7a1a 8e33414 --no-edit
+# 方案 3: 单独 revert feature 分支每个 commit（粒度细，顺序从新到旧）
+git revert 17d9833 d55055a a47f42b 450dc9e 06155c3 81a7a1a 8e33414 --no-edit
 
-# 方案 3: Qiankun 运行时切换（需旧版部署就绪）
+# 方案 4: Qiankun 运行时切换（需旧版已部署到备用端口）
 # 编辑 main-web/public/config/app.json：
 # { "name": "sms-web", "entry": "//{host}:旧版端口/sms-web/" }
 # 无需重启 main-web，Qiankun 会在子应用下次 mount 时拉新 entry

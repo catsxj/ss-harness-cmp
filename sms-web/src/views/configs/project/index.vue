@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- TODO: cmp-element - 自研包在 compat 层处理：AdvanceTable / basic-form / basic-form-item -->
-    <el-tabs v-model="activeName" @tab-click="tabClick">
+    <el-tabs v-show="!detailData.visible" v-model="activeName" @tab-click="tabClick">
       <el-tab-pane :label="'管理' + appStore.systemConfig.projectConfigLabel" name="manage">
         <AdvanceTable
           v-if="activeName === 'manage'"
