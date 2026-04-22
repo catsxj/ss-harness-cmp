@@ -173,3 +173,22 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 - cmp-element `validate` 允许三种形态：String（预设键）、Object（FormItemRule）、Array
 - compat BasicFormItem 全覆盖；maxlength 自动转换 `{ max: N }` 校验
 - `:required` 从 validate/rules 推断确保必填 * 号显示
+
+---
+
+## sms-web 联调与回滚验收补记（2026-04-22）
+
+## 37. 基座 app.json 启动时只读一次，切 entry 必须 F5
+- `main-web/src/core/config.ts` 的 `getMicroApp()` 在 main-web 启动时 `axios.get('/config/app.json')` 一次，结果传给 `registerMicroApps`
+- 改 `public/config/app.json` 的 entry（如回滚切旧版端口）后**必须在浏览器 F5 强刷**才能生效
+- 项目 `docs/rollback-plan.md` 里"无需重启"的说法不准确 —— 需要 F5 触发 main-web 重新拉 app.json
+- cmp-web 迁完跑回滚演练时记得先 F5
+
+## 38. packData 类函数对空数据 / 空父节点访问 undefined.id
+- `sms-web/src/views/monitor/components/next.vue` 的 `packData` 计算父子节点居中连接辅助边时
+- 当 API 成功响应但 data 为空数组（如 dev 环境后端 `192.168.4.111:60006` 不通），`oldChildNodes` / `newChildNodes` 为空
+- `Math.floor(0/2) - 1 = -1` → `arr[-1]` 返回 undefined → 访问 `.id` 抛 TypeError
+- 修复思路：连接边生成块外加 `if (oLen > 0 && nLen > 0)` 守卫
+- **Vue 2 原版同样 latent bug**，生产环境 API 始终有数据就不触发
+- cmp-web 迁移时主动排查：任何"API 成功 + data 可能为空"场景都要在遍历/索引前检查长度
+- （sms-web 本轮暂未修改，留作已知问题）
