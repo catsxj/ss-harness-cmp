@@ -11,15 +11,26 @@ import setupPermissionGuard from './permission'
 import { registerErrorHandlers } from './errorLog'
 import { registerDirectives } from './common/directive'
 import { registerGlobalComponents } from './common/components'
-import { registerCompatComponents } from './common/compat'
+import { registerCmpElement } from '@ss-cmp/cmp-element'
+import { registerCmpEcharts } from '@ss-cmp/cmp-echarts'
+import { configureAuth, configureRequest } from '@ss-cmp/utils'
+import '@ss-cmp/design-tokens/src/element-plus.scss'
+import { tokenKey } from '@/config'
 import { useAppStore, usePermissionStore } from './stores'
 import actions from './shared/action'
 import './icons'
 import '@/common/css/element-variables.scss'
 
-// TODO: cmp-element / cmp-echarts / cmp-socket - 自研包不兼容 Vue 3
-// 原 Vue.use(CmpElement, { rules }) 已移除；组件层在 Stage 2 直接使用 Element Plus
-// rules 由 @/validate/index.ts 直接 import 使用
+configureAuth({ tokenKey })
+configureRequest({
+  onUnauthorized: () => {
+    Promise.all([import('@/stores/permission'), import('@/router')]).then(
+      ([{ usePermissionStore: usePermissionStoreInner }, { default: routerInner, resetRouter }]) => {
+        usePermissionStoreInner().resetRoutes(routerInner, resetRouter)
+      }
+    )
+  }
+})
 
 let instance: VueApp | null = null
 const pinia = createPinia()
@@ -35,7 +46,8 @@ function render(props: Record<string, any> = {}): void {
   })
   registerDirectives(instance)
   registerGlobalComponents(instance)
-  registerCompatComponents(instance)
+  registerCmpElement(instance)
+  registerCmpEcharts(instance)
   registerErrorHandlers(instance)
   setupPermissionGuard(router)
 

@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FormItemRule } from 'element-plus'
-import rules from '@/validate'
+import validationPresets from './validate'
 
 // cmp-element BasicFormItem 参数
 // - label / prop / labelWidth / size
@@ -62,7 +62,7 @@ const mergedRules = computed<FormItemRule[] | undefined>(() => {
       if (v === 'required') {
         list.push({ required: true, message: props.requiredMessage || '请输入内容', trigger: 'blur' })
       } else {
-        const builtin = (rules as Record<string, FormItemRule>)[v]
+        const builtin = (validationPresets as Record<string, FormItemRule>)[v]
         if (builtin) list.push(builtin)
       }
     } else if (Array.isArray(v)) {
@@ -82,7 +82,7 @@ const mergedRules = computed<FormItemRule[] | undefined>(() => {
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 // 克制 label 样式
 .bfi :deep(.el-form-item__label) {

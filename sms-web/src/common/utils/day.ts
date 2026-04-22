@@ -1,6 +1,3 @@
-import dayjs from 'dayjs'
-import 'dayjs/locale/zh-cn'
-
-dayjs.locale('zh-cn')
-
+// Stub: re-export from @ss-cmp/utils.
+import { dayjs } from '@ss-cmp/utils'
 export default dayjs

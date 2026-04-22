@@ -467,7 +467,7 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 .atbl {
   // 统一 Element Plus 令牌到 Technical Precision 体系

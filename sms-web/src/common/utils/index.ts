@@ -1,6 +1,5 @@
 import Clipboard from 'clipboard'
-import { getToken } from './auth'
-import dayjs from './day'
+import { getToken, dayjs } from '@ss-cmp/utils'
 
 export function wrapperParams<T>(data: T): T {
   return data

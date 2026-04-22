@@ -28,6 +28,14 @@
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.d.ts",
+    "../packages/*/src/**/*.ts",
+    "../packages/*/src/**/*.vue",
+    "../packages/*/src/**/*.d.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

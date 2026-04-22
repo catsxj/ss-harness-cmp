@@ -24,7 +24,7 @@ withDefaults(
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 .empty {
   display: flex;

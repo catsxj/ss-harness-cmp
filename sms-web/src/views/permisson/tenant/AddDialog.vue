@@ -169,7 +169,7 @@ function clear() {
 </script>
 
 <style scoped lang="scss">
-@import '@/common/compat/tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 // el-dialog 容器外观（通过 :deep 穿透）
 .wizard-dialog :deep(.el-dialog) {

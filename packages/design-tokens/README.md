@@ -11,7 +11,7 @@
 .foo { color: $accent; }
 ```
 
-## 覆盖清单（Phase 2 后填）
+## 覆盖清单
 
-- [ ] Phase 2: 从 sms-web/src/common/compat/tokens.scss 搬入
-- [ ] Phase 2: 抽出 Element Plus CSS 变量覆盖到 element-plus.scss
+- [x] Phase 2: 从 sms-web/src/common/compat/tokens.scss 搬入（`git mv`，保留 history）
+- [x] Phase 2: 从 sms-web/src/common/css/global-ui.scss 搬入为 element-plus.scss（含 Element Plus CSS 变量覆盖 + 32px 统一尺寸组件规则）

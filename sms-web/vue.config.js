@@ -11,6 +11,7 @@ const proxyUrl = '192.168.4.111:60006/'
 const publicPath = process.env.NODE_ENV === 'production' ? '/sms-web/' : '/'
 module.exports = {
   publicPath,
+  transpileDependencies: [/@ss-cmp\//],
   assetsDir: 'static',
   outputDir: 'sms-web',
   lintOnSave: process.env.NODE_ENV !== 'production',

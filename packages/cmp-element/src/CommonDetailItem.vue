@@ -22,7 +22,7 @@ const spanStyle = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 .cdi {
   display: flex;
