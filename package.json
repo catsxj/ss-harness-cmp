@@ -1,0 +1,13 @@
+{
+  "name": "ss-harness-cmp",
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "dev:sms": "pnpm --filter sms-web serve",
+    "build:sms": "pnpm --filter sms-web build",
+    "lint:sms": "pnpm --filter sms-web lint"
+  },
+  "devDependencies": {
+    "typescript": "~5.4.0"
+  }
+}

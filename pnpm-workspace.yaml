@@ -1,0 +1,9 @@
+packages:
+  - 'packages/*'
+  - 'main-web'
+  - 'scr-web'
+  - 'sms-web'
+  - 'cmp-web'
+  - 'cms-web'
+  - 'cos-web'
+  - 'cop-web'
