@@ -1,7 +1,7 @@
 # sms-web 迁移总结
 
-> 第二个迁移子应用 | 代码迁移完成日期：2026-04-20 | 基座联调通过：2026-04-21
-> 分支：feature/migrate-sms-web（待合并到 develop）
+> 第二个迁移子应用 | 代码迁移完成日期：2026-04-20 | 基座联调通过：2026-04-21 | 合并 develop：2026-04-22 @ b057cff
+> 分支：feature/migrate-sms-web → develop（--no-ff 合并完成）
 > 前置：v2-sms-web tag
 
 ---
