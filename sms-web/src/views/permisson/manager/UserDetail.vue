@@ -1,10 +1,12 @@
 <template>
-  <common-detail :title="detailData.name" @goBack="$emit('goBack')">
-    <template v-slot:item_container>
+  <!-- TODO: cmp-element common-detail / common-detail-item -->
+  <common-detail :title="detailData.name" @go-back="emit('goBack')">
+    <template #item_container>
       <common-detail-item label="登录账号">{{ detailData.account }}</common-detail-item>
       <common-detail-item label="用户姓名">{{ detailData.name }}</common-detail-item>
       <common-detail-item label="用户性别">{{ sexFilter(detailData.sex) }}</common-detail-item>
       <common-detail-item label="用户状态">
+        <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(detailData.status, 'color')">
           {{ generalStatusFilter(detailData.status, 'status') }}
         </status-icon>
@@ -19,8 +21,9 @@
       <common-detail-item label="所属租户">{{ detailData.tenantName }}</common-detail-item>
       <common-detail-item label="用户描述">{{ detailData.remark }}</common-detail-item>
     </template>
-    <el-tabs value="log" @tab-click="handleTab">
+    <el-tabs model-value="log" @tab-click="handleTab">
       <el-tab-pane label="操作日志" name="log">
+        <!-- TODO: cmp-element basic-table -->
         <basic-table :data="logList" :params="logParams" :get-list="getLogList" :total="logTotal">
           <el-table-column show-overflow-tooltip label="服务名称" prop="module"> </el-table-column>
           <el-table-column show-overflow-tooltip label="请求IP" prop="requestIp"> </el-table-column>
@@ -44,84 +47,76 @@
     </el-tabs>
   </common-detail>
 </template>
-<script lang="ts">
-import { defineComponent, reactive, ref, toRefs } from '@vue/composition-api'
+
+<script setup lang="ts">
+import { ref, reactive, toRefs } from 'vue'
 import { getUserDetail, getTrack } from 'services/system/manager'
 import { getLog } from 'services/system/log'
 import { generalStatusFilter, sexFilter } from '@/filters/common'
+import { handleSearchParam } from 'utils'
 
-export default defineComponent({
-  props: {
-    userData: {
-      type: Object,
-      required: true
-    }
-  },
-  setup(props, context) {
-    const detailData = ref({})
-    async function getDetail() {
-      const res = await getUserDetail(props.userData.id)
-      if (res.success) {
-        detailData.value = res.data
-      }
-    }
-    getDetail()
-    // 操作日志
-    const logState = reactive({
-      logList: [],
-      logTotal: 0,
-      logParams: {
-        page: 1,
-        rows: 10,
-        params: context.root.$tools.handleSearchParam({
-          userId: props.userData.id,
-          catalog: 'Manager'
-        })
-      }
-    })
-    async function getLogList() {
-      const res = await getLog(logState.logParams)
-      if (res.success) {
-        logState.logList = res.data.rows
-        logState.logTotal = res.data.total
-      }
-    }
-    getLogList()
-    // 登录记录
-    const loginState = reactive({
-      loginList: [],
-      loginTotal: 0,
-      loginParams: {
-        page: 1,
-        rows: 10,
-        params: context.root.$tools.handleSearchParam({
-          account: props.userData.account
-        })
-      }
-    })
-    async function getLogin() {
-      const res = await getTrack(loginState.loginParams)
-      if (res.success) {
-        loginState.loginList = res.data.rows
-        loginState.loginTotal = res.data.total
-      }
-    }
-    // tab切换
-    function handleTab(tab: any) {
-      if (tab.name === 'login' && loginState.loginList.length === 0) {
-        getLogin()
-      }
-    }
-    return {
-      generalStatusFilter,
-      sexFilter,
-      detailData,
-      ...toRefs(loginState),
-      getLogin,
-      ...toRefs(logState),
-      getLogList,
-      handleTab
-    }
+const props = defineProps<{ userData: any }>()
+const emit = defineEmits<{ goBack: [] }>()
+
+const detailData = ref<any>({})
+
+async function getDetail() {
+  const res = await getUserDetail(props.userData.id)
+  if (res.success) {
+    detailData.value = res.data
   }
+}
+getDetail()
+
+const logState = reactive({
+  logList: [] as any[],
+  logTotal: 0,
+  logParams: {
+    page: 1,
+    rows: 10,
+    params: handleSearchParam({
+      userId: props.userData.id,
+      catalog: 'Manager'
+    })
+  } as any
 })
+
+async function getLogList() {
+  const res = await getLog(logState.logParams)
+  if (res.success) {
+    logState.logList = res.data.rows
+    logState.logTotal = res.data.total
+  }
+}
+getLogList()
+
+const loginState = reactive({
+  loginList: [] as any[],
+  loginTotal: 0,
+  loginParams: {
+    page: 1,
+    rows: 10,
+    params: handleSearchParam({
+      account: props.userData.account
+    })
+  } as any
+})
+
+async function getLogin() {
+  const res = await getTrack(loginState.loginParams)
+  if (res.success) {
+    loginState.loginList = res.data.rows
+    loginState.loginTotal = res.data.total
+  }
+}
+
+function handleTab(tab: any) {
+  if (tab.props.name === 'login' && loginState.loginList.length === 0) {
+    getLogin()
+  }
+}
+
+// 暴露给模板（通过 toRefs 保持响应性）
+const { logList, logTotal, logParams } = toRefs(logState)
+const { loginList, loginTotal, loginParams } = toRefs(loginState)
 </script>

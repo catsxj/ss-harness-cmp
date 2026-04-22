@@ -1,5 +1,5 @@
 <template>
-  <el-dialog width="1100px" :close-on-click-modal="false" :visible.sync="dialog.visible">
+  <el-dialog width="1100px" :close-on-click-modal="false" v-model="dialog.visible">
     <div class="left-title">
       <div class="left-title__header">
         <h3>{{ dialog.title }}</h3>
@@ -13,12 +13,8 @@
       <div :span="24" v-show="activeStep === 0">
         <div class="title">{{ dialog.rightContent[0].title }}</div>
         <div class="wrapper">
-          <slot name="first" ref="sss"></slot>
+          <slot name="first"></slot>
         </div>
-        <!-- <div class="footer">
-          <el-button class="pull-right m-r" type="primary" @click="create()" :loading="loading">完成</el-button>
-          <el-button class="pull-right m-r clear" @click="clear">取消</el-button>
-        </div> -->
         <div class="footer">
           <el-button class="pull-right m-r" type="primary" @click="nextStep()">下一步</el-button>
           <el-button class="pull-right m-r clear" @click="clear">取消</el-button>
@@ -38,77 +34,98 @@
     </div>
   </el-dialog>
 </template>
-<script>
+<script setup lang="ts">
+import { ref, getCurrentInstance } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { createTenant } from 'services/system/tenant'
 import { createProject } from 'services/system/project'
 
-export default {
-  props: {
-    dialog: {
-      type: Object
-    }
-  },
-  data() {
-    return {
-      activeStep: 0,
-      postData: {},
-      loading: false
-    }
-  },
-  methods: {
-    async nextStep() {
-      if (this.activeStep === 0) {
-        const data = await this.$parent.$refs[this.dialog.rightContent[0].ref].getPostData()
-        console.log(data)
-        if (data) this.postData = data
-        else return false
-      }
-      ++this.activeStep
-    },
-    prevStep() {
-      --this.activeStep
-    },
-    async create() {
-      const data = await this.$parent.$refs[this.dialog.rightContent[0].ref].getPostData()
-      const list = await this.$parent.$refs[this.dialog.rightContent[1].ref].getPostData()
-      console.log(list)
-      if (data) {
-        this.postData = {
-          ...data,
-          ...list
-        }
-      }
-      console.log(this.postData)
-      this.loading = true
-      let res = null
-      if (this.$route.path.indexOf('tenants') !== -1) {
-        res = await createTenant({
-          ...data
-        }).finally(() => {
-          this.loading = false
-        })
-      } else if (this.$route.path.indexOf('project') !== -1) {
-        res = await createProject({
-          ...this.postData
-        }).finally(() => {
-          this.loading = false
-        })
-      }
-      if (res.success) {
-        this.dialog.visible = false
-        this.$message.success(res.message)
-        this.$parent.clearAddDialog()
-      }
-    },
-    clear() {
-      this.$emit('clearAddDialog', 'clear')
+interface DialogRightItem {
+  title: string
+  ref: string
+}
+interface DialogData {
+  visible: boolean
+  title?: string
+  des?: string
+  leftStepList: string[]
+  rightContent: DialogRightItem[]
+  [key: string]: unknown
+}
+
+const props = defineProps<{ dialog: DialogData }>()
+const emit = defineEmits<{ clearAddDialog: [type: string] }>()
+
+const activeStep = ref(0)
+// TODO: type - 表单项提交数据后续补具体类型
+const postData = ref<Record<string, any>>({})
+const loading = ref(false)
+
+const route = useRoute()
+const instance = getCurrentInstance()
+
+async function nextStep() {
+  if (activeStep.value === 0) {
+    // TODO: type - cmp-element 兼容层，父组件 ref 类型后续由 compat 层提供
+    const parentRefs = (instance?.parent?.refs ?? {}) as Record<string, any>
+    const data = await parentRefs[props.dialog.rightContent[0].ref]?.getPostData()
+    console.log(data)
+    if (data) postData.value = data
+    else return false
+  }
+  ++activeStep.value
+}
+
+function prevStep() {
+  --activeStep.value
+}
+
+async function create() {
+  // TODO: type - cmp-element 兼容层，父组件 ref 类型后续由 compat 层提供
+  const parentRefs = (instance?.parent?.refs ?? {}) as Record<string, any>
+  const data = await parentRefs[props.dialog.rightContent[0].ref]?.getPostData()
+  const list = await parentRefs[props.dialog.rightContent[1].ref]?.getPostData()
+  console.log(list)
+  if (data) {
+    postData.value = {
+      ...data,
+      ...list
     }
   }
+  console.log(postData.value)
+  loading.value = true
+  // TODO: type - res 具体返回类型后续由 services 补全
+  let res: any = null
+  if (route.path.indexOf('tenants') !== -1) {
+    res = await createTenant({
+      ...data
+    }).finally(() => {
+      loading.value = false
+    })
+  } else if (route.path.indexOf('project') !== -1) {
+    res = await createProject({
+      ...postData.value
+    }).finally(() => {
+      loading.value = false
+    })
+  }
+  if (res && res.success) {
+    props.dialog.visible = false
+    ElMessage.success(res.message)
+    // TODO: type - cmp-element 兼容层，父组件方法类型后续由 compat 层提供
+    const parent = instance?.parent?.exposed as any
+    parent?.clearAddDialog?.()
+  }
+}
+
+function clear() {
+  emit('clearAddDialog', 'clear')
 }
 </script>
 <style scoped lang="scss">
 .el-dialog__wrapper {
-  ::v-deep .el-dialog {
+  :deep(.el-dialog) {
     .el-dialog__header {
       padding: 0 !important;
       background-color: #fff !important;

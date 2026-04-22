@@ -1,0 +1,63 @@
+// cmp-element compat 设计令牌 · Technical Precision · Blue Primary
+
+// ────────────────────────────────────────────
+// 底层背景 / 边 / 文字 — 保持中性炭灰暖白基座
+// ────────────────────────────────────────────
+$bg-page: #f7f8fa;
+$bg-surface: #ffffff;
+$bg-subtle: #f1f4f8;
+$bg-inset: #eaeef4;
+
+$border-hairline: #e4e7eb;
+$border-solid: #cbd2da;
+$border-emphasis: #1f2937;
+
+$text-primary: #0f172a;
+$text-secondary: #475569;
+$text-muted: #94a3b8;
+$text-inverse: #ffffff;
+
+// ────────────────────────────────────────────
+// 主色：精致深蓝（非 Element Plus 默认亮蓝）
+// ────────────────────────────────────────────
+$accent: #2563eb;
+$accent-hover: #1d4ed8;
+$accent-soft: #eff6ff;
+
+// 状态色
+$status-normal: #2563eb;
+$status-primary: #2563eb;
+$status-success: #059669;
+$status-warning: #d97706;
+$status-danger: #dc2626;
+$status-disabled: #94a3b8;
+
+// ────────────────────────────────────────────
+// 字体：系统内组合，不依赖网络
+// ────────────────────────────────────────────
+$font-display: 'ui-serif', 'Georgia', 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', serif;
+$font-body: 'ui-sans-serif', 'SF Pro Text', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-mono: 'ui-monospace', 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+
+// ────────────────────────────────────────────
+// 阴影：双层精细
+// ────────────────────────────────────────────
+$shadow-crisp: 0 0 0 1px #{$border-hairline};
+$shadow-subtle: 0 1px 0 #{$border-hairline}, 0 8px 16px -8px rgba(15, 23, 42, 0.08);
+$shadow-floating: 0 1px 0 #{$border-solid}, 0 16px 32px -12px rgba(15, 23, 42, 0.14);
+$shadow-pressed: inset 0 1px 2px rgba(15, 23, 42, 0.1);
+
+// ────────────────────────────────────────────
+// 运动
+// ────────────────────────────────────────────
+$ease-out: cubic-bezier(0.32, 0, 0.16, 1);
+$ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+$dur-fast: 120ms;
+$dur-base: 200ms;
+
+// ────────────────────────────────────────────
+// 排版尺度
+// ────────────────────────────────────────────
+$tracking-tight: -0.02em;
+$tracking-wide: 0.08em;
+$tracking-ultra: 0.2em;

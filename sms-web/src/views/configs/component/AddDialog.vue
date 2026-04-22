@@ -1,5 +1,5 @@
 <template>
-  <el-dialog width="1100px" :visible.sync="dialogData.visible">
+  <el-dialog width="1100px" v-model="dialogData.visible">
     <div class="nav">
       <el-steps direction="vertical" :active="currentStepIndex + 1">
         <el-step :title="item.step" v-for="(item, index) in dialogData.steps" :key="index"></el-step>
@@ -9,52 +9,56 @@
       <div v-for="(item, index) in dialogData.steps" :key="index" v-show="index === currentStepIndex">
         <slot :name="item.slot"></slot>
       </div>
-      <span slot="footer" class="dialog-footer">
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
         <el-button @click="dialogData.visible = false">取 消</el-button>
         <el-button @click="prev" v-if="currentStepIndex !== 0">上一步</el-button>
         <el-button @click="next" v-if="currentStepIndex !== dialogData.steps.length - 1">下一步</el-button>
         <el-button type="primary" @click="submit()">确 定</el-button>
       </span>
-    </div>
+    </template>
   </el-dialog>
 </template>
 
-<script>
-import { ref } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 
-export default {
-  props: {
-    dialogData: {
-      type: Object
-    }
-  },
-  setup(prop, { emit, ...obj }) {
-    const currentStepIndex = ref(0)
-
-    const handleClose = function () {}
-
-    const next = function () {
-      emit('getBasicPostData')
-      currentStepIndex.value += 1
-    }
-
-    const prev = function () {
-      currentStepIndex.value -= 1
-    }
-
-    function submit() {
-      emit('postData')
-    }
-
-    return {
-      handleClose,
-      currentStepIndex,
-      next,
-      prev,
-      submit
-    }
-  }
+interface StepItem {
+  step: string
+  slot: string
 }
+interface DialogData {
+  visible: boolean
+  steps: StepItem[]
+}
+
+defineProps<{ dialogData: DialogData }>()
+const emit = defineEmits<{
+  getBasicPostData: []
+  postData: []
+}>()
+
+const currentStepIndex = ref(0)
+
+function handleClose() {
+  /* noop */
+}
+
+function next() {
+  emit('getBasicPostData')
+  currentStepIndex.value += 1
+}
+
+function prev() {
+  currentStepIndex.value -= 1
+}
+
+function submit() {
+  emit('postData')
+}
+
+defineExpose({ handleClose, currentStepIndex, next, prev, submit })
 </script>
 
 <style>

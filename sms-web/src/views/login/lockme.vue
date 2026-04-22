@@ -1,18 +1,23 @@
 <template>
   <div class="lock-wrapper" @click.stop="">
     <div class="lock-center">
-      <img class="logo" :src="userData.portrait" />
-      <p class="account">{{ userData.name }}</p>
-      <el-form :model="loginForm" ref="loginForm" @keyup.enter.native.prevent="handleLogin" @submit.native.prevent>
+      <img class="logo" :src="userData?.portrait" />
+      <p class="account">{{ userData?.name }}</p>
+      <el-form :model="loginForm" ref="loginFormRef" @keyup.enter.prevent="handleLogin" @submit.prevent>
         <basic-form-item prop="password" validate="required" required-message="请输入密码">
           <el-input v-model="loginForm.password" placeholder="请输入密码" type="password">
-            <template slot="append">
-              <el-button type="primary" @click="handleLogin()" :loading="loading" icon="el-icon-right"> </el-button>
+            <template #append>
+              <el-button type="primary" @click="handleLogin()" :loading="loading">
+                <el-icon><Right /></el-icon>
+              </el-button>
             </template>
           </el-input>
         </basic-form-item>
       </el-form>
-      <el-button class="switch-button" type="text" @click="switchUser()"><i class="el-icon-arrow-left"></i>切换账户</el-button>
+      <el-button class="switch-button" link @click="switchUser()">
+        <el-icon><ArrowLeft /></el-icon>
+        切换账户
+      </el-button>
     </div>
     <div class="date-time">
       <div class="time">{{ currentTime.time }}</div>
@@ -21,98 +26,112 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import type { FormInstance } from 'element-plus'
+import { Right, ArrowLeft } from '@element-plus/icons-vue'
 import dayjs from 'utils/day'
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { setLoginData } from './tools'
 import { login } from 'services/system'
+import { useAppStore, usePermissionStore } from '@/stores'
+import router, { resetRouter } from '@/router'
 
 interface ILockData {
   isLock: boolean
   path: string
 }
-@Component
-export default class Lock extends Vue {
-  private loginForm = {
-    password: ''
-  }
 
-  private loading: boolean = false
-  private timer: number = 0
-  private currentTime = {}
-  private lockData: ILockData = {
-    isLock: false,
-    path: ''
-  }
-
-  get userData() {
-    return this.$store.getters.userData
-  }
-
-  private created() {
-    const lockData = localStorage.getItem('lockData')
-    if (lockData) this.lockData = JSON.parse(lockData)
-    // 处理通过路由进入锁屏
-    localStorage.setItem(
-      'lockData',
-      JSON.stringify({
-        ...this.lockData,
-        isLock: true
-      })
-    )
-    this.setTimer()
-  }
-
-  private destroyed() {
-    clearInterval(this.timer)
-  }
-
-  private handleLogin() {
-    ;(this.$refs.loginForm as any).validate((valid: boolean) => {
-      if (valid) {
-        this.loading = true
-        login({
-          account: this.userData.account,
-          password: crypto.encrypt(this.loginForm.password),
-          isManager: true
-        }).then((data: any) => {
-          this.loading = false
-          if (data.success) {
-            setLoginData(data.data)
-            this.$router.replace(this.lockData.path)
-            this.$store.commit('SET_OPERATETIME')
-            localStorage.setItem(
-              'lockData',
-              JSON.stringify({
-                ...this.lockData,
-                isLock: false
-              })
-            )
-          }
-        })
-      }
-    })
-  }
-
-  private setTimer() {
-    const getTime = () => {
-      const time = dayjs()
-      this.currentTime = {
-        time: time.format('HH:mm:ss'),
-        date: `${time.format('MM月DD日')}, ${time.format('dddd')}`
-      }
-    }
-    getTime()
-    this.timer = setInterval(() => {
-      getTime()
-    }, 1000)
-  }
-
-  private switchUser() {
-    this.$store.dispatch('permission/ResetRoutes')
-  }
+interface CurrentTime {
+  time?: string
+  date?: string
 }
+
+const routerInstance = useRouter()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
+
+const loginFormRef = ref<FormInstance>()
+const loginForm = reactive({ password: '' })
+const loading = ref(false)
+const timer = ref<number>(0)
+const currentTime = reactive<CurrentTime>({})
+const lockData = ref<ILockData>({ isLock: false, path: '' })
+
+const userData = computed(() => appStore.userData)
+
+function init(): void {
+  const raw = localStorage.getItem('lockData')
+  if (raw) {
+    try {
+      lockData.value = JSON.parse(raw) as ILockData
+    } catch {
+      /* ignore */
+    }
+  }
+  localStorage.setItem(
+    'lockData',
+    JSON.stringify({
+      ...lockData.value,
+      isLock: true
+    })
+  )
+  setTimer()
+}
+
+function handleLogin(): void {
+  if (!loginFormRef.value) return
+  loginFormRef.value.validate((valid: boolean) => {
+    if (valid) {
+      loading.value = true
+      login({
+        account: (userData.value as any)?.account,
+        password: crypto.encrypt(loginForm.password),
+        isManager: true
+      }).then((data: any) => {
+        loading.value = false
+        if (data.success) {
+          setLoginData(data.data)
+          routerInstance.replace(lockData.value.path)
+          appStore.setOperateTime()
+          localStorage.setItem(
+            'lockData',
+            JSON.stringify({
+              ...lockData.value,
+              isLock: false
+            })
+          )
+        }
+      })
+    }
+  })
+}
+
+function setTimer(): void {
+  const getTime = () => {
+    const time = dayjs()
+    currentTime.time = time.format('HH:mm:ss')
+    currentTime.date = `${time.format('MM月DD日')}, ${time.format('dddd')}`
+  }
+  getTime()
+  timer.value = window.setInterval(() => {
+    getTime()
+  }, 1000)
+}
+
+function switchUser(): void {
+  permissionStore.resetRoutes(router, resetRouter)
+}
+
+onMounted(init)
+
+onUnmounted(() => {
+  if (timer.value) {
+    clearInterval(timer.value)
+    timer.value = 0
+  }
+})
 </script>
 
 <style lang="scss">

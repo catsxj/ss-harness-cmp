@@ -1,80 +1,101 @@
 <template>
   <div>
+    <!-- TODO: cmp-element AdvanceTable -->
     <AdvanceTable title="租户列表" :search-configs="searchConfigs" :data="listData" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading" @selection-change="selectionChange">
-      <template v-slot:action>
-        <el-button type="primary" @click="handleCreate()" slot="operate" icon="el-icon-plus">新增</el-button>
-        <ImportData url="/api/sms/v1/tenants/import" @getData="getList" template-url="/sms/v1/tenants/import/template"></ImportData>
-        <el-button slot="operate" icon="el-icon-download" @click="exportData">导出</el-button>
-        <el-button slot="operate" icon="el-icon-lock" @click="handleLock('lock')" :disabled="!tenantIds.length">批量冻结</el-button>
-        <el-button slot="operate" icon="el-icon-unlock" @click="handleLock('active')" :disabled="!tenantIds.length">批量解冻</el-button>
-        <el-button slot="operate" icon="el-icon-delete" @click="handleLock('remove')" :disabled="!tenantIds.length">批量删除</el-button>
+      <template #action>
+        <el-button type="primary" @click="handleCreate()">
+          <el-icon><Plus /></el-icon>新增
+        </el-button>
+        <ImportData url="/api/sms/v1/tenants/import" @get-data="getList" template-url="/sms/v1/tenants/import/template"></ImportData>
+        <el-button @click="exportData">
+          <el-icon><Download /></el-icon>导出
+        </el-button>
+        <el-button @click="handleLock('lock')" :disabled="!tenantIds.length">
+          <el-icon><Lock /></el-icon>批量冻结
+        </el-button>
+        <el-button @click="handleLock('active')" :disabled="!tenantIds.length">
+          <el-icon><Unlock /></el-icon>批量解冻
+        </el-button>
+        <el-button @click="handleLock('remove')" :disabled="!tenantIds.length">
+          <el-icon><Delete /></el-icon>批量删除
+        </el-button>
       </template>
-      <template #account="val, record">
+      <template #account="{ val, record }">
         <span class="detail-href" @click="getDetail(record.id)">{{ val }}</span>
       </template>
-      <template #status="status">
+      <template #status="{ val: status, record }">
+        <!-- TODO: cmp-element status-icon -->
         <status-icon :type="generalStatusFilter(status, 'color')">
           {{ generalStatusFilter(status, 'status') }}
         </status-icon>
       </template>
-      <template #openFlow="val">
-        {{ val | booleanFilter }}
+      <template #openFlow="{ val, record }">
+        {{ booleanFilter(val) }}
       </template>
-      <template #isInstallSoftware="val">
-        {{ val | booleanFilter }}
+      <template #isInstallSoftware="{ val, record }">
+        {{ booleanFilter(val) }}
       </template>
-      <template #paymentMode="val">
-        <span v-if="Array.isArray(val)">{{ val.map((item) => paymentModeFilter(item)).join('，') }}</span>
+      <template #paymentMode="{ val, record }">
+        <span v-if="Array.isArray(val)">{{ val.map((item: string) => paymentModeFilter(item)).join('，') }}</span>
         <span v-else>--</span>
       </template>
-
-      <template #operate="val, record">
-        <el-button type="text" @click="handleCreate('edit', record)" icon="el-icon-edit">编辑</el-button>
+      <template #operate="{ val, record }">
+        <el-button link @click="handleCreate('edit', record)">
+          <el-icon><Edit /></el-icon>编辑
+        </el-button>
         <div class="action-divider"></div>
-        <el-button type="text" @click="handleRemove(record.id)" :disabled="record.status !== 'LOGOUT'" icon="el-icon-delete">删除</el-button>
+        <el-button link @click="handleRemove(record.id)" :disabled="record.status !== 'LOGOUT'">
+          <el-icon><Delete /></el-icon>删除
+        </el-button>
         <div class="action-divider"></div>
         <el-dropdown trigger="click">
           <span class="el-dropdown-link">
             更多
-            <svg-icon iconName="el-icon-arrow-down" />
+            <!-- TODO: cmp-element svg-icon -->
+            <svg-icon icon-name="el-icon-arrow-down" />
           </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="assignPool(record)"> 资源分配 </el-dropdown-item>
-            <el-dropdown-item @click.native="handleService(record)"> 服务授权 </el-dropdown-item>
-            <el-dropdown-item @click.native="handlePermission(record)"> 权限设置 </el-dropdown-item>
-            <el-dropdown-item @click.native="handleReset(record.id)"> 密码重置 </el-dropdown-item>
-            <el-dropdown-item @click.native="handleUserConfig(record)"> 用户管理 </el-dropdown-item>
-            <el-dropdown-item @click.native="handleRecharge(record)"> 账户授权 </el-dropdown-item>
-            <el-dropdown-item v-if="record.status === 'NORMAL'" @click.native="handleOperate(record.id, 'lock')"> 账户冻结 </el-dropdown-item>
-            <el-dropdown-item v-if="record.status === 'ABNORMAL'" @click.native="handleOperate(record.id, 'active')"> 账户解冻 </el-dropdown-item>
-            <el-dropdown-item v-if="record.status !== 'LOGOUT'" @click.native="handleOperate(record.id, 'logout')"> 账户注销 </el-dropdown-item>
-          </el-dropdown-menu>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="handleAssignPool(record)"> 资源分配 </el-dropdown-item>
+              <el-dropdown-item @click="handleService(record)"> 服务授权 </el-dropdown-item>
+              <el-dropdown-item @click="handlePermission(record)"> 权限设置 </el-dropdown-item>
+              <el-dropdown-item @click="handleReset(record.id)"> 密码重置 </el-dropdown-item>
+              <el-dropdown-item @click="handleUserConfig(record)"> 用户管理 </el-dropdown-item>
+              <el-dropdown-item @click="handleRecharge(record)"> 账户授权 </el-dropdown-item>
+              <el-dropdown-item v-if="record.status === 'NORMAL'" @click="handleOperate(record.id, 'lock')"> 账户冻结 </el-dropdown-item>
+              <el-dropdown-item v-if="record.status === 'ABNORMAL'" @click="handleOperate(record.id, 'active')"> 账户解冻 </el-dropdown-item>
+              <el-dropdown-item v-if="record.status !== 'LOGOUT'" @click="handleOperate(record.id, 'logout')"> 账户注销 </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
         </el-dropdown>
       </template>
     </AdvanceTable>
     <!--详情界面-->
     <TenantDetail v-if="detailComponent.visible" :config="detailComponent"></TenantDetail>
-    <AddDialog :dialog="addDialog" v-if="addDialog.visible" @getData="getList" @clearAddDialog="clearAddDialog">
-      <template v-slot:first>
+    <AddDialog :dialog="addDialog" v-if="addDialog.visible" @get-data="getList" @clear-add-dialog="clearAddDialog">
+      <template #first>
         <BasicInfo ref="basicInfo" />
       </template>
-      <template v-slot:second>
+      <template #second>
         <Quota catalog="TENANT" ref="quota" />
       </template>
-      <template v-slot:third>
+      <template #third>
         <service-item ref="service" />
       </template>
     </AddDialog>
     <!--新增编辑-->
-    <el-dialog title="编辑租户" :close-on-click-modal="false" v-if="addDialogVisible" :visible.sync="addDialogVisible">
+    <el-dialog title="编辑租户" :close-on-click-modal="false" v-if="addDialogVisible" v-model="addDialogVisible">
       <BasicInfo :info-data="addData" ref="basicInfo"></BasicInfo>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="addDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="addSubmit" :loading="loading">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="addDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="addSubmit" :loading="loading">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <!--重置密码-->
-    <el-dialog title="重置密码" :visible.sync="resetDialogVisible" width="35%">
+    <el-dialog title="重置密码" v-model="resetDialogVisible" width="35%">
+      <!-- TODO: cmp-element basic-form -->
       <basic-form :model="resetData" ref="resetForm">
         <el-row>
           <el-col :span="24">
@@ -84,18 +105,20 @@
           </el-col>
         </el-row>
       </basic-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="resetDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="resetSubmit" :loading="loading">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="resetDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="resetSubmit" :loading="loading">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <!--服务界面-->
-    <ServiceDialog v-if="serviceDialog.visible" :dialog="serviceDialog" @serviceSuccess="getList"></ServiceDialog>
+    <ServiceDialog v-if="serviceDialog.visible" :dialog="serviceDialog" @service-success="getList"></ServiceDialog>
     <!--权限设置-->
     <PermissionDialog v-if="permissionDialog.visible" :dialog="permissionDialog" @success="getList"></PermissionDialog>
     <assignPool :add-data="assignPoolData" v-if="assignPoolData.dialog"></assignPool>
     <!--授信账户-->
-    <el-dialog title="授信账户" :visible.sync="rechargeDialogVisible" width="600px">
+    <el-dialog title="授信账户" v-model="rechargeDialogVisible" width="600px">
       <basic-form label-width="150px">
         <el-row>
           <el-col :span="12">
@@ -136,12 +159,14 @@
           </el-col>
         </el-row>
       </basic-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="rechargeDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="rechargeSubmit" :loading="loading">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="rechargeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="rechargeSubmit" :loading="loading">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
-    <el-dialog title="API授权" :close-on-click-modal="false" v-if="apiGrantVisible" :visible.sync="apiGrantVisible" width="70%">
+    <el-dialog title="API授权" :close-on-click-modal="false" v-if="apiGrantVisible" v-model="apiGrantVisible" width="70%">
       <basic-form>
         <el-select v-model="apiGrantData.module" placeholder="请选择服务" :loading="loading" @change="changeModule">
           <el-option v-for="item in modulesData" :key="item.value" :label="item.name" :value="item.value"> </el-option>
@@ -149,25 +174,32 @@
         <el-row class="m-t" :gutter="10" v-loading="loading">
           <el-col :span="12">
             <el-checkbox v-model="apiGrantData.selectAll" @change="selectAll">全选</el-checkbox>
-            <el-tree ref="apitree" :expand-on-click-node="false" :data="modulesList" node-key="pattern" :props="{ label: 'label', children: 'value' }" show-checkbox @check-change="changeCheckApi">
-              <span slot-scope="{ node }">
-                <span :class="node.label.indexOf(':') > -1 ? 'custom-tree-node' : ''">{{ node.label.split(':')[0] }}</span
-                ><span>: {{ node.label.split(':')[1] }}</span>
-              </span>
+            <el-tree ref="apitreeRef" :expand-on-click-node="false" :data="modulesList" node-key="pattern" :props="{ label: 'label', children: 'value' }" show-checkbox @check-change="changeCheckApi">
+              <template #default="{ node }">
+                <span>
+                  <span :class="node.label.indexOf(':') > -1 ? 'custom-tree-node' : ''">{{ node.label.split(':')[0] }}</span><span>: {{ node.label.split(':')[1] }}</span>
+                </span>
+              </template>
             </el-tree>
           </el-col>
         </el-row>
       </basic-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="apiGrantVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="apiGrantSubmit" :loading="loading">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="apiGrantVisible = false">取消</el-button>
+          <el-button type="primary" @click="apiGrantSubmit" :loading="loading">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <!--用户管理-->
-    <Transfer :key="2" ref="transfer" @success="getList" v-if="userConfig.visible" :config="userConfig"></Transfer>
+    <Transfer :key="2" ref="transferRef" @success="getList" v-if="userConfig.visible" :config="userConfig"></Transfer>
   </div>
 </template>
-<script>
+
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Edit, Delete, Download, Lock, Unlock } from '@element-plus/icons-vue'
 import crypto from 'utils/crypto'
 import TenantDetail from './tenantDetail.vue'
 import ServiceDialog from './ServiceDialog.vue'
@@ -177,444 +209,338 @@ import BasicInfo from './components/basicInfo.vue'
 import Quota from './components/quota.vue'
 import ServiceItem from './components/ServiceItem.vue'
 import assignPool from './assignPool.vue'
-import { getTenant, modifyTenant, removeTenant, tenantCongigUser, operateTenant, exportTenantList, lockTenant, resetTenantPsw, getTenantAccount, createTenantAccount, getApiById, updateApi, getTenantUserTrans } from 'services/system/tenant'
-import { getModules, getModulesByName } from 'services/system/role'
-import { columns, searchConfigs } from './config'
 import Transfer from './components/transfer.vue'
 import ImportData from '@/common/components/import-data/index.vue'
+import { getTenant, modifyTenant, removeTenant, operateTenant, exportTenantList, lockTenant, resetTenantPsw, getTenantAccount, createTenantAccount, getApiById, updateApi } from 'services/system/tenant'
+import { getModules, getModulesByName } from 'services/system/role'
+import { columns, searchConfigs } from './config'
 import { generalStatusFilter, booleanFilter, paymentModeFilter } from '@/filters/common'
+import { handleSearchParam } from 'utils'
+import { useAppStore, usePermissionStore } from '@/stores'
+import router, { resetRouter } from '@/router'
 
-export default {
-  components: {
-    TenantDetail,
-    ServiceDialog,
-    PermissionDialog,
-    AddDialog,
-    BasicInfo,
-    assignPool,
-    Quota,
-    ServiceItem,
-    Transfer,
-    ImportData
-  },
-  filters: {
-    booleanFilter
-  },
-  data() {
-    return {
-      generalStatusFilter,
-      searchConfigs,
-      columns,
-      listData: [],
-      total: 0,
-      params: {
-        page: 1,
-        rows: 10
-      },
-      addDialogVisible: false,
-      detailComponent: {},
-      loading: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑租户',
-        create: '新增租户'
-      },
-      userConfig: {
-        visible: false,
-        id: ''
-      },
-      addData: {},
-      quotaDialog: {},
-      serviceDialog: {},
-      businessDialog: {},
-      poolDialog: {},
-      addDialog: {
-        visible: false,
-        parentId: 0,
-        title: '快速导航',
-        des: '您可以通过本向导轻松新增租户进行管理',
-        leftStepList: ['基本信息', '资源分配', '服务授权'],
-        rightContent: [
-          { title: '基本信息', ref: 'basicInfo' },
-          { title: '资源分配', ref: 'quota' },
-          { title: '服务授权', ref: 'service' }
-        ]
-      },
-      // 重置密码
-      resetDialogVisible: false,
-      resetData: {},
-      assignPoolData: {
-        dialog: false,
-        data: {}
-      },
-      // 充值
-      rechargeDialogVisible: false,
-      rechargeData: {
-        accountTotal: 0,
-        accountUsed: 0
-      },
-      apiGrantVisible: false,
-      apiGrantData: {
-        apis: []
-      },
-      modulesData: [], // 服务列表
-      modulesList: [], // 服务下api列表
-      apisById: [], // 当前角色已授权api,
-      permissionDialog: {
-        visible: false,
-        record: {}
-      },
-      tenantIds: []
-    }
-  },
-  computed: {
-    pwdRule() {
-      return this.$store.state.app.systemConfig.pwdStrength
-    },
-    ids() {
-      return this.tenantIds.join(',')
-    }
-  },
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
 
-  methods: {
-    paymentModeFilter,
-    exportData() {
-      const params = JSON.parse(this.params.params)
-      params.push(
-        ...JSON.parse(
-          this.$tools.handleSearchParam({
-            'id:IN': this.ids
-          })
-        )
-      )
-      exportTenantList({ params: JSON.stringify(params) })
-    },
-    selectionChange(val) {
-      this.tenantIds = val.map((item) => item.id)
-    },
-    // 冻结
-    handleLock(action) {
-      let title = ''
-      switch (action) {
-        case 'lock':
-          title = '冻结'
-          break
-        case 'active':
-          title = '解冻'
-          break
-        case 'remove':
-          title = '删除'
-          break
+const listData = ref<any[]>([])
+const total = ref(0)
+const params = reactive<any>({ page: 1, rows: 10 })
+const addDialogVisible = ref(false)
+const detailComponent = reactive<any>({})
+const loading = ref(false)
+const dialogStatus = ref('')
+const textMap: Record<string, string> = { update: '编辑租户', create: '新增租户' }
+const userConfig = reactive<any>({ visible: false, id: '' })
+const addData = ref<any>({})
+const serviceDialog = reactive<any>({})
+const addDialog = reactive<any>({
+  visible: false,
+  parentId: 0,
+  title: '快速导航',
+  des: '您可以通过本向导轻松新增租户进行管理',
+  leftStepList: ['基本信息', '资源分配', '服务授权'],
+  rightContent: [
+    { title: '基本信息', ref: 'basicInfo' },
+    { title: '资源分配', ref: 'quota' },
+    { title: '服务授权', ref: 'service' }
+  ]
+})
+const resetDialogVisible = ref(false)
+const resetData = ref<any>({})
+const assignPoolData = reactive<any>({ dialog: false, data: {} })
+const rechargeDialogVisible = ref(false)
+const rechargeData = ref<any>({ accountTotal: 0, accountUsed: 0 })
+const apiGrantVisible = ref(false)
+const apiGrantData = ref<any>({ apis: [] })
+const modulesData = ref<any[]>([])
+const modulesList = ref<any[]>([])
+const apisById = ref<any[]>([])
+const permissionDialog = reactive<any>({ visible: false, record: {} })
+const tenantIds = ref<any[]>([])
+
+const basicInfo = ref<any>(null)
+const resetForm = ref<any>(null)
+const apitreeRef = ref<any>(null)
+const transferRef = ref<any>(null)
+
+const pwdRule = computed(() => (appStore.systemConfig as any).pwdStrength)
+const ids = computed(() => tenantIds.value.join(','))
+
+
+function exportData() {
+  const p = JSON.parse(params.params)
+  p.push(
+    ...JSON.parse(handleSearchParam({ 'id:IN': ids.value }))
+  )
+  exportTenantList({ params: JSON.stringify(p) })
+}
+
+function selectionChange(val: any[]) {
+  tenantIds.value = val.map((item: any) => item.id)
+}
+
+function handleLock(action: string) {
+  let title = ''
+  if (action === 'lock') title = '冻结'
+  else if (action === 'active') title = '解冻'
+  else if (action === 'remove') title = '删除'
+  ElMessageBox.confirm(`您确定要${title}所选租户吗？`, '提示', {
+    confirmButtonClass: 'el-button--danger',
+    type: 'warning'
+  }).then(() => {
+    lockTenant({ ids: tenantIds.value, action }).then((data: any) => {
+      if (data.success) {
+        ElMessage.success(data.message)
+        getList()
       }
-      this.$confirm(`您确定要${title}所选租户吗？`, '提示', {
-        confirmButtonClass: 'el-button--danger',
-        type: 'warning'
-      }).then(() => {
-        lockTenant({ ids: this.tenantIds, action: action }).then((data) => {
-          if (data.success) {
-            this.$message.success({
-              message: data.message,
-              type: 'success'
-            })
-            this.getList()
-          }
+    })
+  })
+}
+
+function handleUserConfig(record: any) {
+  userConfig.id = record.id
+  userConfig.visible = true
+}
+
+function clearAddDialog() {
+  addDialog.visible = false
+}
+
+function handleAssignPool(data: any) {
+  Object.assign(assignPoolData, { dialog: true, data: { id: data.id } })
+}
+
+function handleRemove(id: number) {
+  ElMessageBox.confirm('您确定要删除该租户吗？', '提示', {
+    confirmButtonClass: 'el-button--danger',
+    type: 'warning'
+  }).then(() => {
+    removeTenant(id).then((data: any) => {
+      if (data.success) {
+        ElMessage.success(data.message)
+        getList()
+      }
+    })
+  })
+}
+
+function getList() {
+  loading.value = true
+  getTenant(params)
+    .then((data: any) => {
+      if (data.success) {
+        listData.value = data.data.rows.map((item: any) => {
+          item.openFlow = !!item.openFlow
+          item.isInstallSoftware = !!item.isInstallSoftware
+          item.paymentMode = JSON.parse(item.paymentMode || '["Hour","Month"]')
+          return item
         })
-      })
-    },
-    async handleUserConfig(record) {
-      this.userConfig.id = record.id
-      this.userConfig.visible = true
-    },
-    clearAddDialog() {
-      this.addDialog.visible = false
-    },
-    type(value) {
-      const obj = {
-        category: '单位类型',
-        topOrganization: '单位',
-        department: '部门'
+        total.value = data.data.total
       }
-      return obj[value]
-    },
-    assignPool(data) {
-      this.assignPoolData = {
-        dialog: true,
-        data: {
-          id: data.id
+    })
+    .finally(() => {
+      loading.value = false
+    })
+}
+
+function handleCreate(type?: string, data?: any) {
+  if (type === 'edit') {
+    addData.value = Object.assign({}, data)
+    dialogStatus.value = 'update'
+    addDialogVisible.value = true
+  } else {
+    addDialog.visible = true
+  }
+}
+
+async function addSubmit() {
+  const data = await basicInfo.value?.getPostData()
+  if (data) {
+    loading.value = true
+    modifyTenant(data)
+      .then((res: any) => {
+        if (res.success) {
+          ElMessage.success(res.message)
+          addDialogVisible.value = false
+          getList()
         }
-      }
-    },
-    assgin() {
-      this.$router.push({ name: 'assignCoupons' })
-    },
-    handleRemove(id) {
-      this.$confirm('您确定要删除该租户吗？', '提示', {
-        confirmButtonClass: 'el-button--danger',
-        type: 'warning'
-      }).then(() => {
-        removeTenant(id).then((data) => {
-          if (data.success) {
-            this.$message.success({
-              message: data.message,
-              type: 'success'
-            })
-            this.getList()
-          }
-        })
       })
-    },
-    getList() {
-      this.loading = true
-      getTenant(this.params)
-        .then((data) => {
+      .finally(() => {
+        loading.value = false
+      })
+  }
+}
+
+function handleService(record: any) {
+  Object.assign(serviceDialog, { id: record.id, quotaAble: record.quotaAble, visible: true })
+}
+
+function handlePermission(record: any) {
+  Object.assign(permissionDialog, { record: { ...record }, visible: true })
+}
+
+function getDetail(id: number) {
+  Object.assign(detailComponent, { id, visible: true })
+}
+
+function handleReset(id: number) {
+  resetDialogVisible.value = true
+  resetData.value = { id }
+}
+
+function resetSubmit() {
+  resetForm.value?.validate((valid: boolean) => {
+    if (valid) {
+      const { id, password } = resetData.value
+      loading.value = true
+      resetTenantPsw(id, { password: crypto.encrypt(password) })
+        .then((data: any) => {
           if (data.success) {
-            this.listData = data.data.rows.map((item) => {
-              item.openFlow = !!item.openFlow
-              item.isInstallSoftware = !!item.isInstallSoftware
-              item.paymentMode = JSON.parse(item.paymentMode || '["Hour","Month"]')
-              return item
-            })
-            this.total = data.data.total
+            resetDialogVisible.value = false
+            ElMessage.success(data.message)
           }
         })
         .finally(() => {
-          this.loading = false
+          loading.value = false
         })
-    },
-    handleSortChange({ prop, order }) {
-      if (order) {
-        this.params.sorter = JSON.stringify({
-          [prop]: order === 'ascending' ? '0' : '1'
-        })
-      } else {
-        delete this.params.sorter
-      }
-      this.getList()
-    },
-    handleSearch(params) {
-      this.params.page = 1
-      this.params.params = params
-      this.getList()
-    },
-    handleCreate(type, data) {
-      if (type === 'edit') {
-        console.log(data)
-        this.addData = Object.assign({}, data)
-        this.dialogStatus = 'update'
-        this.addDialogVisible = true
-      } else {
-        this.addDialog.visible = true
-      }
-    },
-    async addSubmit() {
-      const data = await this.$refs.basicInfo.getPostData()
-      if (data) {
-        this.loading = true
-        modifyTenant(data)
-          .then((data) => {
-            if (data.success) {
-              this.$message({
-                message: data.message,
-                type: 'success'
-              })
-              this.addDialogVisible = false
-              this.getList()
-            }
-          })
-          .finally(() => {
-            this.loading = false
-          })
-      }
-    },
-    handleService(record) {
-      this.serviceDialog = {
-        id: record.id,
-        quotaAble: record.quotaAble,
-        visible: true
-      }
-    },
-    handlePermission(record) {
-      this.permissionDialog = {
-        record: { ...record },
-        visible: true
-      }
-    },
-    getDetail(id) {
-      this.detailComponent = {
-        id: id,
-        visible: true
-      }
-    },
-    // 重置密码
-    handleReset(id) {
-      this.resetDialogVisible = true
-      this.resetData = { id }
-    },
-    resetSubmit() {
-      this.$refs.resetForm.validate((valid) => {
-        if (valid) {
-          const { id, password } = this.resetData
-          this.loading = true
-          resetTenantPsw(id, { password: crypto.encrypt(password) })
-            .then((data) => {
-              if (data.success) {
-                this.resetDialogVisible = false
-                this.$message({
-                  message: data.message,
-                  type: 'success'
-                })
-              }
-            })
-            .finally(() => {
-              this.loading = false
-            })
-        }
-      })
-    },
-    handleOperate(id, action, record) {
-      let tip
-      switch (action) {
-        case 'lock':
-          tip = '是否冻结该租户？'
-          break
-        case 'active':
-          tip = '是否解冻该租户？'
-          break
-        case 'logout':
-          tip = '是否注销该租户？'
-          break
-      }
-      this.$confirm(tip, '提示', {
-        confirmButtonClass: 'el-button--danger',
-        type: 'warning'
-      })
-        .then(() => {
-          operateTenant(id, action).then((data) => {
-            if (data.success) {
-              this.$message.success(data.message)
-              this.getList()
-            }
-          })
-        })
-        .catch(() => {})
-    },
-    // 授信
-    async handleRecharge(row) {
-      const data = await getTenantAccount(row.id)
-      if (data.success) {
-        this.rechargeData = data.data
-        this.rechargeDialogVisible = true
-      }
-    },
-    rechargeSubmit() {
-      if (this.rechargeData.accountTotal !== 0 && !this.rechargeData.accountTotal) return this.$message.error('授信额度不能为空')
-      this.loading = true
-      createTenantAccount(this.rechargeData)
-        .then((data) => {
-          if (data.success) {
-            this.rechargeDialogVisible = false
-            this.$message({
-              message: data.message,
-              type: 'success'
-            })
-          }
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    // 切换树形
-    goTree() {
-      this.$emit('goTree')
-    },
-    async getModules() {
-      this.loading = true
-      const data = await getModules()
-      if (data.success) {
-        this.loading = false
-        this.modulesData = data.data
-        if (this.modulesData.length) {
-          this.$set(this.apiGrantData, 'module', this.modulesData[0].value)
-          this.changeModule(this.apiGrantData.module)
-        }
-      }
-    },
-    async changeModule(value) {
-      this.modulesList = []
-      this.apiGrantData.selectAll = false
-      this.apiGrantData.apis = []
-      this.loading = true
-      const data = await getApiById(this.apiGrantData.id, { module: value })
-      if (data.success) {
-        this.apisById = data.data
-      }
-      getModulesByName(value).then((data) => {
+    }
+  })
+}
+
+function handleOperate(id: number, action: string) {
+  let tip: string | undefined
+  if (action === 'lock') tip = '是否冻结该租户？'
+  else if (action === 'active') tip = '是否解冻该租户？'
+  else if (action === 'logout') tip = '是否注销该租户？'
+  if (!tip) return
+  ElMessageBox.confirm(tip, '提示', {
+    confirmButtonClass: 'el-button--danger',
+    type: 'warning'
+  })
+    .then(() => {
+      operateTenant(id, action).then((data: any) => {
         if (data.success) {
-          this.loading = false
-          this.modulesList = data.data
-          this.modulesList.forEach((item) => {
-            // item.disabled = true
-            item.label = item.name
-            item.value.forEach((target) => {
-              target.label = `${target.method}: ${target.operation} (${target.url})`
-              if (this.apisById.indexOf(target.operation) > -1) {
-                this.apiGrantData.apis.push(target)
-              }
-              this.$refs.apitree.setCheckedKeys(this.apisById)
-            })
-          })
+          ElMessage.success(data.message)
+          getList()
         }
       })
-    },
-    changeCheckApi(obj, isChecked, data3) {
-      if (isChecked) {
-        this.apiGrantData.apis.push(obj)
-      } else {
-        const index = this.apiGrantData.apis.indexOf(obj.pattern)
-        if (index != -1) {
-          this.apiGrantData.apis.splice(index, 1)
-        }
+    })
+    .catch(() => {})
+}
+
+async function handleRecharge(row: any) {
+  const data = await getTenantAccount(row.id)
+  if (data.success) {
+    rechargeData.value = data.data
+    rechargeDialogVisible.value = true
+  }
+}
+
+function rechargeSubmit() {
+  if (rechargeData.value.accountTotal !== 0 && !rechargeData.value.accountTotal) {
+    ElMessage.error('授信额度不能为空')
+    return
+  }
+  loading.value = true
+  createTenantAccount(rechargeData.value)
+    .then((data: any) => {
+      if (data.success) {
+        rechargeDialogVisible.value = false
+        ElMessage.success(data.message)
       }
-    },
-    selectAll(value) {
-      const arr = []
-      if (value) {
-        this.modulesList.forEach((item) => {
-          item.value.forEach((target) => {
-            arr.push(target.pattern)
-          })
-        })
-      }
-      this.$refs.apitree.setCheckedKeys(arr)
-    },
-    apiGrantSubmit() {
-      const that = this
-      const nodes = this.$refs.apitree.getCheckedNodes()
-      const { id, module } = that.apiGrantData
-      const apis = []
-      nodes.forEach((item) => {
-        if (!item.value) {
-          apis.push(item)
-        }
-      })
-      this.loading = true
-      updateApi(id, { apis: JSON.stringify(apis), module: module }).then((data) => {
-        if (data.success) {
-          this.$message({
-            message: data.message,
-            type: 'success'
-          })
-          this.apiGrantVisible = false
-          // 更新路由
-          this.$store.dispatch('permission/ChangeRoutes')
-          this.getList()
-        }
-        this.loading = false
-      })
+    })
+    .finally(() => {
+      loading.value = false
+    })
+}
+
+async function getModulesData() {
+  loading.value = true
+  const data = await getModules()
+  if (data.success) {
+    loading.value = false
+    modulesData.value = data.data
+    if (modulesData.value.length) {
+      apiGrantData.value.module = modulesData.value[0].value
+      changeModule(apiGrantData.value.module)
     }
   }
 }
+
+async function changeModule(value: string) {
+  modulesList.value = []
+  apiGrantData.value.selectAll = false
+  apiGrantData.value.apis = []
+  loading.value = true
+  const data = await getApiById(apiGrantData.value.id, { module: value })
+  if (data.success) {
+    apisById.value = data.data
+  }
+  getModulesByName(value).then((data2: any) => {
+    if (data2.success) {
+      loading.value = false
+      modulesList.value = data2.data
+      modulesList.value.forEach((item: any) => {
+        item.label = item.name
+        item.value.forEach((target: any) => {
+          target.label = `${target.method}: ${target.operation} (${target.url})`
+          if (apisById.value.indexOf(target.operation) > -1) {
+            apiGrantData.value.apis.push(target)
+          }
+          apitreeRef.value?.setCheckedKeys(apisById.value)
+        })
+      })
+    }
+  })
+}
+
+function changeCheckApi(obj: any, isChecked: boolean) {
+  if (isChecked) {
+    apiGrantData.value.apis.push(obj)
+  } else {
+    const index = apiGrantData.value.apis.indexOf(obj.pattern)
+    if (index != -1) apiGrantData.value.apis.splice(index, 1)
+  }
+}
+
+function selectAll(val: boolean) {
+  const arr: string[] = []
+  if (val) {
+    modulesList.value.forEach((item: any) => {
+      item.value.forEach((target: any) => {
+        arr.push(target.pattern)
+      })
+    })
+  }
+  apitreeRef.value?.setCheckedKeys(arr)
+}
+
+async function changeRoutes() {
+  const { asyncRouterMap } = await import('@/router')
+  return permissionStore.changeRoutes(asyncRouterMap, router, resetRouter)
+}
+
+function apiGrantSubmit() {
+  const nodes: any[] = apitreeRef.value?.getCheckedNodes() || []
+  const { id, module } = apiGrantData.value
+  const apis: any[] = []
+  nodes.forEach((item: any) => {
+    if (!item.value) apis.push(item)
+  })
+  loading.value = true
+  updateApi(id, { apis: JSON.stringify(apis), module }).then((data: any) => {
+    if (data.success) {
+      ElMessage.success(data.message)
+      apiGrantVisible.value = false
+      changeRoutes()
+      getList()
+    }
+    loading.value = false
+  })
+}
+
 </script>
+
 <style scoped>
 .custom-tree-node {
   color: #409eff;

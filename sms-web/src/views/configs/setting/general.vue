@@ -7,32 +7,32 @@
     </el-row>
   </div>
 </template>
-<script>
-import { ref } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import CardItem from './interface/CardItem.vue'
 import { getSystemTreeConfigs } from 'services/system'
-export default {
-  components: {
-    CardItem
-  },
-  setup(props, context) {
-    const configs = ref([])
-    const loading = ref(true)
-    async function getConfigs() {
-      loading.value = true
-      const res = await getSystemTreeConfigs({ category: context.root.$route.meta.category || '采集器主机配置' })
-      loading.value = false
-      if (res.success) {
-        configs.value = res.data
-      }
-    }
-    getConfigs()
-    return {
-      configs,
-      loading
-    }
+
+interface ConfigItem {
+  name: string
+  values?: any[]
+  [key: string]: unknown
+}
+
+const route = useRoute()
+const configs = ref<ConfigItem[]>([])
+const loading = ref(true)
+
+async function getConfigs() {
+  loading.value = true
+  // TODO: i18n
+  const res = await getSystemTreeConfigs({ category: (route.meta?.category as string) || '采集器主机配置' })
+  loading.value = false
+  if (res.success) {
+    configs.value = res.data
   }
 }
+getConfigs()
 </script>
 <style lang="scss" scoped>
 .wrapper {

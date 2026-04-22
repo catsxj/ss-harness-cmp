@@ -3,102 +3,102 @@
     <el-form-item :label="label" required>
       <input :id="id" type="file" name="file" v-if="isShowUploadFile" style="border: 1px solid #d8dce5; border-radius: 4px; padding: 5px 10px; width: 80%" />
       <el-button type="primary" v-if="isShowUploadFile" @click="submitUpload(file)">上传</el-button>
-      <el-progress :percentage="file.progress" v-if="!isShowUploadFile"></el-progress>
+      <el-progress :percentage="file?.progress ?? 0" v-if="!isShowUploadFile"></el-progress>
     </el-form-item>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import uploadFile from 'utils/uploadFile'
 
-export default {
-  props: {
-    fileType: {
-      type: String
-    },
-    id: {
-      type: String,
-      default: 'btnFileUpload'
-    },
-    label: {
-      type: String,
-      default: '文件上传：'
-    }
-  },
-  data() {
-    return {
-      file: null,
-      isShowUploadFile: true,
-      uploadSuccess: false
-    }
-  },
-  created() {},
-  mounted() {
-    const self = this
-    document.getElementById(this.id).addEventListener('change', function (event) {
-      const files = event.target.files
-      const file = files[0]
-      if (/[\u4e00-\u9fa5\s]/.test(file.name)) {
-        self.$message({
-          message: '文件名不允许存在中文和空格',
-          type: 'error'
-        })
-      }
+interface IFileInfo {
+  file: File
+  name: string
+  isUploading: boolean
+  isCancel: boolean
+  isReady: boolean
+  isSuccess: boolean
+  progress: number
+}
 
-      if (file.name.length > 64) {
-        self.$message({
-          message: '文件名称过长',
-          type: 'error'
-        })
-      }
-      self.file = {
-        file: file,
-        name: file.name,
-        isUploading: false,
-        isCancel: false,
-        isReady: false,
-        isSuccess: false,
-        progress: 0
-      }
-    })
-  },
-  methods: {
-    submitUpload(file) {
-      if (file == undefined || file == null) {
-        return this.$message.error('请选择上传文件')
-      }
-      if (/[\u4e00-\u9fa5\s]/.test(file.name)) {
-        return this.$message.error('文件名不允许存在中文和空格')
-      }
-      if (this.fileType == 'EXCEL') {
-        const fileName = file.name.split('.')
-        let flag
-        if (
-          fileName[fileName.length - 1] === 'xlsx' ||
-          fileName[fileName.length - 1] === 'xls' ||
-          fileName[fileName.length - 1] === 'xltx' ||
-          fileName[fileName.length - 1] === 'xlt' ||
-          fileName[fileName.length - 1] === 'xlsm' ||
-          fileName[fileName.length - 1] === 'xlsb' ||
-          fileName[fileName.length - 1] === 'xltm' ||
-          fileName[fileName.length - 1] === 'csv'
-        ) {
-          flag = true
-        } else {
-          return this.$message.error('请上传EXCEL表格')
-        }
-      }
-      this.isShowUploadFile = false
-      this.$emit('show', this.isShowUploadFile)
-      uploadFile(file, this.message)
-    },
-    message(item) {
-      this.$message({
-        message: '上传成功',
-        type: 'success'
+const props = withDefaults(
+  defineProps<{
+    fileType?: string
+    id?: string
+    label?: string
+  }>(),
+  {
+    id: 'btnFileUpload',
+    label: '文件上传：'
+  }
+)
+
+const emit = defineEmits<{ show: [val: boolean] }>()
+
+const file = ref<IFileInfo | null>(null)
+const isShowUploadFile = ref(true)
+const uploadSuccess = ref(false)
+
+onMounted(() => {
+  document.getElementById(props.id)?.addEventListener('change', (event: Event) => {
+    const files = (event.target as HTMLInputElement).files
+    if (!files || !files[0]) return
+    const f = files[0]
+    if (/[\u4e00-\u9fa5\s]/.test(f.name)) {
+      ElMessage({
+        message: '文件名不允许存在中文和空格',
+        type: 'error'
       })
-      this.uploadSuccess = true
+    }
+
+    if (f.name.length > 64) {
+      ElMessage({
+        message: '文件名称过长',
+        type: 'error'
+      })
+    }
+    file.value = {
+      file: f,
+      name: f.name,
+      isUploading: false,
+      isCancel: false,
+      isReady: false,
+      isSuccess: false,
+      progress: 0
+    }
+  })
+})
+
+const message = () => {
+  ElMessage({
+    message: '上传成功',
+    type: 'success'
+  })
+  uploadSuccess.value = true
+}
+
+const submitUpload = (target: IFileInfo | null) => {
+  if (target == undefined || target == null) {
+    ElMessage.error('请选择上传文件')
+    return
+  }
+  if (/[\u4e00-\u9fa5\s]/.test(target.name)) {
+    ElMessage.error('文件名不允许存在中文和空格')
+    return
+  }
+  if (props.fileType == 'EXCEL') {
+    const fileName = target.name.split('.')
+    const ext = fileName[fileName.length - 1]
+    const validExts = ['xlsx', 'xls', 'xltx', 'xlt', 'xlsm', 'xlsb', 'xltm', 'csv']
+    if (!validExts.includes(ext)) {
+      ElMessage.error('请上传EXCEL表格')
+      return
     }
   }
+  isShowUploadFile.value = false
+  emit('show', isShowUploadFile.value)
+  uploadFile(target, message)
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="vue-image-crop-upload" v-show="value">
+  <div class="vue-image-crop-upload" v-show="modelValue">
     <div class="vicp-wrap">
       <div class="vicp-close" @click="off">
         <i class="vicp-icon4"></i>
@@ -45,7 +45,7 @@
                 @mousemove="imgMove"
                 @mouseup="createImg"
                 @mouseout="createImg"
-                ref="img"
+                ref="imgRef"
               />
               <div class="vicp-img-shade vicp-img-shade-1" :style="sourceImgShadeStyle"></div>
               <div class="vicp-img-shade vicp-img-shade-2" :style="sourceImgShadeStyle"></div>
@@ -94,694 +94,538 @@
           <a @click="off" @mousedown="ripple">{{ lang.btn.close }}</a>
         </div>
       </div>
-      <canvas v-show="false" :width="width" :height="height" ref="canvas"></canvas>
+      <canvas v-show="false" :width="width" :height="height" ref="canvasRef"></canvas>
     </div>
   </div>
 </template>
 
-<script>
-/* eslint-disable*/
+<script setup lang="ts">
+/* eslint-disable */
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import language from './utils/language.js'
 import mimes from './utils/mimes.js'
 import data2blob from './utils/data2blob.js'
 import effectRipple from './utils/effectRipple.js'
 
-export default {
-  props: {
-    // 域，上传文件name，触发事件会带上（如果一个页面多个图片上传控件，可以做区分
-    field: {
-      type: String,
-      default: 'avatar'
-    },
-    // 原名key，类似于id，触发事件会带上（如果一个页面多个图片上传控件，可以做区分
-    ki: {
-      default: 0
-    },
-    // 显示该控件与否
-    value: {
-      default: true
-    },
-    // 上传地址
-    url: {
-      type: String,
-      default: ''
-    },
-    // 其他要上传文件附带的数据，对象格式
-    params: {
-      type: Object,
-      default: null
-    },
-    // Add custom headers
-    headers: {
-      type: Object,
-      default: null
-    },
-    // 剪裁图片的宽
-    width: {
-      type: Number,
-      default: 200
-    },
-    // 剪裁图片的高
-    height: {
-      type: Number,
-      default: 200
-    },
-    // 不显示旋转功能
-    noRotate: {
-      type: Boolean,
-      default: true
-    },
-    // 不预览圆形图片
-    noCircle: {
-      type: Boolean,
-      default: false
-    },
-    // 不预览方形图片
-    noSquare: {
-      type: Boolean,
-      default: false
-    },
-    // 单文件大小限制
-    maxSize: {
-      type: Number,
-      default: 10240
-    },
-    // 语言类型
-    langType: {
-      type: String,
-      default: 'zh'
-    },
-    // 语言包
-    langExt: {
-      type: Object,
-      default: null
-    },
-    // 图片上传格式
-    imgFormat: {
-      type: String,
-      default: 'png'
-    },
-    // 图片背景 jpg情况下生效
-    imgBgc: {
-      type: String,
-      default: '#fff'
-    },
-    // 是否支持跨域
-    withCredentials: {
-      type: Boolean,
-      default: false
+// TODO: type - image-cropper 内部结构较复杂，lang 等来自 JS 工具函数，暂以宽松类型处理
+const props = withDefaults(
+  defineProps<{
+    field?: string
+    ki?: string | number
+    modelValue?: boolean
+    url?: string
+    params?: Record<string, any> | null
+    headers?: Record<string, any> | null
+    width?: number
+    height?: number
+    noRotate?: boolean
+    noCircle?: boolean
+    noSquare?: boolean
+    maxSize?: number
+    langType?: string
+    langExt?: Record<string, any> | null
+    imgFormat?: string
+    imgBgc?: string
+    withCredentials?: boolean
+  }>(),
+  {
+    field: 'avatar',
+    ki: 0,
+    modelValue: true,
+    url: '',
+    params: null,
+    headers: null,
+    width: 200,
+    height: 200,
+    noRotate: true,
+    noCircle: false,
+    noSquare: false,
+    maxSize: 10240,
+    langType: 'zh',
+    langExt: null,
+    imgFormat: 'png',
+    imgBgc: '#fff',
+    withCredentials: false
+  }
+)
+
+const emit = defineEmits<{
+  'update:modelValue': [val: boolean]
+  'crop-success': [createImgUrl: string, field: string, ki: string | number]
+  'crop-upload-success': [resData: any, field: string, ki: string | number]
+  'crop-upload-fail': [sts: any, field: string, ki: string | number]
+}>()
+
+const allowImgFormat = ['jpg', 'png']
+const tempImgFormat = allowImgFormat.indexOf(props.imgFormat) === -1 ? 'jpg' : props.imgFormat
+const lang: any = language[props.langType] ? language[props.langType] : language.en
+const mime = (mimes as any)[tempImgFormat]
+
+if (props.langExt) {
+  Object.assign(lang, props.langExt)
+}
+
+const isSupported = ref(typeof FormData === 'function')
+// eslint-disable-next-line no-prototype-builtins
+const isSupportTouch = document.hasOwnProperty('ontouchstart')
+
+const step = ref(1)
+const loading = ref(0)
+const progress = ref(0)
+const hasError = ref(false)
+const errorMsg = ref('')
+const ratio = props.width / props.height
+
+const sourceImg = ref<HTMLImageElement | null>(null)
+const sourceImgUrl = ref<any>('')
+const createImgUrl = ref('')
+
+const sourceImgMouseDown = reactive({
+  on: false,
+  mX: 0,
+  mY: 0,
+  x: 0,
+  y: 0
+})
+
+const previewContainer = {
+  width: 100,
+  height: 100
+}
+
+const sourceImgContainer = {
+  width: 240,
+  height: 184
+}
+
+const scale = reactive({
+  zoomAddOn: false,
+  zoomSubOn: false,
+  range: 1,
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  maxWidth: 0,
+  maxHeight: 0,
+  minWidth: 0,
+  minHeight: 0,
+  naturalWidth: 0,
+  naturalHeight: 0
+})
+
+const fileinput = ref<HTMLInputElement | null>(null)
+const imgRef = ref<HTMLImageElement | null>(null)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+
+const progressStyle = computed(() => ({
+  width: progress.value + '%'
+}))
+
+const sourceImgMasking = computed(() => {
+  const sic = sourceImgContainer
+  const sicRatio = sic.width / sic.height
+  let x = 0,
+    y = 0,
+    w = sic.width,
+    h = sic.height,
+    s = 1
+  if (ratio < sicRatio) {
+    s = sic.height / props.height
+    w = sic.height * ratio
+    x = (sic.width - w) / 2
+  }
+  if (ratio > sicRatio) {
+    s = sic.width / props.width
+    h = sic.width / ratio
+    y = (sic.height - h) / 2
+  }
+  return {
+    scale: s,
+    x,
+    y,
+    width: w,
+    height: h
+  }
+})
+
+const sourceImgStyle = computed(() => {
+  const sim = sourceImgMasking.value
+  const top = scale.y + sim.y + 'px'
+  const left = scale.x + sim.x + 'px'
+  return {
+    top,
+    left,
+    width: scale.width + 'px',
+    height: scale.height + 'px'
+  }
+})
+
+const sourceImgShadeStyle = computed(() => {
+  const sic = sourceImgContainer
+  const sim = sourceImgMasking.value
+  const w = sim.width == sic.width ? sim.width : (sic.width - sim.width) / 2
+  const h = sim.height == sic.height ? sim.height : (sic.height - sim.height) / 2
+  return {
+    width: w + 'px',
+    height: h + 'px'
+  }
+})
+
+const previewStyle = computed(() => {
+  const pc = previewContainer
+  let w = pc.width
+  let h = pc.height
+  const pcRatio = w / h
+  if (ratio < pcRatio) {
+    w = pc.height * ratio
+  }
+  if (ratio > pcRatio) {
+    h = pc.width / ratio
+  }
+  return {
+    width: w + 'px',
+    height: h + 'px'
+  }
+})
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue && loading.value != 1) {
+      reset()
     }
-  },
-  data() {
-    const that = this,
-      { imgFormat, langType, langExt, width, height } = that,
-      allowImgFormat = ['jpg', 'png'],
-      tempImgFormat = allowImgFormat.indexOf(imgFormat) === -1 ? 'jpg' : imgFormat,
-      lang = language[langType] ? language[langType] : language.en,
-      mime = mimes[tempImgFormat]
-    let isSupported = true
-    // 规范图片格式
-    that.imgFormat = tempImgFormat
+  }
+)
 
-    if (langExt) {
-      Object.assign(lang, langExt)
+// 点击波纹效果
+const ripple = (e: MouseEvent) => {
+  effectRipple(e)
+}
+
+// 关闭控件
+const off = () => {
+  setTimeout(() => {
+    emit('update:modelValue', false)
+    if (step.value == 3 && loading.value == 2) {
+      setStep(1)
     }
-    if (typeof FormData != 'function') {
-      isSupported = false
-    }
-    return {
-      // 图片的mime
-      mime,
+  }, 200)
+}
 
-      // 语言包
-      lang,
+const setStep = (no: number) => {
+  setTimeout(() => {
+    step.value = no
+  }, 200)
+}
 
-      // 浏览器是否支持该控件
-      isSupported,
-      // 浏览器是否支持触屏事件
-      // eslint-disable-next-line no-prototype-builtins
-      isSupportTouch: document.hasOwnProperty('ontouchstart'),
+const preventDefault = (e: Event) => {
+  e.preventDefault()
+  return false
+}
 
-      // 步骤
-      step: 1, // 1选择文件 2剪裁 3上传
-
-      // 上传状态及进度
-      loading: 0, // 0未开始 1正在 2成功 3错误
-      progress: 0,
-
-      // 是否有错误及错误信息
-      hasError: false,
-      errorMsg: '',
-
-      // 需求图宽高比
-      ratio: width / height,
-
-      // 原图地址、生成图片地址
-      sourceImg: null,
-      sourceImgUrl: '',
-      createImgUrl: '',
-
-      // 原图片拖动事件初始值
-      sourceImgMouseDown: {
-        on: false,
-        mX: 0, // 鼠标按下的坐标
-        mY: 0,
-        x: 0, // scale原图坐标
-        y: 0
-      },
-
-      // 生成图片预览的容器大小
-      previewContainer: {
-        width: 100,
-        height: 100
-      },
-
-      // 原图容器宽高
-      sourceImgContainer: {
-        // sic
-        width: 240,
-        height: 184 // 如果生成图比例与此一致会出现bug，先改成特殊的格式吧，哈哈哈
-      },
-
-      // 原图展示属性
-      scale: {
-        zoomAddOn: false, // 按钮缩放事件开启
-        zoomSubOn: false, // 按钮缩放事件开启
-        range: 1, // 最大100
-
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        maxWidth: 0,
-        maxHeight: 0,
-        minWidth: 0, // 最宽
-        minHeight: 0,
-        naturalWidth: 0, // 原宽
-        naturalHeight: 0
-      }
-    }
-  },
-  computed: {
-    // 进度条样式
-    progressStyle() {
-      const { progress } = this
-      return {
-        width: progress + '%'
-      }
-    },
-    // 原图样式
-    sourceImgStyle() {
-      const { scale, sourceImgMasking } = this,
-        top = scale.y + sourceImgMasking.y + 'px',
-        left = scale.x + sourceImgMasking.x + 'px'
-      return {
-        top,
-        left,
-        width: scale.width + 'px',
-        height: scale.height + 'px' // 兼容 Opera
-      }
-    },
-    // 原图蒙版属性
-    sourceImgMasking() {
-      const { width, height, ratio, sourceImgContainer } = this,
-        sic = sourceImgContainer,
-        sicRatio = sic.width / sic.height // 原图容器宽高比
-      let x = 0,
-        y = 0,
-        w = sic.width,
-        h = sic.height,
-        scale = 1
-      if (ratio < sicRatio) {
-        scale = sic.height / height
-        w = sic.height * ratio
-        x = (sic.width - w) / 2
-      }
-      if (ratio > sicRatio) {
-        scale = sic.width / width
-        h = sic.width / ratio
-        y = (sic.height - h) / 2
-      }
-      return {
-        scale, // 蒙版相对需求宽高的缩放
-        x,
-        y,
-        width: w,
-        height: h
-      }
-    },
-    // 原图遮罩样式
-    sourceImgShadeStyle() {
-      const { sourceImgMasking, sourceImgContainer } = this,
-        sic = sourceImgContainer,
-        sim = sourceImgMasking,
-        w = sim.width == sic.width ? sim.width : (sic.width - sim.width) / 2,
-        h = sim.height == sic.height ? sim.height : (sic.height - sim.height) / 2
-      return {
-        width: w + 'px',
-        height: h + 'px'
-      }
-    },
-    previewStyle() {
-      const { width, height, ratio, previewContainer } = this,
-        pc = previewContainer
-      let w = pc.width,
-        h = pc.height
-      const pcRatio = w / h
-      if (ratio < pcRatio) {
-        w = pc.height * ratio
-      }
-      if (ratio > pcRatio) {
-        h = pc.width / ratio
-      }
-      return {
-        width: w + 'px',
-        height: h + 'px'
-      }
-    }
-  },
-  watch: {
-    value(newValue) {
-      if (newValue && this.loading != 1) {
-        this.reset()
-      }
-    }
-  },
-  methods: {
-    // 点击波纹效果
-    ripple(e) {
-      effectRipple(e)
-    },
-    // 关闭控件
-    off() {
-      setTimeout(() => {
-        this.$emit('input', false)
-        if (this.step == 3 && this.loading == 2) {
-          this.setStep(1)
-        }
-      }, 200)
-    },
-    // 设置步骤
-    setStep(no) {
-      // 延时是为了显示动画效果呢，哈哈哈
-      setTimeout(() => {
-        this.step = no
-      }, 200)
-    },
-
-    /* 图片选择区域函数绑定--------------------------------------------------------------- */
-    preventDefault(e) {
+const handleClick = (e: MouseEvent) => {
+  if (loading.value !== 1) {
+    if (e.target !== fileinput.value) {
       e.preventDefault()
-      return false
-    },
-    handleClick(e) {
-      if (this.loading !== 1) {
-        if (e.target !== this.$refs.fileinput) {
-          e.preventDefault()
-          if (document.activeElement !== this.$refs) {
-            this.$refs.fileinput.click()
-          }
-        }
+      if (document.activeElement !== (fileinput.value as any)) {
+        fileinput.value?.click()
       }
-    },
-    handleChange(e) {
-      e.preventDefault()
-      if (this.loading !== 1) {
-        const files = e.target.files || e.dataTransfer.files
-        this.reset()
-        if (this.checkFile(files[0])) {
-          this.setSourceImg(files[0])
-        }
-      }
-    },
-    /* --------------------------------------------------------------- */
-
-    // 检测选择的文件是否合适
-    checkFile(file) {
-      const that = this,
-        { lang, maxSize } = that
-      // 仅限图片
-      if (file.type.indexOf('image') === -1) {
-        that.hasError = true
-        that.errorMsg = lang.error.onlyImg
-        return false
-      }
-
-      // 超出大小
-      if (file.size / 1024 > maxSize) {
-        that.hasError = true
-        that.errorMsg = lang.error.outOfSize + maxSize + 'kb'
-        return false
-      }
-      return true
-    },
-    // 重置控件
-    reset() {
-      const that = this
-      that.loading = 0
-      that.hasError = false
-      that.errorMsg = ''
-      that.progress = 0
-    },
-    // 设置图片源
-    setSourceImg(file) {
-      const that = this,
-        fr = new FileReader()
-      fr.onload = function (e) {
-        that.sourceImgUrl = fr.result
-        that.startCrop()
-      }
-      fr.readAsDataURL(file)
-    },
-    // 剪裁前准备工作
-    startCrop() {
-      const that = this,
-        { width, height, ratio, scale, sourceImgUrl, sourceImgMasking, lang } = that,
-        sim = sourceImgMasking,
-        img = new Image()
-      img.src = sourceImgUrl
-      img.onload = function () {
-        const nWidth = img.naturalWidth,
-          nHeight = img.naturalHeight,
-          nRatio = nWidth / nHeight
-        let w = sim.width,
-          h = sim.height,
-          x = 0,
-          y = 0
-        // 图片像素不达标
-        if (nWidth < width || nHeight < height) {
-          that.hasError = true
-          that.errorMsg = lang.error.lowestPx + width + '*' + height
-          return false
-        }
-        if (ratio > nRatio) {
-          h = w / nRatio
-          y = (sim.height - h) / 2
-        }
-        if (ratio < nRatio) {
-          w = h * nRatio
-          x = (sim.width - w) / 2
-        }
-        scale.range = 0
-        scale.x = x
-        scale.y = y
-        scale.width = w
-        scale.height = h
-        scale.minWidth = w
-        scale.minHeight = h
-        scale.maxWidth = nWidth * sim.scale
-        scale.maxHeight = nHeight * sim.scale
-        scale.naturalWidth = nWidth
-        scale.naturalHeight = nHeight
-        that.sourceImg = img
-        that.createImg()
-        that.setStep(2)
-      }
-    },
-    // 鼠标按下图片准备移动
-    imgStartMove(e) {
-      e.preventDefault()
-      // 支持触摸事件，则鼠标事件无效
-      if (this.isSupportTouch && !e.targetTouches) {
-        return false
-      }
-      const et = e.targetTouches ? e.targetTouches[0] : e,
-        { sourceImgMouseDown, scale } = this,
-        simd = sourceImgMouseDown
-      simd.mX = et.screenX
-      simd.mY = et.screenY
-      simd.x = scale.x
-      simd.y = scale.y
-      simd.on = true
-    },
-    // 鼠标按下状态下移动，图片移动
-    imgMove(e) {
-      e.preventDefault()
-      // 支持触摸事件，则鼠标事件无效
-      if (this.isSupportTouch && !e.targetTouches) {
-        return false
-      }
-      const et = e.targetTouches ? e.targetTouches[0] : e,
-        {
-          sourceImgMouseDown: { on, mX, mY, x, y },
-          scale,
-          sourceImgMasking
-        } = this,
-        sim = sourceImgMasking,
-        nX = et.screenX,
-        nY = et.screenY,
-        dX = nX - mX,
-        dY = nY - mY
-      let rX = x + dX,
-        rY = y + dY
-      if (!on) return
-      if (rX > 0) {
-        rX = 0
-      }
-      if (rY > 0) {
-        rY = 0
-      }
-      if (rX < sim.width - scale.width) {
-        rX = sim.width - scale.width
-      }
-      if (rY < sim.height - scale.height) {
-        rY = sim.height - scale.height
-      }
-      scale.x = rX
-      scale.y = rY
-    },
-    // 顺时针旋转图片
-    rotateImg(e) {
-      const {
-          sourceImg,
-          scale: { naturalWidth, naturalHeight }
-        } = this,
-        width = naturalHeight,
-        height = naturalWidth,
-        canvas = this.$refs.canvas,
-        ctx = canvas.getContext('2d')
-      canvas.width = width
-      canvas.height = height
-      ctx.clearRect(0, 0, width, height)
-
-      ctx.fillStyle = 'rgba(0,0,0,0)'
-      ctx.fillRect(0, 0, width, height)
-
-      ctx.translate(width, 0)
-      ctx.rotate((Math.PI * 90) / 180)
-
-      ctx.drawImage(sourceImg, 0, 0, naturalWidth, naturalHeight)
-      const imgUrl = canvas.toDataURL(mimes.png)
-
-      this.sourceImgUrl = imgUrl
-      this.startCrop()
-    },
-
-    // 按钮按下开始放大
-    startZoomAdd(e) {
-      const that = this,
-        { scale } = that
-      scale.zoomAddOn = true
-
-      function zoom() {
-        if (scale.zoomAddOn) {
-          const range = scale.range >= 100 ? 100 : ++scale.range
-          that.zoomImg(range)
-          setTimeout(function () {
-            zoom()
-          }, 60)
-        }
-      }
-      zoom()
-    },
-    // 按钮松开或移开取消放大
-    endZoomAdd(e) {
-      this.scale.zoomAddOn = false
-    },
-    // 按钮按下开始缩小
-    startZoomSub(e) {
-      const that = this,
-        { scale } = that
-      scale.zoomSubOn = true
-
-      function zoom() {
-        if (scale.zoomSubOn) {
-          const range = scale.range <= 0 ? 0 : --scale.range
-          that.zoomImg(range)
-          setTimeout(function () {
-            zoom()
-          }, 60)
-        }
-      }
-      zoom()
-    },
-    // 按钮松开或移开取消缩小
-    endZoomSub(e) {
-      const { scale } = this
-      scale.zoomSubOn = false
-    },
-    zoomChange(e) {
-      this.zoomImg(e.target.value)
-    },
-    // 缩放原图
-    zoomImg(newRange) {
-      const that = this,
-        { sourceImgMasking, sourceImgMouseDown, scale } = this,
-        { maxWidth, maxHeight, minWidth, minHeight, width, height, x, y, range } = scale,
-        sim = sourceImgMasking,
-        // 蒙版宽高
-        sWidth = sim.width,
-        sHeight = sim.height,
-        // 新宽高
-        nWidth = minWidth + ((maxWidth - minWidth) * newRange) / 100,
-        nHeight = minHeight + ((maxHeight - minHeight) * newRange) / 100
-      // 新坐标（根据蒙版中心点缩放）
-      let nX = sWidth / 2 - (nWidth / width) * (sWidth / 2 - x),
-        nY = sHeight / 2 - (nHeight / height) * (sHeight / 2 - y)
-
-      // 判断新坐标是否超过蒙版限制
-      if (nX > 0) {
-        nX = 0
-      }
-      if (nY > 0) {
-        nY = 0
-      }
-      if (nX < sWidth - nWidth) {
-        nX = sWidth - nWidth
-      }
-      if (nY < sHeight - nHeight) {
-        nY = sHeight - nHeight
-      }
-
-      // 赋值处理
-      scale.x = nX
-      scale.y = nY
-      scale.width = nWidth
-      scale.height = nHeight
-      scale.range = newRange
-      setTimeout(function () {
-        if (scale.range == newRange) {
-          that.createImg()
-        }
-      }, 300)
-    },
-    // 生成需求图片
-    createImg(e) {
-      const that = this,
-        {
-          imgFormat,
-          imgBgc,
-          mime,
-          sourceImg,
-          scale: { x, y, width, height },
-          sourceImgMasking: { scale }
-        } = that,
-        canvas = that.$refs.canvas,
-        ctx = canvas.getContext('2d')
-      if (e) {
-        // 取消鼠标按下移动状态
-        that.sourceImgMouseDown.on = false
-      }
-      canvas.width = that.width
-      canvas.height = that.height
-      ctx.clearRect(0, 0, that.width, that.height)
-
-      if (imgFormat == 'png') {
-        ctx.fillStyle = 'rgba(0,0,0,0)'
-      } else {
-        // 如果jpg 为透明区域设置背景，默认白色
-        ctx.fillStyle = imgBgc
-      }
-      ctx.fillRect(0, 0, that.width, that.height)
-
-      ctx.drawImage(sourceImg, x / scale, y / scale, width / scale, height / scale)
-      that.createImgUrl = canvas.toDataURL(mime)
-    },
-    prepareUpload() {
-      const { url, createImgUrl, field, ki } = this
-      this.$emit('crop-success', createImgUrl, field, ki)
-      if (typeof url == 'string' && url) {
-        this.upload()
-      } else {
-        this.off()
-      }
-    },
-    // 上传图片
-    upload() {
-      const that = this,
-        { lang, imgFormat, mime, url, params, headers, field, ki, createImgUrl, withCredentials } = this,
-        fmData = new FormData()
-      fmData.append(field, data2blob(createImgUrl, mime), field + '.' + imgFormat)
-
-      // 添加其他参数
-      if (typeof params == 'object' && params) {
-        Object.keys(params).forEach((k) => {
-          fmData.append(k, params[k])
-        })
-      }
-
-      // 监听进度回调
-      const uploadProgress = function (event) {
-        if (event.lengthComputable) {
-          that.progress = (100 * Math.round(event.loaded)) / event.total
-        }
-      }
-
-      // 上传文件
-      that.reset()
-      that.loading = 1
-      that.setStep(3)
-      new Promise(function (resolve, reject) {
-        const client = new XMLHttpRequest()
-        client.open('POST', url, true)
-        client.withCredentials = withCredentials
-        client.onreadystatechange = function () {
-          if (this.readyState !== 4) {
-            return
-          }
-          if (this.status === 200 || this.status === 201) {
-            resolve(JSON.parse(this.responseText))
-          } else {
-            reject(this.status)
-          }
-        }
-        client.upload.addEventListener('progress', uploadProgress, false) // 监听进度
-        // 设置header
-        if (typeof headers == 'object' && headers) {
-          Object.keys(headers).forEach((k) => {
-            client.setRequestHeader(k, headers[k])
-          })
-        }
-        client.send(fmData)
-      }).then(
-        // 上传成功
-        function (resData) {
-          if (that.value) {
-            that.loading = 2
-            that.$emit('crop-upload-success', resData, field, ki)
-          }
-        },
-        // 上传失败
-        function (sts) {
-          if (that.value) {
-            that.loading = 3
-            that.hasError = true
-            that.errorMsg = lang.fail
-            that.$emit('crop-upload-fail', sts, field, ki)
-          }
-        }
-      )
     }
-  },
-  created() {
-    // 绑定按键esc隐藏此插件事件
-    document.addEventListener('keyup', (e) => {
-      if (this.value && (e.key == 'Escape' || e.keyCode == 27)) {
-        this.off()
-      }
-    })
   }
 }
+
+const handleChange = (e: any) => {
+  e.preventDefault()
+  if (loading.value !== 1) {
+    const files = e.target.files || e.dataTransfer.files
+    reset()
+    if (checkFile(files[0])) {
+      setSourceImg(files[0])
+    }
+  }
+}
+
+const checkFile = (file: File) => {
+  if (file.type.indexOf('image') === -1) {
+    hasError.value = true
+    errorMsg.value = lang.error.onlyImg
+    return false
+  }
+  if (file.size / 1024 > props.maxSize) {
+    hasError.value = true
+    errorMsg.value = lang.error.outOfSize + props.maxSize + 'kb'
+    return false
+  }
+  return true
+}
+
+const reset = () => {
+  loading.value = 0
+  hasError.value = false
+  errorMsg.value = ''
+  progress.value = 0
+}
+
+const setSourceImg = (file: File) => {
+  const fr = new FileReader()
+  fr.onload = function () {
+    sourceImgUrl.value = fr.result
+    startCrop()
+  }
+  fr.readAsDataURL(file)
+}
+
+const startCrop = () => {
+  const sim = sourceImgMasking.value
+  const img = new Image()
+  img.src = sourceImgUrl.value
+  img.onload = function () {
+    const nWidth = img.naturalWidth
+    const nHeight = img.naturalHeight
+    const nRatio = nWidth / nHeight
+    let w = sim.width
+    let h = sim.height
+    let x = 0
+    let y = 0
+    if (nWidth < props.width || nHeight < props.height) {
+      hasError.value = true
+      errorMsg.value = lang.error.lowestPx + props.width + '*' + props.height
+      return false
+    }
+    if (ratio > nRatio) {
+      h = w / nRatio
+      y = (sim.height - h) / 2
+    }
+    if (ratio < nRatio) {
+      w = h * nRatio
+      x = (sim.width - w) / 2
+    }
+    scale.range = 0
+    scale.x = x
+    scale.y = y
+    scale.width = w
+    scale.height = h
+    scale.minWidth = w
+    scale.minHeight = h
+    scale.maxWidth = nWidth * sim.scale
+    scale.maxHeight = nHeight * sim.scale
+    scale.naturalWidth = nWidth
+    scale.naturalHeight = nHeight
+    sourceImg.value = img
+    createImg()
+    setStep(2)
+  }
+}
+
+const imgStartMove = (e: any) => {
+  e.preventDefault()
+  if (isSupportTouch && !e.targetTouches) {
+    return false
+  }
+  const et = e.targetTouches ? e.targetTouches[0] : e
+  sourceImgMouseDown.mX = et.screenX
+  sourceImgMouseDown.mY = et.screenY
+  sourceImgMouseDown.x = scale.x
+  sourceImgMouseDown.y = scale.y
+  sourceImgMouseDown.on = true
+}
+
+const imgMove = (e: any) => {
+  e.preventDefault()
+  if (isSupportTouch && !e.targetTouches) {
+    return false
+  }
+  const et = e.targetTouches ? e.targetTouches[0] : e
+  const { on, mX, mY, x, y } = sourceImgMouseDown
+  const sim = sourceImgMasking.value
+  const nX = et.screenX
+  const nY = et.screenY
+  const dX = nX - mX
+  const dY = nY - mY
+  let rX = x + dX
+  let rY = y + dY
+  if (!on) return
+  if (rX > 0) rX = 0
+  if (rY > 0) rY = 0
+  if (rX < sim.width - scale.width) rX = sim.width - scale.width
+  if (rY < sim.height - scale.height) rY = sim.height - scale.height
+  scale.x = rX
+  scale.y = rY
+}
+
+const rotateImg = () => {
+  const { naturalWidth, naturalHeight } = scale
+  const w = naturalHeight
+  const h = naturalWidth
+  const canvas = canvasRef.value!
+  const ctx = canvas.getContext('2d')!
+  canvas.width = w
+  canvas.height = h
+  ctx.clearRect(0, 0, w, h)
+  ctx.fillStyle = 'rgba(0,0,0,0)'
+  ctx.fillRect(0, 0, w, h)
+  ctx.translate(w, 0)
+  ctx.rotate((Math.PI * 90) / 180)
+  ctx.drawImage(sourceImg.value!, 0, 0, naturalWidth, naturalHeight)
+  const imgUrl = canvas.toDataURL((mimes as any).png)
+  sourceImgUrl.value = imgUrl
+  startCrop()
+}
+
+const startZoomAdd = () => {
+  scale.zoomAddOn = true
+  function zoom() {
+    if (scale.zoomAddOn) {
+      const range = scale.range >= 100 ? 100 : ++scale.range
+      zoomImg(range)
+      setTimeout(() => zoom(), 60)
+    }
+  }
+  zoom()
+}
+
+const endZoomAdd = () => {
+  scale.zoomAddOn = false
+}
+
+const startZoomSub = () => {
+  scale.zoomSubOn = true
+  function zoom() {
+    if (scale.zoomSubOn) {
+      const range = scale.range <= 0 ? 0 : --scale.range
+      zoomImg(range)
+      setTimeout(() => zoom(), 60)
+    }
+  }
+  zoom()
+}
+
+const endZoomSub = () => {
+  scale.zoomSubOn = false
+}
+
+const zoomChange = (e: any) => {
+  zoomImg(e.target.value)
+}
+
+const zoomImg = (newRange: number) => {
+  const { maxWidth, maxHeight, minWidth, minHeight, width: sw, height: sh, x, y } = scale
+  const sim = sourceImgMasking.value
+  const sWidth = sim.width
+  const sHeight = sim.height
+  const nWidth = minWidth + ((maxWidth - minWidth) * newRange) / 100
+  const nHeight = minHeight + ((maxHeight - minHeight) * newRange) / 100
+  let nX = sWidth / 2 - (nWidth / sw) * (sWidth / 2 - x)
+  let nY = sHeight / 2 - (nHeight / sh) * (sHeight / 2 - y)
+  if (nX > 0) nX = 0
+  if (nY > 0) nY = 0
+  if (nX < sWidth - nWidth) nX = sWidth - nWidth
+  if (nY < sHeight - nHeight) nY = sHeight - nHeight
+  scale.x = nX
+  scale.y = nY
+  scale.width = nWidth
+  scale.height = nHeight
+  scale.range = newRange
+  setTimeout(() => {
+    if (scale.range == newRange) {
+      createImg()
+    }
+  }, 300)
+}
+
+const createImg = (e?: any) => {
+  const canvas = canvasRef.value!
+  const ctx = canvas.getContext('2d')!
+  if (e) {
+    sourceImgMouseDown.on = false
+  }
+  canvas.width = props.width
+  canvas.height = props.height
+  ctx.clearRect(0, 0, props.width, props.height)
+  if (props.imgFormat == 'png') {
+    ctx.fillStyle = 'rgba(0,0,0,0)'
+  } else {
+    ctx.fillStyle = props.imgBgc
+  }
+  ctx.fillRect(0, 0, props.width, props.height)
+  const sim = sourceImgMasking.value
+  ctx.drawImage(sourceImg.value!, scale.x / sim.scale, scale.y / sim.scale, scale.width / sim.scale, scale.height / sim.scale)
+  createImgUrl.value = canvas.toDataURL(mime)
+}
+
+const prepareUpload = () => {
+  emit('crop-success', createImgUrl.value, props.field, props.ki)
+  if (typeof props.url == 'string' && props.url) {
+    upload()
+  } else {
+    off()
+  }
+}
+
+const upload = () => {
+  const fmData = new FormData()
+  fmData.append(props.field, data2blob(createImgUrl.value, mime), props.field + '.' + props.imgFormat)
+
+  if (typeof props.params == 'object' && props.params) {
+    Object.keys(props.params).forEach((k) => {
+      fmData.append(k, (props.params as any)[k])
+    })
+  }
+
+  const uploadProgress = function (event: ProgressEvent) {
+    if (event.lengthComputable) {
+      progress.value = (100 * Math.round(event.loaded)) / event.total
+    }
+  }
+
+  reset()
+  loading.value = 1
+  setStep(3)
+  new Promise<any>(function (resolve, reject) {
+    const client = new XMLHttpRequest()
+    client.open('POST', props.url, true)
+    client.withCredentials = props.withCredentials
+    client.onreadystatechange = function () {
+      if (this.readyState !== 4) return
+      if (this.status === 200 || this.status === 201) {
+        resolve(JSON.parse(this.responseText))
+      } else {
+        reject(this.status)
+      }
+    }
+    client.upload.addEventListener('progress', uploadProgress, false)
+    if (typeof props.headers == 'object' && props.headers) {
+      Object.keys(props.headers).forEach((k) => {
+        client.setRequestHeader(k, (props.headers as any)[k])
+      })
+    }
+    client.send(fmData)
+  }).then(
+    function (resData) {
+      if (props.modelValue) {
+        loading.value = 2
+        emit('crop-upload-success', resData, props.field, props.ki)
+      }
+    },
+    function (sts) {
+      if (props.modelValue) {
+        loading.value = 3
+        hasError.value = true
+        errorMsg.value = lang.fail
+        emit('crop-upload-fail', sts, props.field, props.ki)
+      }
+    }
+  )
+}
+
+onMounted(() => {
+  document.addEventListener('keyup', (e: KeyboardEvent) => {
+    if (props.modelValue && (e.key == 'Escape' || e.keyCode == 27)) {
+      off()
+    }
+  })
+})
 </script>
 
 <style>

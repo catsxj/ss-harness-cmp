@@ -1,0 +1,31 @@
+type LazyComponent = () => Promise<unknown>
+
+const system: Record<string, LazyComponent> = {
+  SystemDepart: () => import('views/permisson/department.vue'),
+  SystemManager: () => import('views/permisson/manager/index.vue'),
+  TenantManager: () => import('views/permisson/tenant/index.vue'),
+  SystemRole: () => import('views/permisson/role.vue'),
+  SystemPermission: () => import('views/permisson/auth/index.vue'),
+  NameRule: () => import('views/configs/namerule.vue'),
+  AuditLog: () => import('views/log/audit.vue'),
+  SystemDictionary: () => import('views/configs/dictionary.vue'),
+  SystemMonitor: () => import('views/monitor/index.vue'),
+  SystemAbout: () => import('views/about/index.vue'),
+  SettingDashboard: () => import('views/configs/setting_dashboard/index.vue'),
+  SystemPageSetting: () => import('views/configs/setting/page/index.vue'),
+  SystemInterfaceSetting: () => import('views/configs/setting/interface/index.vue'),
+  SystemGeneralSetting: () => import('views/configs/setting/general.vue'),
+  SystemSecuritySetting: () => import('views/configs/setting/security/index.vue'),
+  SystemEnviroment: () => import('views/configs/enviroment.vue'),
+  BusinessSetting: () => import('views/configs/business/index.vue'),
+  ProjectAdmin: () => import('views/configs/project/index.vue'),
+  Tag: () => import('views/configs/tag.vue'),
+  PlatformTask: () => import('views/configs/PlatformTask.vue'),
+  Migration: () => import('views/configs/migration/index.vue'),
+  Notice: () => import('views/configs/notice/index.vue'),
+  PluginManager: () => import('views/permisson/plugins/index.vue'),
+  PluginManagerConfig: () => import('views/permisson/plugins/configIndex.vue'),
+  SettingMonitor: () => import('views/configs/setting/monitor/index.vue')
+}
+
+export default system

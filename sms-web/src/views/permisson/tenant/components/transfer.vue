@@ -1,102 +1,109 @@
 <template>
-  <el-dialog title="用户管理" :visible.sync="config.visible" width="800px">
-    <el-transfer v-loading="loadLoading" v-model="addData.value" :props="props" :data="addData.data" :titles="['未选择', '已选择']">
-      <div slot="left-footer">
-        <el-input v-model="name" placeholder="请输入用户名进行搜索">
-          <el-button slot="append" icon="el-icon-search" @click="getLeft"></el-button>
-        </el-input>
-      </div>
+  <el-dialog title="用户管理" v-model="props.config.visible" width="800px">
+    <el-transfer v-loading="loadLoading" v-model="addData.value" :props="transferProps" :data="addData.data" :titles="['未选择', '已选择']">
+      <template #left-footer>
+        <div>
+          <el-input v-model="name" placeholder="请输入用户名进行搜索">
+            <template #append>
+              <el-button @click="getLeft">
+                <el-icon><Search /></el-icon>
+              </el-button>
+            </template>
+          </el-input>
+        </div>
+      </template>
     </el-transfer>
-    <span slot="footer" class="dialog-footer">
-      <el-button @click="config.visible = false">取 消</el-button>
-      <el-button type="primary" @click="handleSubmit">确 定</el-button>
-    </span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="props.config.visible = false">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      </span>
+    </template>
   </el-dialog>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 import { tenantCongigUser, getTenantUserTrans } from 'services/system/tenant'
 import { getUser } from 'services/system/user'
+import { handleSearchParam } from 'utils'
 
-const mergeAndDeduplicate = (arr1, arr2) => {
-  const combined = [...arr1, ...arr2]
-  const unique = combined.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id))
-  return unique
+interface TransferConfigItem {
+  visible: boolean
+  id: number
+  value?: any[]
+  data?: any[]
 }
-export default {
-  props: {
-    config: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
-  },
-  data() {
-    return {
-      props: {
-        key: 'id',
-        label: 'name'
-      },
-      addData: {
-        value: [],
-        hasData: [],
-        data: []
-      },
-      userParams: {
-        page: 1,
-        rows: 50
-      },
-      name: '',
-      loadLoading: false
-    }
-  },
-  created() {
-    this.getRight()
-    this.getLeft()
-  },
-  methods: {
-    async getRight() {
-      const res = await getTenantUserTrans(this.config.id, { page: 1, rows: 99999 })
-      if (res.success) {
-        this.addData.value = res.data.map((item) => item.id)
-        this.addData.hasData = res.data.map(({ id, name }) => ({ id, name }))
-        this.addData.data = mergeAndDeduplicate(this.addData.hasData, this.addData.data)
-      }
-    },
-    async getLeft() {
-      this.userParams.params = this.$tools.handleSearchParam({ 'tenantId:EQ': 0, 'name:LK': this.name })
-      this.loadLoading = true
-      const res = await getUser(this.userParams).finally(() => {
-        this.loadLoading = false
-      })
-      if (res.success && res.data) {
-        this.addData.data = mergeAndDeduplicate(
-          res.data.rows.map(({ id, name }) => ({ id, name })),
-          this.addData.hasData
-        )
-      }
-    },
-    handleSubmit() {
-      const params = {
-        id: this.config.id,
-        ids: this.addData.value
-      }
-      tenantCongigUser(params).then((res) => {
-        if (res.success) {
-          this.$emit('success')
-          this.$message.success(res.message)
-          this.config.visible = false
-        }
-      })
-    },
-    getPostData() {
-      return {
-        groupIds: this.config.value
-      }
-    }
+
+const props = defineProps<{ config: TransferConfigItem }>()
+const emit = defineEmits<{
+  success: []
+  transferSubmit: [value: any[]]
+}>()
+
+const mergeAndDeduplicate = <T extends { id: any }>(arr1: T[], arr2: T[]): T[] => {
+  const combined = [...arr1, ...arr2]
+  return combined.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id))
+}
+
+const transferProps = { key: 'id', label: 'name' }
+
+const addData = reactive<{ value: any[]; hasData: any[]; data: any[] }>({
+  value: [],
+  hasData: [],
+  data: []
+})
+const userParams = reactive<any>({ page: 1, rows: 50 })
+const name = ref('')
+const loadLoading = ref(false)
+
+onMounted(() => {
+  getRight()
+  getLeft()
+})
+
+async function getRight() {
+  const res = await getTenantUserTrans(props.config.id, { page: 1, rows: 99999 })
+  if (res.success) {
+    addData.value = res.data.map((item: any) => item.id)
+    addData.hasData = res.data.map(({ id, name }: any) => ({ id, name }))
+    addData.data = mergeAndDeduplicate(addData.hasData, addData.data)
   }
 }
+
+async function getLeft() {
+  userParams.params = handleSearchParam({ 'tenantId:EQ': 0, 'name:LK': name.value })
+  loadLoading.value = true
+  const res = await getUser(userParams).finally(() => {
+    loadLoading.value = false
+  })
+  if (res.success && res.data) {
+    addData.data = mergeAndDeduplicate(
+      res.data.rows.map(({ id, name }: any) => ({ id, name })),
+      addData.hasData
+    )
+  }
+}
+
+function handleSubmit() {
+  const params = { id: props.config.id, ids: addData.value }
+  tenantCongigUser(params).then((res: any) => {
+    if (res.success) {
+      emit('success')
+      ElMessage.success(res.message)
+      props.config.visible = false
+    }
+  })
+}
+
+function getPostData() {
+  return { groupIds: props.config.value }
+}
+
+defineExpose({ getPostData })
+
 </script>
 
 <style scoped lang="scss">
@@ -104,14 +111,14 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  ::v-deep .el-transfer__buttons {
+  :deep(.el-transfer__buttons) {
     width: 50px;
     box-sizing: content-box;
     .el-button {
       margin-left: 0;
     }
   }
-  ::v-deep .el-transfer-panel {
+  :deep(.el-transfer-panel) {
     width: 250px;
     .is-with-footer {
       padding-top: 50px;

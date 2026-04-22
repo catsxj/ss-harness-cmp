@@ -8,6 +8,7 @@
         <svg-icon icon-name="svg-vm"></svg-icon>
       </div>
       <div class="count">
+        <!-- TODO: i18n -->
         <span>云主机</span>
         <span>{{ data.vmNum }}</span>
       </div>
@@ -17,6 +18,7 @@
         <svg-icon icon-name="svg-host"></svg-icon>
       </div>
       <div class="count">
+        <!-- TODO: i18n -->
         <span>物理机</span>
         <span>{{ data.hostNum }}</span>
       </div>
@@ -26,54 +28,58 @@
         <svg-icon icon-name="svg-image"></svg-icon>
       </div>
       <div class="count">
+        <!-- TODO: i18n -->
         <span>镜像</span>
         <span>{{ data.imageNum }}</span>
       </div>
     </div>
   </div>
 </template>
-<script lang="ts">
-import { ref, defineComponent, PropType, unref } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 import { getDc } from 'services/platform/index'
 import { getResourceCountByDc } from 'services/system/portal'
 
-export default defineComponent({
-  props: {
-    itemData: {
-      type: Object as PropType<{ config: any }>,
-      required: true
-    }
-  },
-  setup(props) {
-    const data = ref({
-      vmNum: 0,
-      hostNum: 0,
-      imageNum: 0
-    })
-    const dcId = ref()
-    const dcList = ref([])
-    ;(async function () {
-      const res = await getDc({ page: 1, rows: 10000 })
-      if (res.success) {
-        dcList.value = res.data.rows
-        if (unref(dcList).length) {
-          dcId.value = (dcList.value[0] as any).id
-          getCount()
-        }
-      }
-    })()
-    async function getCount() {
-      const res = await getResourceCountByDc(unref(dcId))
-      data.value = res.data
-    }
-    return {
-      data,
-      dcList,
-      dcId,
-      getCount
+interface DcItem {
+  id: number | string
+  name: string
+}
+
+interface CountData {
+  vmNum: number
+  hostNum: number
+  imageNum: number
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+defineProps<{
+  itemData: { config?: any }
+}>()
+
+const data = ref<CountData>({
+  vmNum: 0,
+  hostNum: 0,
+  imageNum: 0
+})
+const dcId = ref<number | string | undefined>(undefined)
+const dcList = ref<DcItem[]>([])
+
+;(async function () {
+  const res = await getDc({ page: 1, rows: 10000 })
+  if (res.success) {
+    dcList.value = res.data.rows
+    if (dcList.value.length) {
+      dcId.value = dcList.value[0].id
+      getCount()
     }
   }
-})
+})()
+
+async function getCount() {
+  if (dcId.value === undefined) return
+  const res = await getResourceCountByDc(dcId.value)
+  data.value = res.data
+}
 </script>
 <style lang="scss" scoped>
 .control-wrapper {

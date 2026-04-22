@@ -1,5 +1,6 @@
 <template>
-  <el-dialog :title="getTitle" :visible.sync="addData.visible" width="75%">
+  <!-- TODO: cmp-element - 自研包在 compat 层处理：basic-form / basic-form-item -->
+  <el-dialog :title="getTitle" v-model="addData.visible" width="75%">
     <basic-form :model="addData" ref="dialogForm">
       <el-row :gutter="10">
         <el-col :span="24">
@@ -87,97 +88,86 @@
       <el-row v-if="addData.sendType === 'CLOCK'">
         <el-col :span="24">
           <basic-form-item>
-            <el-date-picker v-model="addData.sendTime" type="datetime" placeholder="选择日期时间" @change="change" :pickerOptions="pickerOptions"></el-date-picker>
+            <el-date-picker v-model="addData.sendTime" type="datetime" placeholder="选择日期时间" @change="change" :disabled-date="disabledDate"></el-date-picker>
           </basic-form-item>
         </el-col>
       </el-row>
     </basic-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="ghost" @click.native="addData.visible = false">取消</el-button>
-      <el-button type="primary" @click.native="submit" :loading="loading">确定</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="ghost" @click="addData.visible = false">取消</el-button>
+        <el-button type="primary" @click="submit" :loading="loading">确定</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
-<script>
-import { reactive, toRefs, computed, ref } from '@vue/composition-api'
-import { Message } from 'element-ui'
-import dayjs from 'utils/day.js'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import dayjs from 'utils/day'
 import { createNotice, modifyNotice } from 'services/system/notice'
-export default {
-  props: {
-    addData: {
-      type: Object,
-      default() {
-        return {}
-      }
-    }
-  },
-  setup(props, { emit }) {
-    const state = reactive({
-      loading: false,
-      titleMap: {
-        add: '新增公告',
-        edit: '编辑公告'
-      }
-    })
 
-    const dialogForm = ref(null)
+interface NoticeAddData {
+  visible: boolean
+  currentTitle: 'add' | 'edit'
+  title?: string
+  content?: string
+  sendGroups: string[]
+  sendWays: string[]
+  sendType?: string
+  sendTime?: string | Date
+  [key: string]: unknown
+}
 
-    const getTitle = computed(() => {
-      return state.titleMap[props.addData.currentTitle]
-    })
+const props = defineProps<{ addData: NoticeAddData }>()
+const emit = defineEmits<{ getList: [] }>()
 
-    function submit() {
-      dialogForm.value.validate(async (valid) => {
-        if (!valid) return
-        state.loading = true
-        const { sendGroups, sendWays, sendTime, currentTitle } = props.addData
-        let formatTime = ''
-        if (currentTitle === 'add' || (currentTitle === 'edit' && typeof sendTime === 'object')) {
-          formatTime = sendTime && dayjs(sendTime.getTime()).format('YYYY-MM-DD HH:mm:ss')
-        } else if (currentTitle === 'edit' && typeof sendTime === 'string') {
-          formatTime = sendTime
-        }
-        const data = {
-          ...props.addData,
-          sendGroups: sendGroups.join(','),
-          sendWays: sendWays.join(','),
-          sendTime: formatTime
-        }
-        const http = props.addData.currentTitle === 'add' ? createNotice : modifyNotice
-        const res = await http(data)
-        if (res.success) {
-          Message({
-            type: 'success',
-            message: res.message
-          })
-          props.addData.visible = false
-          emit('getList')
-        }
-        state.loading = false
-      })
+const loading = ref(false)
+const titleMap: Record<string, string> = { add: '新增公告', edit: '编辑公告' }
+
+// TODO: type - basic-form 实例类型由 compat 层提供
+const dialogForm = ref<any>(null)
+
+const getTitle = computed(() => titleMap[props.addData.currentTitle])
+
+function submit() {
+  dialogForm.value?.validate(async (valid: boolean) => {
+    if (!valid) return
+    loading.value = true
+    const { sendGroups, sendWays, sendTime, currentTitle } = props.addData
+    let formatTime = ''
+    if (currentTitle === 'add' || (currentTitle === 'edit' && typeof sendTime === 'object')) {
+      formatTime = sendTime ? dayjs((sendTime as Date).getTime()).format('YYYY-MM-DD HH:mm:ss') : ''
+    } else if (currentTitle === 'edit' && typeof sendTime === 'string') {
+      formatTime = sendTime
     }
-    function change(val) {
-      if (new Date(val).getTime() - Date.now() < -60000) {
-        Message.warning('发布时间小于当前时间')
-        props.addData.sendTime = ''
-      }
+    const data = {
+      ...props.addData,
+      sendGroups: sendGroups.join(','),
+      sendWays: sendWays.join(','),
+      sendTime: formatTime
     }
-    const pickerOptions = ref({
-      disabledDate(time) {
-        return time.getTime() <= Date.now() - 8.64e7
-      }
-    })
-    return {
-      ...toRefs(state),
-      submit,
-      getTitle,
-      dialogForm,
-      change,
-      pickerOptions
+    const http = props.addData.currentTitle === 'add' ? createNotice : modifyNotice
+    const res = await http(data)
+    if (res.success) {
+      ElMessage.success(res.message)
+      props.addData.visible = false
+      emit('getList')
     }
+    loading.value = false
+  })
+}
+
+function change(val: string | Date) {
+  if (new Date(val).getTime() - Date.now() < -60000) {
+    ElMessage.warning('发布时间小于当前时间')
+    props.addData.sendTime = ''
   }
+}
+
+function disabledDate(time: Date) {
+  return time.getTime() <= Date.now() - 8.64e7
 }
 </script>
 

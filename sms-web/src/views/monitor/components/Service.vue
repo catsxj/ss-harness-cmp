@@ -1,22 +1,25 @@
 <template>
   <div>
     <el-row type="flex" :gutter="20" class="component-container">
-      <el-col v-for="(item, key) in data.service" :key="key" :span="modelMap[data.hosts]" :class="colorMap[item.status]">
+      <el-col v-for="(item, key) in (data as any).service" :key="key" :span="modelMap[(data as any).hosts] || 12" :class="colorMap[item.status]">
         <div class="cell">
           <div class="cell-title">{{ item.name }}</div>
-          <div class="cell-body" :class="cell.status !== 'running' && 'disabled'" v-for="(cell, key) in item.instance" :key="key" @click="getDetail(cell)" :style="{ 'border-color': borderColorMap[cell.status] }">
+          <div class="cell-body" :class="cell.status !== 'running' && 'disabled'" v-for="(cell, idx) in item.instance" :key="idx" @click="getDetail(cell)" :style="{ 'border-color': borderColorMap[cell.status] }">
             <el-row class="row" :gutter="10">
               <el-dropdown class="setting">
                 <span class="el-dropdown-link">
-                  <i class="el-icon-setting"></i>
+                  <el-icon><Setting /></el-icon>
                 </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item @click.stop.native="handleRealLog(cell)">实时日志</el-dropdown-item>
-                  <el-dropdown-item @click.stop.native="download(cell)">日志下载</el-dropdown-item>
-                </el-dropdown-menu>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click.stop="handleRealLog(cell)">实时日志</el-dropdown-item>
+                    <el-dropdown-item @click.stop="download(cell)">日志下载</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
               </el-dropdown>
               <el-col :span="24" class="m-b-sm">
                 <span class="status">
+                  <!-- TODO: cmp-element -->
                   <status-icon :type="statusFilter(cell.status, 'color')"></status-icon>
                 </span>
                 <span class="progress-wrap" :title="cell.host">{{ cell.host }}</span>
@@ -38,8 +41,10 @@
         </div>
       </el-col>
     </el-row>
+    <!-- TODO: cmp-element -->
     <common-detail-right v-if="detailVisible" title="服务详情" @goBack="goBack">
       <template #item_container>
+        <!-- TODO: cmp-element -->
         <common-detail-item :label="item.name" v-for="item in detailData" :key="item.name">{{ item.value }}</common-detail-item>
       </template>
     </common-detail-right>
@@ -49,93 +54,87 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'
+import { Setting } from '@element-plus/icons-vue'
 import RealLog from './realLog.vue'
 import LogDownload from './logDownload.vue'
 import { getServices, getStatus } from 'services/system/service_system'
 import { statusFilter, colorMap, borderColorMap } from './filters'
 
-export default {
-  components: { RealLog, LogDownload },
-  data() {
-    return {
-      modelMap: {
-        6: 12,
-        3: 12,
-        1: 6
-      },
-      statusFilter,
-      colorMap,
-      borderColorMap,
-      data: '',
-      relationData: {},
-      detailVisible: false,
-      detailSetting: {
-        type: 'host',
-        columns: []
-      },
-      detailData: {},
-      realLog: {
-        visible: false,
-        data: {}
-      },
-      logDownload: {
-        visible: false
-      }
-    }
-  },
-  created() {
-    this.getList()
-  },
-  methods: {
-    getData(value) {
-      this.getList()
-    },
-    getList() {
-      getServices().then((data) => {
-        if (data.success) {
-          this.data = data.data
-        }
-      })
-    },
-    download(item) {
-      this.logDownload = {
-        visible: true,
-        data: Object.assign({}, item)
-      }
-    },
-    getDetail(row) {
-      if (row.status !== 'running') {
-        return
-      }
-      this.detailVisible = true
-      getStatus({
-        value: row.host
-      }).then((data) => {
-        if (data.success) {
-          const array = []
-          for (const key in data.data) {
-            array.push({
-              name: key,
-              value: data.data[key]
-            })
-          }
-          this.detailData = array
-        }
-      })
-    },
-    goBack() {
-      this.detailVisible = false
-    },
-    handleRealLog(row) {
-      this.realLog = {
-        visible: true,
-        data: row
-      }
-    }
-  }
+interface ServiceInstance {
+  host: string
+  status: string
+  cpuUsed?: number
+  memUsed?: number
+  [key: string]: unknown
 }
+
+interface ServiceItem {
+  name: string
+  status: string
+  instance: ServiceInstance[]
+}
+
+interface ServiceData {
+  service?: ServiceItem[]
+  hosts?: number
+  [key: string]: unknown
+}
+
+const modelMap: Record<number, number> = {
+  6: 12,
+  3: 12,
+  1: 6
+}
+
+const data = ref<ServiceData | ''>('')
+const detailVisible = ref(false)
+const detailData = ref<Array<{ name: string; value: unknown }>>([])
+const realLog = reactive<{ visible: boolean; data: Record<string, unknown> }>({ visible: false, data: {} })
+const logDownload = reactive<{ visible: boolean; data?: Record<string, unknown> }>({ visible: false })
+
+function getList(): void {
+  getServices().then((res: any) => {
+    if (res.success) {
+      data.value = res.data
+    }
+  })
+}
+
+function download(item: ServiceInstance): void {
+  logDownload.visible = true
+  logDownload.data = { ...item }
+}
+
+function getDetail(row: ServiceInstance): void {
+  if (row.status !== 'running') {
+    return
+  }
+  detailVisible.value = true
+  getStatus({ value: row.host }).then((res: any) => {
+    if (res.success) {
+      const array: Array<{ name: string; value: unknown }> = []
+      for (const key in res.data) {
+        array.push({ name: key, value: res.data[key] })
+      }
+      detailData.value = array
+    }
+  })
+}
+
+function goBack(): void {
+  detailVisible.value = false
+}
+
+function handleRealLog(row: ServiceInstance): void {
+  realLog.visible = true
+  realLog.data = row
+}
+
+onMounted(getList)
 </script>
+
 <style scoped lang="scss">
 @import './index';
 .cell {

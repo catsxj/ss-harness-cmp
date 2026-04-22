@@ -1,9 +1,10 @@
-import { onUnmounted, ref } from '@vue/composition-api'
-import WebSocket from 'cmp-socket'
+import { onUnmounted } from 'vue'
+import WebSocketClient from 'cmp-socket'
 import { getToken } from 'utils/auth'
-export default function (onmessage: { (): void }) {
+
+export default function useWebsocket(onmessage?: (event: MessageEvent) => void) {
   const protocol = location.protocol === 'http:' ? 'ws' : 'wss'
-  let webSocket = new WebSocket({
+  let webSocket: any = new WebSocketClient({
     url: `${protocol}://${location.host}/api/sms/messageService`,
     pingMsg: 'HeartBeat',
     reConnectNum: 5,
@@ -13,10 +14,8 @@ export default function (onmessage: { (): void }) {
     webSocket.onmessage = onmessage
   }
   onUnmounted(() => {
-    webSocket.Destroy()
+    webSocket?.Destroy?.()
     webSocket = null
   })
-  return {
-    webSocket
-  }
+  return { webSocket }
 }

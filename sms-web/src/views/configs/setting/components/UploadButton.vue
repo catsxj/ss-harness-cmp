@@ -1,62 +1,56 @@
 <template>
-  <el-button type="text" @click="updateData" class="update-button" :loading="loading">更新</el-button>
+  <el-button text @click="updateData" class="update-button" :loading="loading">更新</el-button>
 </template>
 
-<script>
-import { ref } from '@vue/composition-api'
-import { Message } from 'element-ui'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { updateSystemConfigs } from 'services/system'
+import { useAppStore } from '@/stores'
 
-export default {
-  props: {
-    data: {
-      type: Object
-    },
-    codes: {
-      type: Array
-    },
-    files: {
-      type: Array
-    },
-    updateKey: {
-      type: String
-    },
-    validate: {
-      type: Function
-    }
-  },
-  setup(props, context) {
-    const loading = ref(false)
-    const updateData = async () => {
-      if (props.validate && !props.validate()) return
-      const formData = new FormData()
-      const { codes, files, data } = props
-      const arr = []
-      codes.forEach((key) => {
-        arr.push({
-          code: key,
-          value: data[key]
-        })
-      })
-      formData.append('configs', JSON.stringify(arr))
-      files &&
-        files.forEach((key) => {
-          const file = data[key]
-          if (file) {
-            formData.append(key, file.raw)
-          }
-        })
-      loading.value = true
-      const res = await updateSystemConfigs(formData)
-      loading.value = false
-      if (res.success) {
-        Message.success(res.message)
-        props.updateKey && context.root.$store.dispatch(props.updateKey)
+interface Props {
+  data?: Record<string, unknown>
+  codes?: string[]
+  files?: string[]
+  updateKey?: string
+  validate?: () => boolean
+}
+
+const props = defineProps<Props>()
+
+const loading = ref(false)
+const appStore = useAppStore()
+
+// TODO: i18n
+const updateData = async () => {
+  if (props.validate && !props.validate()) return
+  const formData = new FormData()
+  const { codes, files, data } = props
+  const arr: { code: string; value: unknown }[] = []
+  codes?.forEach((key) => {
+    arr.push({
+      code: key,
+      value: data?.[key]
+    })
+  })
+  formData.append('configs', JSON.stringify(arr))
+  files &&
+    files.forEach((key) => {
+      // TODO: type - Element Plus upload file 对象
+      const file = data?.[key] as any
+      if (file) {
+        formData.append(key, file.raw)
       }
-    }
-    return {
-      loading,
-      updateData
+    })
+  loading.value = true
+  const res = await updateSystemConfigs(formData)
+  loading.value = false
+  if (res.success) {
+    ElMessage.success(res.message)
+    if (props.updateKey === 'GetPageConfigs') {
+      appStore.getPageConfigs()
+    } else if (props.updateKey === 'GetSystemConfigs') {
+      appStore.getSystemConfigs()
     }
   }
 }

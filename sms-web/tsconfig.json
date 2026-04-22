@@ -5,26 +5,29 @@
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "allowJs": true,
     "baseUrl": ".",
-    "types": ["webpack-env"],
+    "types": ["webpack-env", "node"],
     "skipLibCheck": true,
-    // "typeRoots": ["./node_modules/@types/", "./types"],
+    "useDefineForClassFields": true,
     "paths": {
       "@/*": ["src/*"],
       "services/*": ["src/services/*"],
+      "utils": ["src/common/utils"],
       "utils/*": ["src/common/utils/*"],
       "components/*": ["src/common/components/*"],
       "hooks/*": ["src/common/hooks/*"],
-      "filters/*": ["src/common/filters/*"]
+      "interface/*": ["src/common/interface/*"],
+      "filters/*": ["src/filters/*"],
+      "views/*": ["src/views/*"],
+      "assets/*": ["src/assets/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }

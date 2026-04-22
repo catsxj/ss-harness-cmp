@@ -1,11 +1,14 @@
 <template>
   <span>
-    <el-button class="m-l-sm m-r-sm" @click.stop="openDialog" icon="el-icon-upload2">导入 </el-button>
-    <el-dialog title="导入Excel新增数据" :close-on-click-modal="false" :visible.sync="dialogVisible" width="480px" append-to-body>
+    <el-button class="m-l-sm m-r-sm" @click.stop="openDialog">
+      <el-icon><UploadFilled /></el-icon>
+      <span>导入</span>
+    </el-button>
+    <el-dialog title="导入Excel新增数据" :close-on-click-modal="false" v-model="dialogVisible" width="480px" append-to-body>
       <el-row>
         <el-col :span="24">
           <el-alert title="" type="warning" :closable="false">
-            <template slot="">
+            <template #default>
               <div class="text-center">
                 <p>您是否有标准的Excel模版，需要依照模版导入，否则会失败。</p>
                 <a class="text-info cur-point" @click="exportData()">还没有Excel模版?请下载模版</a>
@@ -15,90 +18,87 @@
         </el-col>
         <el-col :span="24" class="text-center m-t">
           <el-upload ref="uploadRef" class="upload-demo" drag accept=".xlsx" :on-success="handleSuccess" :action="url" :headers="headers" :data="params">
-            <i class="el-icon-upload"></i>
+            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能上传excel文件</div>
+            <template #tip>
+              <div class="el-upload__tip">只能上传excel文件</div>
+            </template>
           </el-upload>
         </el-col>
       </el-row>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">关闭</el-button>
+        </div>
+      </template>
     </el-dialog>
   </span>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { reactive, ref, toRefs } from 'vue'
+import { ElMessage } from 'element-plus'
+import { UploadFilled } from '@element-plus/icons-vue'
 import { downloadFile } from 'utils/index'
 import { getToken } from 'utils/auth'
-import { reactive, toRefs, ref, defineComponent } from '@vue/composition-api'
-import { Message } from 'element-ui'
 
-export default defineComponent({
-  props: {
-    url: {
-      type: String,
-      required: true
-    },
-    templateUrl: {
-      type: String,
-      required: true
-    },
-    params: {
-      type: Object,
-      default: function () {
-        return {}
-      }
+const props = withDefaults(
+  defineProps<{
+    url: string
+    templateUrl: string
+    params?: Record<string, any>
+  }>(),
+  {
+    params: () => ({})
+  }
+)
+
+const emit = defineEmits<{ getData: [] }>()
+
+const state = reactive({
+  dialogVisible: false,
+  headers: { token: getToken() } as Record<string, any>
+})
+const { dialogVisible, headers } = toRefs(state)
+
+// TODO: type - el-upload 实例类型后续可改为 UploadInstance
+const uploadRef = ref<any>(null)
+
+const openDialog = () => {
+  uploadRef.value && uploadRef.value.clearFiles()
+  state.dialogVisible = true
+  state.headers.token = getToken()
+}
+
+// 导出数据
+const exportData = () => {
+  downloadFile(props.templateUrl, props.params)
+}
+
+// 数据导入成功回调
+// eslint-disable-next-line no-undef
+const handleSuccess = (res: Base.IResponseData) => {
+  if (res.success) {
+    if (/tenants\/import/.test(props.url)) {
+      ElMessage({
+        type: 'success',
+        dangerouslyUseHTMLString: true,
+        message: res.message
+      })
+    } else {
+      ElMessage.success(res.message)
     }
-  },
-  setup(props: any, context: any) {
-    const state = reactive({
-      dialogVisible: false,
-      headers: { token: getToken() }
-    })
-    const uploadRef = ref(null)
-    function openDialog() {
-      uploadRef.value && (uploadRef.value as any).clearFiles()
-      state.dialogVisible = true
-      state.headers.token = getToken()
-    }
-    // 导出数据
-    function exportData() {
-      downloadFile(props.templateUrl, props.params)
-    }
-    // 数据导入成功回调
-    // eslint-disable-next-line no-undef
-    function handleSuccess(res: Base.IResponseData) {
-      if (res.success) {
-        if (/tenants\/import/.test(props.url)) {
-          Message({
-            type: 'success',
-            dangerouslyUseHTMLString: true,
-            message: res.message
-          })
-        } else {
-          Message.success(res.message)
-        }
-        state.dialogVisible = false
-        context.emit('getData')
-      } else {
-        if (/tenants\/import/.test(props.url)) {
-          Message({
-            type: 'error',
-            dangerouslyUseHTMLString: true,
-            message: res.message
-          })
-        } else {
-          Message.error(res.message)
-        }
-      }
-    }
-    return {
-      ...toRefs(state),
-      uploadRef,
-      openDialog,
-      exportData,
-      handleSuccess
+    state.dialogVisible = false
+    emit('getData')
+  } else {
+    if (/tenants\/import/.test(props.url)) {
+      ElMessage({
+        type: 'error',
+        dangerouslyUseHTMLString: true,
+        message: res.message
+      })
+    } else {
+      ElMessage.error(res.message)
     }
   }
-})
+}
 </script>

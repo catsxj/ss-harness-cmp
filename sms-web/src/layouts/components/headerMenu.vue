@@ -1,99 +1,89 @@
 <template>
   <ul class="header-menu">
-    <!-- <template v-if="menuData.length > 1">
-      <li v-for="item in menuData"  @click="selectMenu(item, 1)" :key="item.id" :class="{selected: item.selected}" :style="getStyle(item)">
-        <svg-icon class="icon" :icon-name="item.meta.icon"></svg-icon>
-        <span>{{item.meta.title}}</span>
-      </li>
-    </template> -->
+    <!-- 头部菜单列表保留 DOM 壳，实际顶栏菜单已由基座处理 -->
   </ul>
 </template>
-<script>
-export default {
-  props: {
-    pageConfigs: Object
-  },
-  // watch: {
-  //   firstPath () {
-  //     // 左侧菜单刷新不用重置菜单数据
-  //     if (this.$route.name !== 'Redirect') this.initMenu('firstPath');
-  //   },
-  //   menuData: {
-  //     handler: function () {
-  //       this.initMenu('menuData');
-  //     },
-  //     immediate: true
-  //   }
-  // },
-  computed: {
-    firstPath: function () {
-      return `/${this.$route.path.split('/')[1]}`
-    },
-    menuData() {
-      return this.$store.state.permission.addRoutes.filter((item) => !item.hidden)
-    },
-    hideHeadMenu() {
-      return this.menuData.filter((item) => !item.hidden).length === 1
-    }
-  },
-  created() {},
-  methods: {
-    getStyle(item) {
-      if (item.selected) {
-        return {
-          backgroundColor: this.pageConfigs.headerSelectColour,
-          color: this.pageConfigs.headerFontSelectColour
-        }
-      }
-    },
-    getJumpRoute(data) {
-      const route = data[0]
-      if (route.children) {
-        return this.getJumpRoute(route.children)
-      }
-      return route.path
-    },
-    // 重置菜单数据 flag:是否重置菜单书局
-    resetMenu(flag) {
-      this.menuData.forEach((row) => {
-        this.$set(row, 'selected', false)
-      })
-      if (flag) {
-        this.$store.commit('SETTING_SIDE_MENU', [])
-        this.$store.commit('SETTING_BASE_PATH', '/')
-      }
-    },
-    selectMenu(item, flag) {
-      if (item.selected) return
-      this.resetMenu()
-      const menu = this.menuData.find((cell) => cell.id === item.id)
-      menu.selected = true
-      // 处理一级菜单没有子菜单的情况
-      const menus = menu.children.filter((item) => !item.hidden)
-      if (menus.length) {
-        this.$store.commit('SETTING_SIDE_MENU', menu.children)
-        this.$store.commit('SETTING_BASE_PATH', menu.path)
-      } else {
-        this.resetMenu(true)
-      }
-      // 点击一级菜单时跳转界面，刷新界面是保持不动
-      if (flag) {
-        this.$router.push({ path: this.getJumpRoute(menu.children) })
-      }
-    },
-    initMenu(flag) {
-      // 没有任何菜单信息时直接return
-      if (!this.menuData || this.menuData.length === 0) return
-      const selectMenu = this.menuData.find((item) => item.path === this.firstPath)
-      if (selectMenu) {
-        this.selectMenu(selectMenu, this.$route.name === 'Home')
-      } else {
-        this.resetMenu(1)
-      }
-    }
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore, usePermissionStore } from '@/stores'
+
+interface PageConfig {
+  headerSelectColour?: string
+  headerFontSelectColour?: string
+  [key: string]: unknown
+}
+
+interface MenuItem {
+  id?: string | number
+  path: string
+  hidden?: boolean
+  selected?: boolean
+  children?: MenuItem[]
+  meta?: { title?: string; icon?: string; [key: string]: unknown }
+}
+
+defineProps<{ pageConfigs: PageConfig }>()
+
+const route = useRoute()
+const router = useRouter()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
+
+const firstPath = computed(() => `/${route.path.split('/')[1]}`)
+const menuData = computed<MenuItem[]>(() =>
+  ((permissionStore.addRoutes ?? []) as MenuItem[]).filter((item) => !item.hidden)
+)
+const hideHeadMenu = computed(() => menuData.value.filter((item) => !item.hidden).length === 1)
+
+function getJumpRoute(data: MenuItem[]): string {
+  const first = data[0]
+  if (first.children && first.children.length) return getJumpRoute(first.children)
+  return first.path
+}
+
+function resetMenu(flag?: number | boolean): void {
+  menuData.value.forEach((row) => {
+    row.selected = false
+  })
+  if (flag) {
+    appStore.settingSideMenu([])
+    appStore.settingBasePath('/')
   }
 }
+
+function selectMenu(item: MenuItem, flag?: number | boolean): void {
+  if (item.selected) return
+  resetMenu()
+  const menu = menuData.value.find((cell) => cell.id === item.id)
+  if (!menu) return
+  menu.selected = true
+  const menus = (menu.children ?? []).filter((child) => !child.hidden)
+  if (menus.length) {
+    appStore.settingSideMenu(menu.children ?? [])
+    appStore.settingBasePath(menu.path)
+  } else {
+    resetMenu(true)
+  }
+  if (flag) {
+    router.push({ path: getJumpRoute(menu.children ?? []) })
+  }
+}
+
+function initMenu(_flag?: string): void {
+  if (!menuData.value || menuData.value.length === 0) return
+  const matched = menuData.value.find((item) => item.path === firstPath.value)
+  if (matched) {
+    selectMenu(matched, route.name === 'Home')
+  } else {
+    resetMenu(1)
+  }
+}
+
+defineExpose({ firstPath, menuData, hideHeadMenu, selectMenu, resetMenu, initMenu })
 </script>
+
 <style lang="scss">
 ul.header-menu {
   margin: 0;

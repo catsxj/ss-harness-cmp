@@ -10,44 +10,43 @@
     </el-row>
   </div>
 </template>
-<script>
-import { ref } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 import CardItem from './CardItem.vue'
 import { getSystemTreeConfigs } from 'services/system'
-export default {
-  components: {
-    CardItem
-  },
-  setup() {
-    const leftConfigs = ref([])
-    const rightConfigs = ref([])
-    const loading = ref(true)
-    const leftKeys = ['企业微信配置', '钉钉配置', 'LDAP配置']
-    async function getConfigs() {
-      loading.value = true
-      const res = await getSystemTreeConfigs({ category: '系统对接' })
-      loading.value = false
-      if (res.success) {
-        res.data.forEach((item) => {
-          if (leftKeys.includes(item.name)) {
-            leftConfigs.value.push(item)
-          } else {
-            rightConfigs.value.push(item)
-          }
-        })
+
+interface ConfigItem {
+  name: string
+  values?: any[]
+  [key: string]: unknown
+}
+
+const leftConfigs = ref<ConfigItem[]>([])
+const rightConfigs = ref<ConfigItem[]>([])
+const loading = ref(true)
+// TODO: i18n
+const leftKeys = ['企业微信配置', '钉钉配置', 'LDAP配置']
+
+async function getConfigs() {
+  loading.value = true
+  // TODO: i18n
+  const res = await getSystemTreeConfigs({ category: '系统对接' })
+  loading.value = false
+  if (res.success) {
+    res.data.forEach((item: ConfigItem) => {
+      if (leftKeys.includes(item.name)) {
+        leftConfigs.value.push(item)
+      } else {
+        rightConfigs.value.push(item)
       }
-    }
-    getConfigs()
-    const showTest = (name) => {
-      return !['短信配置'].includes(name)
-    }
-    return {
-      leftConfigs,
-      rightConfigs,
-      loading,
-      showTest
-    }
+    })
   }
+}
+getConfigs()
+
+const showTest = (name: string): boolean => {
+  // TODO: i18n
+  return !['短信配置'].includes(name)
 }
 </script>
 <style lang="scss" scoped>

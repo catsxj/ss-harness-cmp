@@ -8,14 +8,22 @@
         <span class="desc-title">{{ configs.promotionalTitle }}</span>
         <span class="desc-remark">{{ configs.promotionalContent }}</span>
       </div>
-      <el-form :model="loginForm" ref="loginFormRef" label-position="left" label-width="0px" class="card-box login-form" @keyup.enter.native="handleLogin" status-icon>
+      <el-form :model="loginForm" ref="loginFormRef" label-position="left" label-width="0px" class="card-box login-form" @keyup.enter="handleLogin" status-icon>
         <div class="login-title">账号登录</div>
         <basic-form-item class="login-form-item" prop="account" validate="required" required-message="请输入用户名">
-          <el-input v-model="loginForm.account" autoComplete="on" placeholder="登录账号" prefix-icon="el-icon-user"> </el-input>
+          <el-input v-model="loginForm.account" autocomplete="on" placeholder="登录账号">
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
         </basic-form-item>
-        <el-tooltip v-model="capsTooltip" content="大写锁定已打开" placement="right" manual>
+        <el-tooltip v-model:visible="capsTooltip" content="大写锁定已打开" placement="right" manual>
           <basic-form-item class="login-form-item" prop="password" validate="required" required-message="请输入密码">
-            <el-input name="password" prefix-icon="el-icon-lock" v-model="loginForm.password" placeholder="密码" show-password @blur="capsTooltip = false" @keyup.native="checkCapslock"> </el-input>
+            <el-input name="password" v-model="loginForm.password" placeholder="密码" show-password @blur="capsTooltip = false" @keyup="checkCapslock">
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
           </basic-form-item>
         </el-tooltip>
         <basic-form-item class="login-form-item">
@@ -24,112 +32,118 @@
               <el-switch v-model="remember"></el-switch>
               <span class="m-l-xs">记住密码</span>
             </span>
-            <a :href="`mailto:${configs.helpInformationLink}`" type="text" class="text-info pull-right help-info" :title="configs.helpInformationContent">{{ configs.helpInformationContent }}</a>
+            <a :href="`mailto:${configs.helpInformationLink}`" class="text-info pull-right help-info" :title="configs.helpInformationContent">{{ configs.helpInformationContent }}</a>
           </div>
         </basic-form-item>
-        <el-button class="login-btn" type="primary" size="medium" :loading="loading" @click="handleLogin"> 登录 </el-button>
+        <el-button class="login-btn" type="primary" size="default" :loading="loading" @click="handleLogin"> 登录 </el-button>
       </el-form>
     </div>
     <div class="copyright-info">{{ configs.copyrightInformation }}</div>
   </div>
 </template>
 
-<script>
-import crypto from 'utils/crypto.js'
+<script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import type { FormInstance } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
+import crypto from 'utils/crypto'
 import { login } from 'services/system'
 import { setLoginData } from './tools'
-import { reactive, toRefs, ref, computed } from '@vue/composition-api'
-export default {
-  setup(props, context) {
-    const state = reactive({
-      remember: false,
-      loginForm: {
-        account: '',
-        password: ''
-      },
-      loading: false,
-      capsTooltip: false
-    })
-    const configs = computed(() => context.root.$store.getters.pageConfig)
-    const loginFormRef = ref(null)
-    const init = () => {
-      const local = localStorage.getItem('cmcLoginData')
-      if (local) {
-        const obj = JSON.parse(local)
-        state.loginForm.account = obj.account
-        state.loginForm.password = crypto.decrypt(obj.password)
-        state.remember = true
-      }
-    }
-    init()
-    function goLogin(data) {
-      // const callback = this.$route.query.callback
-      // if (callback) {
-      //   location.href = `${this.ssoUrl}/upmsapi/sso/redirect?token=${data.token}&redirect=${callback}`
-      //   return
-      // }
-      setLoginData(data)
-      if (state.remember) {
-        const obj = {
-          account: state.loginForm.account,
-          password: crypto.encrypt(state.loginForm.password)
-        }
-        localStorage.setItem('cmcLoginData', JSON.stringify(obj))
-      } else {
-        localStorage.removeItem('cmcLoginData')
-      }
-      let path = '/auth/tenants'
-      const { $route, $router } = context.root
-      const redirect = $route.query.redirect
-      if (redirect) {
-        path = redirect.split('/#')[1]
-      }
-      $router.replace(path)
-      localStorage.removeItem('lockData')
-    }
+import { useAppStore, usePermissionStore } from '@/stores'
+import router, { asyncRouterMap } from '@/router'
 
-    function handleLogin() {
-      loginFormRef.value.validate((valid) => {
-        if (valid) {
-          state.loading = true
-          const { account, password } = state.loginForm
-          login({
-            account,
-            password: crypto.encrypt(password),
-            isManager: true
-          })
-            .then((data) => {
-              if (data.success) {
-                goLogin(data.data)
-              }
-            })
-            .finally(() => {
-              state.loading = false
-            })
-        }
+interface LoginForm {
+  account: string
+  password: string
+}
+
+const route = useRoute()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
+
+const loginFormRef = ref<FormInstance>()
+const remember = ref(false)
+const loading = ref(false)
+const capsTooltip = ref(false)
+const loginForm = reactive<LoginForm>({
+  account: '',
+  password: ''
+})
+
+// TODO: type - pageConfig 形状需要在 store 中补充明确接口
+const configs = computed<Record<string, string>>(() => (appStore.pageConfig || {}) as Record<string, string>)
+
+function init(): void {
+  const local = localStorage.getItem('cmcLoginData')
+  if (local) {
+    try {
+      const obj = JSON.parse(local) as { account: string; password: string }
+      loginForm.account = obj.account
+      loginForm.password = crypto.decrypt(obj.password)
+      remember.value = true
+    } catch {
+      /* ignore */
+    }
+  }
+}
+init()
+
+async function goLogin(data: any): Promise<void> {
+  setLoginData(data)
+  if (remember.value) {
+    const obj = {
+      account: loginForm.account,
+      password: crypto.encrypt(loginForm.password)
+    }
+    localStorage.setItem('cmcLoginData', JSON.stringify(obj))
+  } else {
+    localStorage.removeItem('cmcLoginData')
+  }
+  await permissionStore.generateRoutes(asyncRouterMap, router)
+  let path = '/auth/tenants'
+  const redirect = route.query.redirect as string | undefined
+  if (redirect) {
+    path = redirect.split('/#')[1] || path
+  }
+  router.replace(path)
+  localStorage.removeItem('lockData')
+}
+
+function handleLogin(): void {
+  if (!loginFormRef.value) return
+  loginFormRef.value.validate((valid: boolean) => {
+    if (valid) {
+      loading.value = true
+      const { account, password } = loginForm
+      login({
+        account,
+        password: crypto.encrypt(password),
+        isManager: true
       })
+        .then((data: any) => {
+          if (data.success) {
+            goLogin(data.data)
+          }
+        })
+        .finally(() => {
+          loading.value = false
+        })
     }
+  })
+}
 
-    function checkCapslock({ shiftKey, key } = {}) {
-      if (key && key.length === 1) {
-        if ((shiftKey && key >= 'a' && key <= 'z') || (!shiftKey && key >= 'A' && key <= 'Z')) {
-          state.capsTooltip = true
-        } else {
-          state.capsTooltip = false
-        }
-      }
-      if (key === 'CapsLock' && this.capsTooltip === true) {
-        state.capsTooltip = false
-      }
+function checkCapslock(event: KeyboardEvent): void {
+  const { shiftKey, key } = event
+  if (key && key.length === 1) {
+    if ((shiftKey && key >= 'a' && key <= 'z') || (!shiftKey && key >= 'A' && key <= 'Z')) {
+      capsTooltip.value = true
+    } else {
+      capsTooltip.value = false
     }
-    console.log(configs)
-    return {
-      ...toRefs(state),
-      configs,
-      loginFormRef,
-      handleLogin,
-      checkCapslock
-    }
+  }
+  if (key === 'CapsLock' && capsTooltip.value === true) {
+    capsTooltip.value = false
   }
 }
 </script>
@@ -206,18 +220,16 @@ export default {
       }
       .login-form-item {
         margin-bottom: 20px;
-        ::v-deep {
-          .el-input--prefix .el-input__inner {
-            padding-left: 50px;
-          }
-          .el-input__prefix {
-            font-size: 20px;
-            padding: 0 10px;
-          }
-          .el-input__inner {
-            height: 60px;
-            line-height: 60px;
-          }
+        :deep(.el-input--prefix .el-input__inner) {
+          padding-left: 50px;
+        }
+        :deep(.el-input__prefix) {
+          font-size: 20px;
+          padding: 0 10px;
+        }
+        :deep(.el-input__inner) {
+          height: 60px;
+          line-height: 60px;
         }
       }
     }

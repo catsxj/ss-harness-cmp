@@ -1,0 +1,72 @@
+// 全局 Element Plus 尺寸 / 主题令牌覆盖
+// Technical Precision: 统一所有输入类组件 32px 高度，蓝主色
+
+:root {
+  --el-color-primary: #2563eb;
+  --el-color-primary-light-3: #1d4ed8;
+  --el-color-primary-light-5: #eff6ff;
+  --el-color-primary-light-7: #eff6ff;
+  --el-color-primary-light-9: #eff6ff;
+  --el-component-size: 32px;
+  --el-component-size-large: 36px;
+  --el-component-size-small: 26px;
+}
+
+// 所有输入类组件统一 32px 高
+.el-input,
+.el-select,
+.el-select-v2,
+.el-date-editor,
+.el-cascader,
+.el-autocomplete {
+  --el-input-height: 32px;
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner,
+.el-date-editor.el-input,
+.el-date-editor.el-input__wrapper {
+  min-height: 32px;
+}
+
+.el-input__inner {
+  height: 30px;
+  line-height: 30px;
+}
+
+// el-range-editor 也强制 32
+.el-date-editor.el-range-editor {
+  height: 32px;
+}
+.el-range-editor .el-range-input {
+  line-height: 28px;
+  height: 28px;
+}
+
+// el-input-number 跟随
+.el-input-number {
+  height: 32px;
+  line-height: 32px;
+}
+.el-input-number .el-input__inner {
+  height: 30px;
+  line-height: 30px;
+}
+
+// el-button 默认 32
+.el-button {
+  --el-button-size: 32px;
+  height: 32px;
+}
+
+// el-pagination 里的 input
+.el-pagination .el-pagination__sizes .el-select__wrapper,
+.el-pagination .el-pagination__editor.el-input .el-input__wrapper {
+  min-height: 28px;
+}
+
+// 上传组件内的 el-button
+.el-upload .el-button {
+  height: 32px;
+}

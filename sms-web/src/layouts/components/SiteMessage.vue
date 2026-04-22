@@ -3,113 +3,143 @@
     <el-dropdown trigger="click">
       <span>
         <el-badge :value="totalMessage" class="item cur-point">
-          <i class="el-icon-message"></i>
+          <el-icon><Message /></el-icon>
         </el-badge>
       </span>
-      <el-dropdown-menu slot="dropdown" class="message-container list-group">
-        <el-card>
-          <div slot="header" class="message-header">
-            <span>我的消息</span>
-            <!-- <router-link :to="{name: 'ProfileMessage'}"> -->
-            <el-button type="text">查看更多</el-button>
-            <!-- </router-link> -->
-          </div>
-          <div v-for="item in messageList" :key="item.id" class="list-group-item">
-            <span class="text-ellipsis"> <i class="dot dot-warning m-r-xs"></i>{{ item.name }}</span>
-            <el-tooltip class="item" effect="dark" :content="item.content" placement="top-start">
-              <small class="text-content">{{ item.content }}</small>
-            </el-tooltip>
-          </div>
-          <empty v-if="messageList.length === 0"></empty>
-        </el-card>
-      </el-dropdown-menu>
+      <template #dropdown>
+        <el-dropdown-menu class="message-container list-group">
+          <el-card>
+            <template #header>
+              <div class="message-header">
+                <span>我的消息</span>
+                <el-button link>查看更多</el-button>
+              </div>
+            </template>
+            <div v-for="item in messageList" :key="item.id" class="list-group-item">
+              <span class="text-ellipsis">
+                <i class="dot dot-warning m-r-xs" />{{ item.name }}
+              </span>
+              <el-tooltip class="item" effect="dark" :content="item.content" placement="top-start">
+                <small class="text-content">{{ item.content }}</small>
+              </el-tooltip>
+            </div>
+            <!-- TODO: cmp-element - empty 组件来自自研包，保留 DOM 占位 -->
+            <empty v-if="messageList.length === 0" />
+          </el-card>
+        </el-dropdown-menu>
+      </template>
     </el-dropdown>
   </div>
 </template>
-<script>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElNotification } from 'element-plus'
+import { Message } from '@element-plus/icons-vue'
 import { setToken } from 'utils/auth'
-import webSocket from '@/common/mixins/webSocket'
+import useGlobalWebsocket from '@/common/hooks/useGlobalWebsocket'
 import { getMessage } from 'services/system/message'
 
-export default {
-  mixins: [webSocket],
-  data() {
-    return {
-      messageList: [],
-      totalMessage: 0,
-      detail: {
-        visible: false
-      }
-    }
-  },
-  watch: {
-    // 监控路由变化隐藏全局站内信详情
-    $route() {
-      if (this.detail.visible) this.detail.visible = false
-    }
-  },
-  created() {
-    this.loadMessage()
-    this.$store.commit('SET_WEBSOCKET', this.webSocket)
-  },
-  methods: {
-    // 获取站内信信息
-    loadMessage() {
-      getMessage({
-        page: 1,
-        rows: 5,
-        params: JSON.stringify([{ param: { status: 'UNREAD' }, sign: 'EQ' }])
-      }).then((data) => {
-        if (data.success) {
-          this.messageList = data.data.rows
-          this.totalMessage = data.data.total
-        }
-      })
-    },
-    handleServiceMessage(data) {
-      if (data.operate === 'refresh.token') {
-        setToken(data.data)
-      }
-      if (data.operate === 'create.boc.tenant') {
-        this.$notify({
-          message: data.message,
-          type: data.success ? 'success' : 'error'
-        })
-      }
-    },
-    messageCommonFun(data) {
-      if (data.operate !== 'HeartBeat') console.log(data)
-      switch (data.category) {
-        case 'MachineDiscovered': // 机器发现消息
-        case 'ResourceEvent': // 云管消息
-          this.$notify({
-            message: data.message,
-            type: data.success ? 'success' : 'error'
-          })
-          break
-        case 'ServiceEvent': // 服务消息
-          this.handleServiceMessage(data)
-          break
-        case 'SiteMessage': // 站内信消息
-          this.loadMessage()
-          if (data.operate !== 'message.change') {
-            this.$notify({
-              message: '您有一条新的消息！',
-              type: 'info'
-            })
-          }
-          break
-      }
-    }
+interface SiteMessageItem {
+  id: string | number
+  name: string
+  content: string
+  [key: string]: unknown
+}
+
+interface ServiceMessageData {
+  operate?: string
+  category?: string
+  message?: string
+  success?: boolean
+  data?: unknown
+  [key: string]: unknown
+}
+
+const route = useRoute()
+
+const messageList = ref<SiteMessageItem[]>([])
+const totalMessage = ref<number>(0)
+const detail = ref<{ visible: boolean }>({ visible: false })
+
+async function loadMessage(): Promise<void> {
+  const data = await getMessage({
+    page: 1,
+    rows: 5,
+    params: JSON.stringify([{ param: { status: 'UNREAD' }, sign: 'EQ' }])
+  })
+  if (data.success) {
+    messageList.value = data.data.rows as SiteMessageItem[]
+    totalMessage.value = data.data.total as number
   }
 }
+
+function handleServiceMessage(data: ServiceMessageData): void {
+  if (data.operate === 'refresh.token') {
+    setToken(data.data as string)
+  }
+  if (data.operate === 'create.boc.tenant') {
+    ElNotification({
+      message: data.message ?? '',
+      type: data.success ? 'success' : 'error'
+    })
+  }
+}
+
+function messageCommonFun(data: ServiceMessageData): void {
+  if (data.operate !== 'HeartBeat') console.log(data)
+  switch (data.category) {
+    case 'MachineDiscovered':
+    case 'ResourceEvent':
+      ElNotification({
+        message: data.message ?? '',
+        type: data.success ? 'success' : 'error'
+      })
+      break
+    case 'ServiceEvent':
+      handleServiceMessage(data)
+      break
+    case 'SiteMessage':
+      loadMessage()
+      if (data.operate !== 'message.change') {
+        ElNotification({
+          message: '您有一条新的消息！',
+          type: 'info'
+        })
+      }
+      break
+  }
+}
+
+watch(
+  () => route.path,
+  () => {
+    if (detail.value.visible) detail.value.visible = false
+  }
+)
+
+loadMessage()
+
+useGlobalWebsocket((event: MessageEvent) => {
+  try {
+    const payload = typeof event.data === 'string' ? (JSON.parse(event.data) as ServiceMessageData) : (event.data as ServiceMessageData)
+    messageCommonFun(payload)
+  } catch {
+    /* ignore malformed payload */
+  }
+})
 </script>
+
 <style lang="scss" scoped>
 .system-letter {
   i {
     font-size: 18px;
   }
-  ::v-deep .el-badge__content.is-fixed {
+  .el-icon {
+    font-size: 18px;
+  }
+  :deep(.el-badge__content.is-fixed) {
     border: none;
     top: 12px !important;
   }
@@ -123,7 +153,7 @@ export default {
     justify-content: space-between;
     align-items: center;
   }
-  ::v-deep .popper__arrow {
+  :deep(.popper__arrow) {
     display: none !important;
   }
 

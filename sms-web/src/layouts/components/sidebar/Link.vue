@@ -1,32 +1,35 @@
 <template>
-  <component v-bind:is="linkProps(to).is" v-bind="linkProps(to)">
+  <component :is="linkProps.is" v-bind="linkProps">
     <slot />
   </component>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed } from 'vue'
 import { isExternalLink } from 'utils/resolvePath'
-export default {
-  props: {
-    to: {
-      type: String,
-      required: true
-    }
-  },
-  methods: {
-    linkProps(url) {
-      if (isExternalLink(url)) {
-        return {
-          is: 'a',
-          href: url,
-          target: '_blank'
-        }
-      }
-      return {
-        is: 'router-link',
-        to: url
-      }
+
+const props = defineProps<{
+  to: string
+}>()
+
+interface LinkProps {
+  is: string
+  href?: string
+  target?: string
+  to?: string
+}
+
+const linkProps = computed<LinkProps>(() => {
+  if (isExternalLink(props.to)) {
+    return {
+      is: 'a',
+      href: props.to,
+      target: '_blank'
     }
   }
-}
+  return {
+    is: 'router-link',
+    to: props.to
+  }
+})
 </script>

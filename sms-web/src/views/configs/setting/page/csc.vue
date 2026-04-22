@@ -11,35 +11,25 @@
     </el-row>
   </div>
 </template>
-<script>
-import { ref } from '@vue/composition-api'
+<script setup lang="ts">
+import { ref } from 'vue'
 import BannerItem from './BannerItem.vue'
 import BrowserItem from './BrowserItem.vue'
 import LoginItem from './LoginItem.vue'
 import { getSystemConfigs } from 'services/system'
-export default {
-  components: {
-    BannerItem,
-    BrowserItem,
-    LoginItem
-  },
-  setup() {
-    const configs = ref({})
-    const loading = ref(true)
-    async function getConfigs() {
-      loading.value = true
-      const res = await getSystemConfigs({ category: '自服务界面配置' })
-      loading.value = false
-      if (res.success) {
-        configs.value = res.data
-      }
-    }
-    getConfigs()
-    return {
-      configs,
-      loading
-    }
+
+const configs = ref<Record<string, any>>({})
+const loading = ref(true)
+
+async function getConfigs() {
+  loading.value = true
+  // TODO: i18n
+  const res = await getSystemConfigs({ category: '自服务界面配置' })
+  loading.value = false
+  if (res.success) {
+    configs.value = res.data
   }
 }
+getConfigs()
 </script>
 <style lang="scss" scoped></style>
