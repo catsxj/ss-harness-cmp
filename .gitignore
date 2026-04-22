@@ -6,3 +6,15 @@ dist/
 .env
 .env.*
 !.env.example
+
+# sub-app build output (误提交历史遗留；输出路径为嵌套 sms-web/sms-web/)
+sms-web/sms-web/
+
+# 自研包原始源码参考副本（不可升级，compat 层重新实现）
+original/
+
+# 本地工具配置
+.tgitconfig
+
+# Claude Code 运行时产物
+.claude/*.lock
