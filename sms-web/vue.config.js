@@ -95,5 +95,11 @@ module.exports = {
       .set('task', resolve('src/views/task'))
       .set('filters', resolve('src/filters'))
       .set('views', resolve('src/views'))
+      // 强制 vue / element-plus / @element-plus/icons-vue 单实例 —— 防止 packages/@ss-cmp/*
+      // 的 peerDep 在 pnpm auto-install-peers 模式下被装成独立副本，导致 slot / reactivity
+      // 跨包拿到不同 Vue runtime 的 ComponentInternalInstance（null.ce 崩溃）
+      .set('vue$', resolve('node_modules/vue'))
+      .set('element-plus$', resolve('node_modules/element-plus'))
+      .set('@element-plus/icons-vue$', resolve('node_modules/@element-plus/icons-vue'))
   }
 }

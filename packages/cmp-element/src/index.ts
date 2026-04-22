@@ -53,5 +53,4 @@ export function registerCmpElement(app: App): void {
     app.component(name, comp)
     app.component(toKebab(name), comp)
   }
-  app.component('empty', Empty)
 }
