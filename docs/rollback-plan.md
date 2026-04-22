@@ -62,7 +62,7 @@ git checkout main -- sms-web/
 - [x] **已合入 develop**：merge commit `b057cff`（--no-ff），可整体 revert
 - [x] **基座 app.json 切换可用**：main-web `public/config/app.json` 的 sms-web 条目支持覆盖 `entry`
 - [ ] **构建产物双版本部署**（需运维配合）
-- [ ] **测试环境回滚演练**（上线前）
+- [x] **测试环境回滚演练**（2026-04-22 本地验证：app.json entry `8091` → `9999` F5 后 Qiankun ERR_CONNECTION_REFUSED；改回 `8091` F5 后 sms-web 正常加载。entry 切换机制有效，需配合 F5 重读 app.json）
 
 ### 快速回滚命令
 
