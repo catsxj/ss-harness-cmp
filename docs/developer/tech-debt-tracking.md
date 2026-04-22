@@ -113,7 +113,7 @@ echo "总 TODO:"; grep -rn "// TODO" src/ --include="*.vue" --include="*.ts" | w
 
 ```
 [ ] CLAUDE.md 的"迁移顺序与状态"是否与实际一致
-[ ] docs/migration-notes/ 是否每个迁完的子应用都有总结
+[ ] docs/history/migration-notes/ 是否每个迁完的子应用都有总结
 [ ] .claude/memory/ 中的信息是否与代码现状一致
 [ ] upgrade-plan.md 的时间线估算是否需要更新
 [ ] 失败案例记录是否包含了最新的踩坑

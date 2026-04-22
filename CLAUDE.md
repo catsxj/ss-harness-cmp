@@ -1,58 +1,26 @@
-# 项目升级 Agent 约束文档
+# CMP 迁移 Agent 入口
 
-> **本文档是 Agent 操作本项目的唯一入口。**
-> **执行任何迁移任务前，必须先读完本文档和引用的规则文件。**
-> 本文档是活文档——每次 Agent 犯错，都应将教训补充到这里。
-
----
-
-## 必读文件索引
-
-开始迁移前，按顺序阅读以下文件：
-
-| 序号 | 文件 | 说明 | 何时读 |
-|------|------|------|--------|
-| 1 | **本文件 CLAUDE.md** | 约束规则总纲（代码规范、禁止事项） | 每次对话必读 |
-| 2 | [.claude/memory/project_cmp_harness.md](.claude/memory/project_cmp_harness.md) | 项目概况：7 个应用清单、迁移状态、迁移顺序 | 每次对话必读 |
-| 3 | [.claude/memory/project_cmp_decisions.md](.claude/memory/project_cmp_decisions.md) | 关键决策：自研包不可升级、保持 Vue CLI、浏览器验收标准 | 每次对话必读 |
-| 4 | [.claude/memory/feedback_keep_build_tool.md](.claude/memory/feedback_keep_build_tool.md) | **构建工具约束：不要把 Vue CLI 换成 Vite** | 迁移前必读 |
-| 5 | [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) | 10 条踩坑记录（ECharts 空值、seamless-scroll、CSS ~前缀等） | 迁移前必读 |
-| 6 | [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) | 文档索引：upgrade-plan、agent 方案、迁移总结等文档位置 | 需要时查阅 |
-| 7 | [.claude/skills/vue2-to-vue3-migration/SKILL.md](.claude/skills/vue2-to-vue3-migration/SKILL.md) | 迁移技能：5 阶段流程、代码改写模板、替换对照表 | 执行迁移时加载 |
-| 8 | [docs/migration-notes/](docs/migration-notes/) | 各子应用迁移总结（按子应用名命名） | 迁移前参考已完成的子应用 |
-| 9 | [docs/rollback-plan.md](docs/rollback-plan.md) | 回滚方案：Git 回滚 + Qiankun 运行时切换 | 迁移上线前确认 |
-| 10 | [docs/coexistence-testing.md](docs/coexistence-testing.md) | Vue 2 + Vue 3 新旧共存联调测试清单 | 每个子应用迁完后跑 |
-| 11 | [docs/production-deploy.md](docs/production-deploy.md) | 生产构建与部署验证清单 | 上线前检查 |
-| 12 | [docs/performance-baseline.md](docs/performance-baseline.md) | 性能基线对比（包体积、加载时间、内存） | 迁移前后记录对比 |
-| 13 | [docs/browser-compatibility.md](docs/browser-compatibility.md) | 浏览器兼容性（Vue 3 不支持 IE11） | 迁移前确认 |
-| 14 | [docs/developer-guide.md](docs/developer-guide.md) | 开发者迁移指南（人读版，代码风格变化） | 新成员入手 |
-| 15 | [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) | Pre-commit Hook（husky + lint-staged 自动拦截） | 项目初始化时配置 |
-| 16 | [docs/architecture-lint-rules.md](docs/architecture-lint-rules.md) | 分层依赖 ESLint 规则（自动拦截违规 import） | 项目初始化时配置 |
-| 17 | [docs/tech-debt-tracking.md](docs/tech-debt-tracking.md) | 技术债追踪（TODO 规范、扫描命令、偿还策略） | 每个子应用迁完后更新 |
-| 18 | [agent-parallel-plan.md](agent-parallel-plan.md) | Agent 并行总方案（各阶段并行度、worktree 工作流） | 需要并行迁移时参考 |
-| 19 | [agent-parallel-all-apps.md](agent-parallel-all-apps.md) | 各子应用并行拆分方案（cmp/cms/cos） | 迁移具体子应用时参考 |
-| 20 | [agent-parallel-sms-web.md](agent-parallel-sms-web.md) | sms-web 三路并行细化方案 | 迁移 sms-web 时参考 |
-| 21 | [agent-auto-parallel.md](agent-auto-parallel.md) | 全自动无人工 Review 并行方案 | 试点验证后使用 |
-| 22 | [docs/knowledge-base/](docs/knowledge-base/) | 知识库：问题排查、资料整理、解决方案 | 遇到问题时查阅和补充 |
+> 微前端 Vue 2 + ElementUI + Vuex + JS → Vue 3 + Element Plus + Pinia + TS 的大型升级。
+> 所有规则、流程、参考、历史都在 [docs/](docs/) 下。本文件只做身份 + 状态 + 导航。
 
 ---
 
-## 项目信息
+## 项目身份
 
+- 仓库：github.com/catsxj/ss-harness-cmp
+- 本地路径：`D:\harnes-test\ss-harness-cmp`
 - 微前端框架：Qiankun
-- 基座 main-web（Vue 3，已完成）+ 6 个子应用
-- 升级方向：Vue2 → Vue3, ElementUI → Element Plus, Vuex → Pinia, JS → TS
-- 渐进式迁移：子应用逐个迁，csc-web 不迁移
-- **构建工具：保持 Vue CLI（@vue/cli-service v5），不切 Vite**
-- **自研包（cmp-element / cmp-echarts / cmp-socket / cmp-graph 等）不可升级源码**
-- **迁移完成标准：浏览器逐页功能验证正常，编译通过只是前置门槛**
+- 基座：main-web（Vue 3，已完成）
+- 子应用：6 个（cmp / cms / cos / sms / scr / cop），外加 csc-web 保持 Vue 2 不迁
+- 构建工具：**保持 Vue CLI（@vue/cli-service v5），禁止切 Vite**（scr-web 特例）
+- 自研包：cmp-element / cmp-echarts / cmp-socket / cmp-graph 等**不可升级源码**，在 compat 层重新实现
 
 ## 迁移顺序与状态
 
 ```
 scr-web  (68 .vue)   ✅ 已完成（特例：用了 Vite）
-sms-web  (125 .vue)  ✅ 已完成（build + 基座 Qiankun 挂载 + compat 层）
-cmp-web  (521 .vue)  ⬜ 待迁移
+sms-web  (125 .vue)  ✅ 已完成（build + 基座 Qiankun 挂载 + compat 层 + 回滚演练）
+cmp-web  (521 .vue)  ⬜ 待迁移（feature/migrate-cmp-web 已切出，v2-cmp-web tag 已打）
 cms-web  (521 .vue)  ⬜ 待迁移
 cos-web  (567 .vue)  ⬜ 待迁移
 csc-web  (1211 .vue) ── 不迁移
@@ -61,265 +29,46 @@ csc-web  (1211 .vue) ── 不迁移
 ## 分支策略
 
 ```
-main（基线快照）→ develop（迁移主分支）→ feature/migrate-xxx-web → 合并回 develop
+main（基线快照）→ develop（迁移主分支）→ feature/migrate-{app}-web → merge --no-ff → develop
 ```
 
 ---
 
-## 分层依赖规则
+## 新对话 / 新 Agent 必读次序
 
-```
-types → constants → utils → api → stores → components → views → router → main
-```
-
-**严禁反向依赖。** 例如：
-- utils 不能 import 任何 vue 组件
-- api 不能 import store
-- components 不能 import views
-- stores 不能 import components
-
-**自动化执行：** 通过 `eslint-plugin-import` 的 `no-restricted-paths` 规则编码为 Linter 检查。
-详见 [docs/architecture-lint-rules.md](docs/architecture-lint-rules.md)。
-
-**技术债追踪：** 迁移中的 TODO / any 残留 / 兼容代码统一用 `// TODO: {type} - {描述}` 格式标记。
-详见 [docs/tech-debt-tracking.md](docs/tech-debt-tracking.md)。
+1. **本文件**（身份 + 状态 + 导航）
+2. [docs/rules/agent-constraints.md](docs/rules/agent-constraints.md) — 必须 / 禁止两张清单
+3. [.claude/memory/project_cmp_harness.md](.claude/memory/project_cmp_harness.md) — 项目概况 memory
+4. [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) — 38+ 条踩坑细节 memory
+5. [docs/migration/lifecycle.md](docs/migration/lifecycle.md) — Phase A-D 迁移生命周期
 
 ---
 
-## Element Plus 迁移规则
+## 文档导航
 
-### 组件 API 映射
+### 🔒 硬性规则 → [docs/rules/](docs/rules/)
+agent-constraints · build-tool · layered-dependencies · commit-gates · architecture-lint
 
-```
-:visible.sync="show"              → v-model="show"
-@click.native                     → @click
-this.$message()                   → import { ElMessage } from 'element-plus'; ElMessage()
-this.$confirm()                   → ElMessageBox.confirm()
-this.$loading()                   → ElLoading.service()
-<i class="el-icon-edit">          → import { Edit } from '@element-plus/icons-vue'; <el-icon><Edit /></el-icon>
-<template slot="xxx">             → <template #xxx>
-el-radio-button label=            → el-radio-button value=
-```
+### 🔄 迁移规范 → [docs/migration/](docs/migration/)
+lifecycle · element-plus-mapping · vue3-syntax · typescript-rules · qiankun-constraints · compat-layer
 
-### 容易遗漏的差异
+### 🚀 运维上线 → [docs/operations/](docs/operations/)
+rollback · deploy · coexistence-testing · performance-baseline · browser-compatibility
 
-```
-- el-pagination: total 为 0 时默认不渲染
-- el-table: selection API 返回值可能不同
-- el-form: validate() 返回 Promise
-- el-upload: before-upload 返回 false 或 Promise.reject 阻止上传
-- el-date-picker: value-format 默认行为可能不同，显式指定
-```
+### 👨‍💻 开发者 → [docs/developer/](docs/developer/)
+onboarding · pre-commit-hooks · tech-debt-tracking
+
+### 📜 历史沉淀 → [docs/history/](docs/history/)
+failure-cases · migration-notes/ · knowledge-base/
+
+### ⚡ 并行方案 → [docs/parallel/](docs/parallel/)
+overall-plan · per-app · sms-web · auto-mode
+
+完整索引：[docs/README.md](docs/README.md)
 
 ---
 
-## TypeScript 规则
+## 迁移完成标准
 
-```typescript
-// 组件必须用 <script setup lang="ts">
-// props / emit 必须带类型
-const props = defineProps<{ title: string; count?: number }>()
-const emit = defineEmits<{ update: [value: string] }>()
-
-// ref 显式标注复杂类型
-const form = ref<FormInstance>()
-```
-
-```
-- 禁止 any，允许 unknown
-- API 返回值必须有 interface
-- 第三方库缺类型时写 .d.ts，不用 any 绕过
-```
-
----
-
-## Vue 3 写法规则
-
-### 禁止（旧写法）
-
-```
-this.xxx / this.$refs / this.$set / this.$on / this.$bus
-Vue.prototype.xxx / filters / mixins / Options API
-```
-
-### 必须（新写法）
-
-```
-<script setup lang="ts"> / Pinia / vue-router 4 / Composables / async/await
-```
-
----
-
-## Qiankun 约束
-
-```
-- 子应用必须导出 bootstrap / mount / unmount
-- 路由 base 前缀与基座 activeRule 一致
-- 静态资源配置 publicPath
-- 不操作 document.body 样式
-- 全局通信用 initGlobalState
-- 卸载时清理所有副作用
-```
-
----
-
-## 单个子应用迁移完整生命周期
-
-### Phase A：迁移前准备
-
-```
-[ ] 1. 读完 CLAUDE.md + .claude/memory/ 下所有文件
-[ ] 2. 读完 docs/migration-notes/ 中已完成子应用的踩坑记录
-[ ] 3. 确认浏览器兼容性（docs/browser-compatibility.md）
-[ ] 4. 给旧版本打 tag：git tag v2-{app-name}
-[ ] 5. 从 develop 切出分支：git checkout -b feature/migrate-{app-name}
-[ ] 6. 记录迁移前的性能基线（docs/performance-baseline.md）
-```
-
-### Phase B：执行迁移
-
-```
-按 .claude/skills/vue2-to-vue3-migration/SKILL.md 的 5 个 Stage 执行：
-  Stage 1: 串行基础层（main.ts / store / router / utils / services）
-  Stage 2: 并行迁移 .vue 文件
-  Stage 3: Lint + /simplify 代码质量审查
-  Stage 4: 构建验证（vue-cli-service build）
-  Stage 5: 浏览器功能验证
-```
-
-### Phase C：提交与合并
-
-```
-[ ] 1. eslint 0 errors
-[ ] 2. /simplify 审查通过
-[ ] 3. 构建通过
-[ ] 4. 浏览器验证通过
-[ ] 5. git commit（feature 分支）
-[ ] 6. git checkout develop && git merge feature/migrate-{app-name} --no-ff
-[ ] 7. git push origin develop
-```
-
-### Phase D：迁移后收尾
-
-```
-[ ] 1. 更新 CLAUDE.md 的"迁移顺序与状态"（⬜ → ✅）
-[ ] 2. 在 docs/migration-notes/{app-name}.md 写迁移总结
-[ ] 3. 更新 docs/tech-debt-tracking.md 的技术债记录表
-[ ] 4. 记录迁移后的性能数据（docs/performance-baseline.md）
-[ ] 5. 跑 Vue 2 + Vue 3 新旧共存联调测试（docs/coexistence-testing.md）
-[ ] 6. 将新踩坑记录补充到 CLAUDE.md 失败案例 + .claude/memory/project_cmp_pitfalls.md
-[ ] 7. 确认回滚方案就绪（docs/rollback-plan.md）
-```
-
-**每迁完一个子应用，Phase D 的 7 步必须全部完成后再开始下一个子应用。**
-
----
-
-## 提交规则（每次提交前必须执行）
-
-### 1. Lint 检查（硬性门禁，不通过不允许提交）
-
-```bash
-# 进入子应用目录后执行
-npx eslint src/ --ext .ts,.vue        # 必须 0 errors
-npx vue-cli-service lint --no-fix     # 或项目配置的 lint 命令
-
-# 如有 prettier 配置
-npx prettier --check src/
-```
-
-**lint 报错 → 先修复 → 再提交。不允许带 lint 错误提交。**
-
-### 2. 代码质量审查（使用 /simplify）
-
-每个子应用迁移完成后、提交前，必须运行 `/simplify` 审查代码质量：
-
-```
-检查项：
-- 重复代码（>10 行相似逻辑 → 抽取为共享函数或 composable）
-- 过大组件（>300 行 → 拆分子组件或抽取 composable）
-- 未使用的导入和变量（删除）
-- 硬编码的值（提取为常量）
-- any 类型残留（补充具体类型）
-- 空 catch 块（添加有意义的错误处理）
-- 可复用逻辑（多个组件相同模式 → 抽取 useXxx）
-```
-
-### 3. 提交前完整流程
-
-```
-迁移 .vue 文件完成
-  ↓
-① eslint 检查通过（0 errors）
-  ↓
-② /simplify 代码质量审查通过
-  ↓
-③ 构建验证通过（vue-cli-service build）
-  ↓
-④ 浏览器功能验证通过
-  ↓
-⑤ git commit
-```
-
-**跳过任何一步都不允许提交。**
-
----
-
-## Agent 行为约束
-
-### 必须遵守
-
-```
-1. 迁移前先读完本文件 + .claude/memory/ 下所有文件
-2. 一次只迁移一个页面/组件，迁完立即验证
-3. 不要一次性迁移整个子应用
-4. 保持原有构建工具（Vue CLI），不切 Vite
-5. 自研包不改源码，在应用侧做适配
-6. 保持功能完全一致，不顺手"优化"业务逻辑
-7. CSS 类名和结构保持一致
-8. 迁完后必须在浏览器中验证功能
-9. 提交前必须 eslint 0 errors + /simplify 审查通过
-10. 遇到问题查阅资料后，将问题和解决方案保存到 docs/knowledge-base/（自动执行，无需用户提醒）
-```
-
-### 禁止
-
-```
-1. 禁止跳过类型检查（// @ts-ignore, // @ts-nocheck）
-2. 禁止使用 any 类型
-3. 禁止修改 shared 包的接口签名
-4. 禁止在子应用中访问其他子应用的内部状态
-5. 禁止删除看起来没用的代码（可能被其他子应用引用）
-6. 禁止修改基座 main-web 代码
-7. 禁止把 Vue CLI 构建换成 Vite
-8. 禁止带 lint 错误提交代码
-```
-
----
-
-## 失败案例记录
-
-> 每次 Agent 迁移出错，在这里记录。
-> 格式：日期 | 问题 | 原因 | 修复方式 | 新增约束
-
-| 日期 | 问题 | 原因 | 修复 |
-|------|------|------|------|
-| 2026-04-20 | ECharts 组件挂载报 TypeError | props.data 为 undefined 时直接访问 .values | updateChart 开头加 `if (!props.data) return` |
-| 2026-04-20 | vue-seamless-scroll 报 _c undefined | Vue 2 版不兼容 Vue 3 | 替换为 vue3-seamless-scroll |
-| 2026-04-20 | data-view 组件无法注册 | @jiaminghi/data-view 不兼容 Vue 3 | 替换为 @kjgl77/datav-vue3 |
-| 2026-04-20 | CSS 背景图不显示 | `url('~assets/...')` Webpack 语法 | 改为 `url('@/assets/...')` |
-| 2026-04-20 | cmp-echarts 模块找不到 | 自研包不可升级 | 改为引用本地子目录组件 |
-| 2026-04-20 | process.env 未定义 | Vite 中无 process.env | 改为 import.meta.env（仅 Vite 场景） |
-| 2026-04-20 | el-submenu 组件和 CSS 类在 Element Plus 中改名 | Element Plus 把 submenu 全部改为 sub-menu | 模板 `<el-submenu>` → `<el-sub-menu>`，CSS `.el-submenu*` → `.el-sub-menu*`（含 `__title`/`__icon-arrow`） |
-| 2026-04-20 | `<keep-alive><router-view>` 不再生效 | Vue 3 router-view 用 slot 暴露组件 | 改为 `<router-view v-slot="{ Component }"><keep-alive><component :is="Component" /></keep-alive></router-view>` |
-| 2026-04-20 | `::v-deep { sel {} }` 块状写法失效 | Vue 3 + scoped 已废弃该语法 | 改为函数式 `::v-deep(sel)` 或推荐的 `:deep(sel)` |
-| 2026-04-20 | date-picker `picker-options` 整体 prop 失效 | Element Plus 拆分为独立属性 | `shortcuts` / `disabled-date` 独立 prop；`shortcuts.onClick` 回调改为 `value: () => [start, end]` |
-| 2026-04-20 | `value-format="yyyy-MM-dd"` 不生效 | Element Plus 用 dayjs，格式区分大小写 | 改为大写 `YYYY-MM-DD`（含 HH:mm:ss 保持原样） |
-| 2026-04-20 | router ↔ store ↔ request 循环依赖 | request.js 同步 import store，Pinia 未初始化 | 改用动态 `Promise.all([import('@/stores/permission'), import('@/router')])` |
-| 2026-04-20 | resetRouter 原 `router.matcher = newRouter.matcher` 失效 | vue-router 4 无 matcher 对外 API | 遍历 `router.getRoutes()`，`removeRoute(name)` 所有非常量路由 |
-| 2026-04-20 | `router-link @contextmenu.native` 失效 | Vue 3 router-link 的 .native 修饰符移除 | 用 `<router-link custom v-slot="{ navigate }">` + 内部 DOM 自行绑定 |
-| 2026-04-20 | sms-web 的 `<assignPool>` 组件与 `assignPool()` 方法同名冲突 | script setup 扁平化作用域 | 方法重命名为 `handleAssignPool` |
-| 2026-04-20 | vue-class-component / vue-property-decorator 在 Vue 3 不可用 | Class 组件 API 废弃 | 三个文件（lockme/namerule/personal）全部改写为 `<script setup lang="ts">` |
-| 2026-04-20 | webpack 5 `jsonpFunction` 不识别 | webpack 5 重命名 | 改为 `chunkLoadingGlobal` |
-| 2026-04-20 | sass-loader 新版 `prependData` 无效 | sass-loader 8+ 改名 | 改为 `additionalData` |
-| 2026-04-20 | `compress-webpack-plugin` 与 webpack 5 不兼容 | 包名变更 | 改用 `compression-webpack-plugin` |
+**不是编译通过，是浏览器里所有功能正常运行。**
+每个子应用 Phase D 7 步完成（含浏览器验收 + 共存测试 + 回滚演练）后才能开始下一个。

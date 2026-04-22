@@ -45,6 +45,6 @@
 
 ---
 
-**状态说明**：
-- `failure-cases.md` 在 Step 2 从 CLAUDE.md 拆出
-- `migration-notes/` 和 `knowledge-base/` 在 Step 2 从 docs/ 根目录搬入本区
+**状态说明**：Step 2 完成：
+- `failure-cases.md` 已从 CLAUDE.md 拆出并补上 Step 1-3 新增的 3 条
+- `migration-notes/` 和 `knowledge-base/` 已从 docs/ 根目录搬入本区

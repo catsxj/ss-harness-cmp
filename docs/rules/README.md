@@ -27,4 +27,4 @@
 
 ---
 
-**状态说明**：本区 5 个文件将在 Step 2 按 CLAUDE.md 内容映射表从入口文件拆出。
+**状态说明**：Step 2 完成：agent-constraints / layered-dependencies / commit-gates 已从 CLAUDE.md 拆出，architecture-lint 已从 docs/ 根搬入。`build-tool.md` 在 Step 3 建。

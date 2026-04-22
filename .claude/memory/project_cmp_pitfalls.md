@@ -181,7 +181,7 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 ## 37. 基座 app.json 启动时只读一次，切 entry 必须 F5
 - `main-web/src/core/config.ts` 的 `getMicroApp()` 在 main-web 启动时 `axios.get('/config/app.json')` 一次，结果传给 `registerMicroApps`
 - 改 `public/config/app.json` 的 entry（如回滚切旧版端口）后**必须在浏览器 F5 强刷**才能生效
-- 项目 `docs/rollback-plan.md` 里"无需重启"的说法不准确 —— 需要 F5 触发 main-web 重新拉 app.json
+- 项目 `docs/operations/rollback.md` 里"无需重启"的说法不准确 —— 需要 F5 触发 main-web 重新拉 app.json
 - cmp-web 迁完跑回滚演练时记得先 F5
 
 ## 38. packData 类函数对空数据 / 空父节点访问 undefined.id

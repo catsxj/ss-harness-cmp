@@ -29,4 +29,4 @@
 
 ---
 
-**状态说明**：本区 4 个文件将在 Step 2 从仓库根目录搬入（`agent-parallel-*.md` → `overall-plan / per-app / sms-web / auto-mode`），旧位置不留占位（Q5 决定）。
+**状态说明**：Step 2 完成：4 个文件已从仓库根目录搬入（`agent-parallel-plan.md` → `overall-plan.md`，`agent-parallel-all-apps.md` → `per-app.md`，`agent-parallel-sms-web.md` → `sms-web.md`，`agent-auto-parallel.md` → `auto-mode.md`）。

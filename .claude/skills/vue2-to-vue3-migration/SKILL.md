@@ -287,4 +287,4 @@ vue-cli-service build  # 或项目原有的构建命令
 - **保持原有构建工具**：不要把 Vue CLI 换成 Vite，升级 @vue/cli-service 到 v5 即可
 - **自研包不动源码**：所有适配在应用侧完成
 - **迁移完成标准**：浏览器逐页验证功能正常，编译通过只是前置门槛
-- **踩坑即记录**：每个子应用迁完后在 docs/migration-notes/ 生成总结
+- **踩坑即记录**：每个子应用迁完后在 docs/history/migration-notes/ 生成总结

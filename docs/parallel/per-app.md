@@ -1,6 +1,6 @@
 # 各子应用 Agent 并行方案总览
 
-> sms-web 细化方案见 agent-parallel-sms-web.md
+> sms-web 细化方案见 [sms-web.md](sms-web.md)
 > 本文档覆盖：cmp-web、cms-web、cos-web
 > csc-web 不迁移（保持 Vue 2）
 

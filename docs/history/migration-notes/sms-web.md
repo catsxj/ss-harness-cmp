@@ -264,7 +264,7 @@ permissionStore.resetRoutes(router, resetRouter)
 | WebSocket | `useWebsocket.ts` `webSocket: any` | cmp-socket 无类型 | 低 |
 | parent refs | `configs/AddDialog.vue`, `component/AddDialog.vue`, `tenant/AddDialog.vue` | `getCurrentInstance().parent.refs` 过渡 | 中 |
 
-全部已在对应代码处加 `// TODO: cmp-element`、`// TODO: i18n`、`// TODO: type` 标记，可用 `docs/tech-debt-tracking.md` 中的扫描命令统计。
+全部已在对应代码处加 `// TODO: cmp-element`、`// TODO: i18n`、`// TODO: type` 标记，可用 `docs/developer/tech-debt-tracking.md` 中的扫描命令统计。
 
 ---
 
@@ -280,8 +280,8 @@ permissionStore.resetRoutes(router, resetRouter)
 
 ## 待后续阶段
 
-- [ ] 性能基线记录到 docs/performance-baseline.md（需真实后端环境）
-- [ ] 新旧共存联调测试 docs/coexistence-testing.md
+- [ ] 性能基线记录到 docs/operations/performance-baseline.md（需真实后端环境）
+- [ ] 新旧共存联调测试 docs/operations/coexistence-testing.md
 - [ ] 合并 feature/migrate-sms-web → develop（由项目负责人批准）
 
 ---

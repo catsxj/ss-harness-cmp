@@ -122,6 +122,6 @@ main              ← 基线，不直接修改
 
 ## 遇到问题
 
-1. 查看 `docs/migration-notes/{app-name}.md` 中的踩坑记录
-2. 查看 `CLAUDE.md` 中的失败案例记录
-3. 查看 `.claude/memory/project_cmp_pitfalls.md` 中的 10 条通用踩坑
+1. 查看 `docs/history/migration-notes/{app-name}.md` 中的踩坑记录
+2. 查看 `docs/history/failure-cases.md` 中的失败案例记录
+3. 查看 `.claude/memory/project_cmp_pitfalls.md` 中的详细踩坑（38+ 条）

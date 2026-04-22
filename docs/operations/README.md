@@ -24,4 +24,4 @@
 
 ---
 
-**状态说明**：本区 5 个文件将在 Step 2 从 docs/ 根目录原位搬入。
+**状态说明**：Step 2 完成：5 个文件已从 docs/ 根目录搬入（rollback-plan.md → rollback.md，production-deploy.md → deploy.md，其他保原名）。

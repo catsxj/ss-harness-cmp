@@ -29,4 +29,4 @@
 
 ---
 
-**状态说明**：本区 6 个文件中 5 个将在 Step 2 从 CLAUDE.md 拆出；`compat-layer.md` 在 Step 3 新建（提炼自 `.claude/memory/project_cmp_pitfalls.md` 的 25-26 条）。
+**状态说明**：Step 2 完成：lifecycle / element-plus-mapping / vue3-syntax / typescript-rules / qiankun-constraints 已从 CLAUDE.md 拆出。`compat-layer.md` 在 Step 3 新建（提炼自 `.claude/memory/project_cmp_pitfalls.md` 的 25-26 条）。

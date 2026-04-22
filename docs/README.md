@@ -43,5 +43,5 @@
 
 ---
 
-**状态说明（2026-04-22）**：文档重组 Step 1 已完成（骨架 + README）。
-实际内容文件在 Step 2 按映射表搬入。在此之前，请仍从 CLAUDE.md 的"必读文件索引"找规则。
+**状态说明（2026-04-22）**：文档重组 Step 2 已完成（骨架 + 文件搬家 + CLAUDE.md 瘦身）。
+剩 Step 3：新建 `docs/migration/compat-layer.md` + `docs/rules/build-tool.md`，调整 memory feedback 文件指向。

@@ -23,4 +23,4 @@
 
 ---
 
-**状态说明**：本区 3 个文件将在 Step 2 从 docs/ 根目录搬入，`developer-guide.md` 同时改名为 `onboarding.md`。
+**状态说明**：Step 2 完成：3 个文件从 docs/ 根目录搬入，`developer-guide.md` 改名为 `onboarding.md`。
