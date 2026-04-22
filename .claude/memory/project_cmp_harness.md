@@ -25,6 +25,8 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 - cmp-element 基于 ElementUI，与 Element Plus 不兼容，需在 compat 层重新实现
 - scr-web 缺少 Qiankun lifecycle，需先补加（csc-web 已移出，本仓库不涉及）
 - 迁移完成标准 = 浏览器中所有功能正常运行，不只是编译通过
+- **sms-web 已通过 pnpm workspace 引用 `@ss-cmp/*` 公共包**（2026-04-22，packages/ 下 4 个包就绪：design-tokens / utils / cmp-element / cmp-echarts；cmp-topology / cmp-graph 空骨架留给 Phase 4 cmp-web 迁移期填充）
+- **pnpm workspace peerDep 陷阱**：`.npmrc` `auto-install-peers=true` 会把 peerDep 装成独立副本，导致 vue 多实例 → `<slot>` 跨包 `ComponentInternalInstance` 失配（null.ce 崩溃）。vue.config.js 必须用 `resolve.alias` 强制 `vue/element-plus/@element-plus/icons-vue` 指到主子应用的 `node_modules/*` 单实例
 
 ## 迁移顺序
 scr-web → sms-web → cmp-web → cms-web → cos-web（csc-web 不迁移）

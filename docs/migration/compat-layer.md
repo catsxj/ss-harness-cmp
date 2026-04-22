@@ -68,3 +68,79 @@ if (!d.values || !d.keys) return
 - [element-plus-mapping.md](element-plus-mapping.md) — ElementUI → EP API 映射
 - [vue3-syntax.md](vue3-syntax.md) — Vue 3 写法规则
 - [../rules/agent-constraints.md](../rules/agent-constraints.md) — "自研包不改源码" 硬约束（必须 5）
+
+---
+
+## 2026-04-22 更新：迁至 pnpm workspace
+
+sms-web Phase D 完成后，所有自研包兼容实现从 `sms-web/src/common/{compat,utils}` + `common/css/global-ui.scss` + `validate/index.ts` 抽到仓库根 `packages/` 下：
+
+- `@ss-cmp/design-tokens` — tokens.scss + element-plus.scss（CSS 变量覆盖 + 32px 组件尺寸）
+- `@ss-cmp/utils` — auth / crypto / day / request / resolvePath / uploadFile + shims-ajax.d.ts / shims-global.d.ts
+- `@ss-cmp/cmp-element` — BasicForm / BasicFormItem / BasicTable / AdvanceTable / TableSearch / CommonDetail / CommonDetailItem / StatusIcon / SvgIcon / Empty + validate.ts
+- `@ss-cmp/cmp-echarts` — BarCharts / BarReverseCharts / LineCharts / PieCharts / GaugeCharts / LiquidFillCharts + useChart.ts
+- `@ss-cmp/cmp-topology` / `@ss-cmp/cmp-graph` — 空骨架，Phase 4 cmp-web 迁移期填
+- `cmp-socket` 保留原包（B 档）
+
+### cmp-web / cms-web / cos-web 迁移时接入方式
+
+1. **package.json 加 workspace:\* 依赖**
+   ```json
+   "dependencies": {
+     "@ss-cmp/design-tokens": "workspace:*",
+     "@ss-cmp/utils": "workspace:*",
+     "@ss-cmp/cmp-element": "workspace:*",
+     "@ss-cmp/cmp-echarts": "workspace:*"
+   }
+   ```
+
+2. **vue.config.js 加 transpileDependencies + vue 单实例 alias**
+   ```js
+   module.exports = {
+     transpileDependencies: [/@ss-cmp\//],
+     chainWebpack: (config) => {
+       config.resolve.alias
+         .set('vue$', resolve('node_modules/vue'))
+         .set('element-plus$', resolve('node_modules/element-plus'))
+         .set('@element-plus/icons-vue$', resolve('node_modules/@element-plus/icons-vue'))
+     }
+   }
+   ```
+   **vue 单实例 alias 必须加** —— `.npmrc` `auto-install-peers=true` 会把 peerDep 装成独立副本，不 alias 会 `<slot>` 跨包报 `null.ce`（见 pitfalls 第 39 条）
+
+3. **tsconfig.json include 扩展**
+   ```json
+   "include": [
+     "src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts",
+     "../packages/*/src/**/*.ts",
+     "../packages/*/src/**/*.vue",
+     "../packages/*/src/**/*.d.ts"
+   ]
+   ```
+
+4. **main.ts 注册 + 配置注入**
+   ```ts
+   import { registerCmpElement } from '@ss-cmp/cmp-element'
+   import { registerCmpEcharts } from '@ss-cmp/cmp-echarts'
+   import { configureAuth, configureRequest } from '@ss-cmp/utils'
+   import '@ss-cmp/design-tokens/src/element-plus.scss'
+   import { tokenKey } from '@/config'
+
+   configureAuth({ tokenKey })
+   configureRequest({
+     onUnauthorized: () => { /* sub-app 自己的 permission store reset */ }
+   })
+
+   registerCmpElement(app)
+   registerCmpEcharts(app)
+   ```
+
+### SCSS 注意事项
+
+- 组件内引 tokens 用 `@import '@ss-cmp/design-tokens/src/tokens.scss';`（**不能用 `@use`**，会和 vue.config.js 的 `additionalData: '@import "@/common/css/common-var.scss";'` 的 "`@use` 必须在所有 @import 之前" 规则冲突）
+
+### sms-web 留的 stub 层
+
+`sms-web/src/common/utils/{auth,crypto,day,request,resolvePath,uploadFile}.ts` 各留了一行 re-export stub 指向 `@ss-cmp/utils`，保留原 `utils/*` 别名 import 不动，避免 60+ 业务文件批量改。cmp-web 迁移时建议直接 import `@ss-cmp/utils`，不要再走 stub。
+
+详细设计见 [../superpowers/specs/2026-04-22-common-compat-workspace-design.md](../superpowers/specs/2026-04-22-common-compat-workspace-design.md)。
