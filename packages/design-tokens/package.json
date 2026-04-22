@@ -1,0 +1,13 @@
+{
+  "name": "@ss-cmp/design-tokens",
+  "version": "0.1.0",
+  "description": "Design tokens (SCSS variables + Element Plus CSS var overrides) for ss-harness-cmp sub-apps",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./src/*": "./src/*"
+  },
+  "files": ["src"],
+  "private": true
+}

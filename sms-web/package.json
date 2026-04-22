@@ -11,6 +11,10 @@
   "dependencies": {
     "@antv/g6": "^4.6.0",
     "@element-plus/icons-vue": "^2.3.0",
+    "@ss-cmp/cmp-echarts": "workspace:*",
+    "@ss-cmp/cmp-element": "workspace:*",
+    "@ss-cmp/design-tokens": "workspace:*",
+    "@ss-cmp/utils": "workspace:*",
     "@wangeditor/editor": "^5.1.23",
     "@wangeditor/editor-for-vue": "^5.1.10",
     "axios": "^1.7.0",

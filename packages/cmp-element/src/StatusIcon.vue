@@ -33,7 +33,7 @@ const customStyle = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 .status-icon {
   --c: #{$status-normal};

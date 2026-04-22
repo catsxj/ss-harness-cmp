@@ -14,6 +14,18 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.0
         version: 2.3.2(vue@3.5.32(typescript@5.4.5))
+      '@ss-cmp/cmp-echarts':
+        specifier: workspace:*
+        version: link:../packages/cmp-echarts
+      '@ss-cmp/cmp-element':
+        specifier: workspace:*
+        version: link:../packages/cmp-element
+      '@ss-cmp/design-tokens':
+        specifier: workspace:*
+        version: link:../packages/design-tokens
+      '@ss-cmp/utils':
+        specifier: workspace:*
+        version: link:../packages/utils
       '@wangeditor/editor':
         specifier: ^5.1.23
         version: 5.1.23

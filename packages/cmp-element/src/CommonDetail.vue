@@ -37,7 +37,7 @@ const emit = defineEmits<{ goBack: [] }>()
 </script>
 
 <style lang="scss" scoped>
-@import './tokens';
+@import '@ss-cmp/design-tokens/src/tokens.scss';
 
 .cd {
   background: $bg-surface;
