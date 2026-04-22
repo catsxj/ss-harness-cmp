@@ -1,3 +1,0 @@
-window.configs = {
-  vpcValidate: false
-}

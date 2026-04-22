@@ -1,7 +1,10 @@
 # Vue 2 + Vue 3 新旧共存联调测试
 
-> csc-web 保持 Vue 2，其他子应用迁移到 Vue 3
-> 必须验证混合环境下 Qiankun 的稳定性
+> csc-web 保持 Vue 2（**已移出本仓库单独维护**，2026-04-22）；本仓库的其他子应用迁移到 Vue 3。
+> 必须验证混合环境下 Qiankun 的稳定性。
+>
+> **测试前置**：csc-web 不在本仓库，Vue2 侧需另起一套独立运行（本地指向其 dev 入口、或引用已部署版本）。
+> 具体 entry 配置方式见 [rollback.md](rollback.md) 的 Qiankun 运行时切换说明。
 
 ---
 

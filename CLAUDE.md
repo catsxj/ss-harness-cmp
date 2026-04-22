@@ -11,7 +11,7 @@
 - 本地路径：`D:\harnes-test\ss-harness-cmp`
 - 微前端框架：Qiankun
 - 基座：main-web（Vue 3，已完成）
-- 子应用：6 个（cmp / cms / cos / sms / scr / cop），外加 csc-web 保持 Vue 2 不迁
+- 子应用：6 个（cmp / cms / cos / sms / scr / cop）。csc-web 保持 Vue 2 且**不在本仓库**（单独维护）
 - 构建工具：**保持 Vue CLI（@vue/cli-service v5），禁止切 Vite**（scr-web 特例）
 - 自研包：cmp-element / cmp-echarts / cmp-socket / cmp-graph 等**不可升级源码**，在 compat 层重新实现
 
@@ -23,7 +23,7 @@ sms-web  (125 .vue)  ✅ 已完成（build + 基座 Qiankun 挂载 + compat 层 
 cmp-web  (521 .vue)  ⬜ 待迁移（feature/migrate-cmp-web 已切出，v2-cmp-web tag 已打）
 cms-web  (521 .vue)  ⬜ 待迁移
 cos-web  (567 .vue)  ⬜ 待迁移
-csc-web  (1211 .vue) ── 不迁移
+csc-web  (1211 .vue) ── 不迁移 & 已移出本仓库（单独维护）
 ```
 
 ## 分支策略

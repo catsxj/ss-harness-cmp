@@ -1,8 +1,0 @@
-@Library('jgpl') _
-webPipeline([
-        onBuildInstallShell:{->
-            return """
-            pnpm install --no-frozen-lockfile
-            pnpm run build || echo 'Ignore build error !!!'
-        """}
-])

@@ -37,3 +37,6 @@ function updateChart(chartInstance: EChartsType) {
 ## 适用范围
 
 所有使用 ECharts 的子应用（scr-web / sms-web / cmp-web / cos-web / csc-web）
+
+---
+*2026-04-22 备注：csc-web 已移出本仓库单独维护，但此文档内容对所有 ECharts 使用场景仍适用。*

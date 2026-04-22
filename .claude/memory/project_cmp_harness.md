@@ -18,12 +18,12 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 | cmp-web | Vue 2 | 521 | 待迁移 |
 | cms-web | Vue 2 | 521 | 待迁移 |
 | cos-web | Vue 2 | 567 | 待迁移 |
-| csc-web | Vue 2 | 1,211 | **不迁移**，保持 Vue 2 |
+| csc-web | Vue 2 | 1,211 | **不迁移**，保持 Vue 2；**已移出本仓库单独维护**（2026-04-22） |
 
 ## 关键约束
 - 自研包（cmp-element/cmp-echarts/cmp-socket/cmp-graph/cmp-graph-editor/cmp-topology）**不可升级源码**
 - cmp-element 基于 ElementUI，与 Element Plus 不兼容，需在 compat 层重新实现
-- scr-web 和 csc-web 缺少 Qiankun lifecycle，需先补加
+- scr-web 缺少 Qiankun lifecycle，需先补加（csc-web 已移出，本仓库不涉及）
 - 迁移完成标准 = 浏览器中所有功能正常运行，不只是编译通过
 
 ## 迁移顺序

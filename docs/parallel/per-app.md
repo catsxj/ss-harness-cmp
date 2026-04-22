@@ -2,7 +2,7 @@
 
 > sms-web 细化方案见 [sms-web.md](sms-web.md)
 > 本文档覆盖：cmp-web、cms-web、cos-web
-> csc-web 不迁移（保持 Vue 2）
+> csc-web 不迁移（保持 Vue 2，**已移出本仓库单独维护**，2026-04-22）
 
 ---
 
@@ -14,7 +14,7 @@ sms-web (125)  ████████  3 Agent, ~3 周
 cmp-web (521)  ████████████████  5 Agent, ~5-6 周
 cms-web (521)  ████████████████  5 Agent, ~5-6 周
 cos-web (567)  ██████████████████  5 Agent, ~6-8 周
-csc-web (1211) ──── 不迁移（保持 Vue 2）
+csc-web (1211) ──── 不迁移（保持 Vue 2）& 已移出本仓库
 ```
 
 每个子应用内部分为：
@@ -270,7 +270,7 @@ csc-web (1211) ──── 不迁移（保持 Vue 2）
 | 特殊难点 | vue-grid-layout | cmp-element | class-component + i18n | 图/拓扑 3 包 |
 | 先行 Agent | layouts | layouts | layouts + i18n | layouts + 图 wrapper |
 
-> csc-web 不迁移，保持 Vue 2。Qiankun 天然支持 Vue 2 + Vue 3 子应用共存。
+> csc-web 不迁移，保持 Vue 2，已移出本仓库单独维护（2026-04-22）。Qiankun 天然支持 Vue 2 + Vue 3 子应用跨仓库 / 跨部署共存。
 
 ## Codemod 脚本复用矩阵
 

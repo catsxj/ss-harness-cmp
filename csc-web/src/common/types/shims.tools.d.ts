@@ -1,8 +1,0 @@
-declare module 'cmp-basic'
-declare module 'cmp-echarts'
-declare module 'cmp-element'
-declare module 'cmp-socket'
-declare module 'cmp-element/utils'
-declare module 'services'
-declare module 'v-viewer/src/component.vue'
-declare module 'cmp-graph-editor'
