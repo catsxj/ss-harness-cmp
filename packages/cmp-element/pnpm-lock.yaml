@@ -14,6 +14,9 @@ importers:
       '@ss-cmp/design-tokens':
         specifier: workspace:*
         version: link:../design-tokens
+      codemirror:
+        specifier: ^5.65.16
+        version: 5.65.21
       element-plus:
         specifier: ^2.7.0
         version: 2.13.7(vue@3.5.32)
@@ -113,6 +116,9 @@ packages:
 
   async-validator@4.2.5:
     resolution: {integrity: sha512-7HhHjtERjqlNbZtqNqy2rckN/SpOOlmDliet+lP7k+eKZEjPk3DgyeU9lIXLdeLz0uBbbVp+9Qdow9wJWgwwfg==}
+
+  codemirror@5.65.21:
+    resolution: {integrity: sha512-6teYk0bA0nR3QP0ihGMoxuKzpl5W80FpnHpBJpgy66NK3cZv5b/d/HY8PnRvfSsCG1MTfr92u2WUl+wT0E40mQ==}
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
@@ -297,6 +303,8 @@ snapshots:
       - typescript
 
   async-validator@4.2.5: {}
+
+  codemirror@5.65.21: {}
 
   csstype@3.2.3: {}
 

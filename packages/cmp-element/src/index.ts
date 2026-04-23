@@ -1,4 +1,5 @@
 import type { App } from 'vue'
+// 重新实现（无源码，sms-web Phase D 新写）
 import BasicForm from './BasicForm.vue'
 import BasicFormItem from './BasicFormItem.vue'
 import BasicTable from './BasicTable.vue'
@@ -9,6 +10,10 @@ import CommonDetailItem from './CommonDetailItem.vue'
 import StatusIcon from './StatusIcon.vue'
 import SvgIcon from './SvgIcon.vue'
 import Empty from './Empty.vue'
+// A 档升级（基于 original/cmp-element/components/* 的 Vue 2 源码）
+import CodeMirror from './CodeMirror.vue'
+import FullScreen from './FullScreen.vue'
+import JsonView from './JsonView.vue'
 
 export {
   BasicForm,
@@ -20,11 +25,16 @@ export {
   CommonDetailItem,
   StatusIcon,
   SvgIcon,
-  Empty
+  Empty,
+  CodeMirror,
+  FullScreen,
+  JsonView
 }
 
 export { default as validationPresets } from './validate'
 
+// 全局注册表：只放业务默认需要的轻量组件
+// CodeMirror / FullScreen / JsonView 按需 explicit import，避免 sms-web 无谓 bundle codemirror (~200KB)
 const COMPONENTS = {
   BasicForm,
   BasicFormItem,

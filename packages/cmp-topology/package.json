@@ -1,7 +1,7 @@
 {
   "name": "@ss-cmp/cmp-topology",
   "version": "0.1.0",
-  "description": "Vue 3 upgrade of cmp-topology@1.0.0 (G6 v3 based graph wrapper; Phase 4 will populate)",
+  "description": "Vue 3 重新实现 cmp-topology@1.0.0（G6 v3 关系图壳；原版无 .vue 源码，仅 lib bundle；Phase 4 cmp-web 迁移时填充）",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
