@@ -19,12 +19,25 @@
 
 ```
 scr-web  (68 .vue)   ✅ 已完成（特例：用了 Vite）
-sms-web  (125 .vue)  ✅ 已完成（build + 基座 Qiankun 挂载 + compat 层 + 回滚演练）
+sms-web  (125 .vue)  ✅ 已完成 + 公共包抽取 @ss-cmp/* (2026-04-22/23)
 cmp-web  (521 .vue)  ⬜ 待迁移（feature/migrate-cmp-web 已切出，v2-cmp-web tag 已打）
 cms-web  (521 .vue)  ⬜ 待迁移
 cos-web  (567 .vue)  ⬜ 待迁移
 csc-web  (1211 .vue) ── 不迁移 & 已移出本仓库（单独维护）
 ```
+
+### 公共包（pnpm workspace，2026-04-22 抽出）
+
+`packages/` 下 6 个 `@ss-cmp/*` 包，细节索引见 [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md)：
+
+- `@ss-cmp/design-tokens` — SCSS 令牌 + Element Plus CSS var 覆盖 ✅ 已验证
+- `@ss-cmp/utils` — 6 通用工具 + 2 shim .d.ts ✅ 已验证
+- `@ss-cmp/cmp-element` — 10 重新实现 ✅ + 3 A 档 port ⚠️（CodeMirror / FullScreen / JsonView 仅编译，runtime 未跑）
+- `@ss-cmp/cmp-echarts` — 6 图表 + useChart hook ✅ 已验证
+- `@ss-cmp/cmp-graph` — 5 A 档 port ⚠️（全部仅编译，runtime 未跑，@antv/g6-editor@^1.2.0 与 Vue 3 的兼容性待 Phase 4 cmp-web 验证）
+- `@ss-cmp/cmp-topology` — 空骨架，Phase 4 cmp-web 时填充（原版无 .vue 源码 → 重新实现）
+
+**Phase 4 启动前务必先读** [.claude/memory/project_cmp_workspace_flow.md](.claude/memory/project_cmp_workspace_flow.md) 的"未验证组件清单"章节。
 
 ## 分支策略
 
@@ -39,8 +52,10 @@ main（基线快照）→ develop（迁移主分支）→ feature/migrate-{app}-
 1. **本文件**（身份 + 状态 + 导航）
 2. [docs/rules/agent-constraints.md](docs/rules/agent-constraints.md) — 必须 / 禁止两张清单
 3. [.claude/memory/project_cmp_harness.md](.claude/memory/project_cmp_harness.md) — 项目概况 memory
-4. [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) — 38+ 条踩坑细节 memory
-5. [docs/migration/lifecycle.md](docs/migration/lifecycle.md) — Phase A-D 迁移生命周期
+4. [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) — 41 条踩坑细节 memory
+5. [.claude/memory/project_cmp_workspace_flow.md](.claude/memory/project_cmp_workspace_flow.md) — 2026-04-22/23 workspace 抽取流程 + 未验证组件清单（Phase 4 启动前必读）
+6. [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) — 文档 / packages / original 位置索引
+7. [docs/migration/lifecycle.md](docs/migration/lifecycle.md) — Phase A-D 迁移生命周期
 
 ---
 
