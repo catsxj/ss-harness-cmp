@@ -24,40 +24,35 @@ const spanStyle = computed(() => {
 <style lang="scss" scoped>
 @import '@ss-cmp/design-tokens/src/tokens.scss';
 
+// cmp-basic 基准：label 加粗 12px #333，value 13-14px 正文色，冒号分隔
 .cdi {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   font-family: $font-body;
   line-height: 1.5;
+  padding: 6px 0;
 }
 
 .cdi__label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: $tracking-wide;
-  text-transform: uppercase;
-  color: $text-muted;
+  font-size: 12px;
+  font-weight: 600;
+  color: $cmp-text-body;
   white-space: nowrap;
   flex-shrink: 0;
+  min-width: 85px;
 
   &::after {
-    content: '';
-    display: inline-block;
-    width: 12px;
-    height: 1px;
-    background: $border-solid;
-    margin: 0 0 3px 6px;
-    vertical-align: middle;
+    content: '：';
+    margin-left: 2px;
   }
 }
 
 .cdi__value {
   margin: 0;
   font-size: 13px;
-  color: $text-primary;
-  font-variant-numeric: tabular-nums;
+  color: $cmp-text-body;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
