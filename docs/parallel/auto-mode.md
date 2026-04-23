@@ -48,108 +48,43 @@
 
 ---
 
-## 实际执行流程（以 sms-web 为例）
+## 实际执行流程（4 Round 模型）
 
 ### Round 1：主 Agent 串行完成基础层
 
 主 Agent 自己做，不派发子 Agent：
+- 创建 Vue3 工程骨架 + main.ts + 路由 + store + services + Codemod 预处理
+- 验证骨架可运行
 
-```
-1. 创建 Vue3 工程骨架
-2. 迁移 store → Pinia（3 个模块）
-3. 迁移 router（vue-router 4）
-4. 迁移 services/ → TS
-5. 迁移 common/utils + common/hooks + common/directive
-6. 迁移 models/ + filters/ + icons/
-7. 处理特殊依赖（cmp-element import 替换等）
-8. 对所有 .vue 文件跑 Codemod（ElementUI 标签替换等）
-9. 验证骨架可运行
-```
+### Round 2：派发 N 个子 Agent 并行迁移 .vue 文件
 
-### Round 2：派发 3 个子 Agent 并行迁移 .vue 文件
+**一条消息，N 个 Agent 调用，全部 `run_in_background: true` + `isolation: "worktree"`。**
 
-**一条消息，三个 Agent 调用，全部 `run_in_background: true`：**
+每个 Agent prompt 含：工作目录白名单 + 迁移规则（见 [overall-workflow.md](overall-workflow.md#agent-prompt-模板) 模板）+ 完成标准（`vue-tsc --noEmit` 通过）。
 
-```python
-# 伪代码，实际用 Agent 工具
-
-Agent(
-    description="迁移 sms-web layouts+common 组件",
-    isolation="worktree",
-    run_in_background=True,
-    prompt="""
-    你的唯一任务：将以下目录中的 .vue 文件从 Vue2 迁移到 Vue3。
-    
-    工作目录：sms-web/src/layouts/**  和  sms-web/src/common/components/**
-    共 31 个 .vue 文件。
-    
-    对每个 .vue 文件执行：
-    1. <script> → <script setup lang="ts">
-    2. Options API → Composition API
-    3. this.xxx → 直接引用
-    4. Vuex → Pinia（import { useAppStore } from '@/stores/app'）
-    5. 补充 TS 类型，禁止 any
-    6. Codemod 已处理了基础的 ElementUI → Element Plus 标签替换，
-       你只需修正遗漏和处理逻辑层面的改动
-    
-    禁止修改以上目录之外的任何文件。
-    完成后运行 cd sms-web && npx vue-tsc --noEmit 确认无报错。
-    """
-)
-
-Agent(
-    description="迁移 sms-web configs+monitor",
-    isolation="worktree",
-    run_in_background=True,
-    prompt="""（同上，目录改为 views/configs/** 和 views/monitor/**）"""
-)
-
-Agent(
-    description="迁移 sms-web permisson+小模块",
-    isolation="worktree",
-    run_in_background=True,
-    prompt="""（同上，目录改为 views/permisson/** + login/ + log/ + about/ + errorPage/）"""
-)
-```
-
-### Round 3：子 Agent 返回后，主 Agent 自动合并
+### Round 3：主 Agent 自动合并 + 边界检查
 
 ```
 子 Agent 完成后返回 worktree 路径和分支名。
 
 主 Agent 执行：
-1. git merge 三个分支（目录不重叠，零冲突）
+1. git merge 子 Agent 分支（目录不重叠，零冲突）
 2. git diff --stat 确认每个分支只改了指定目录的文件
-3. 如果发现越界修改 → 回滚该分支，重新派发带更严格约束的子 Agent
+3. 发现越界修改 → 回滚该分支，重新派发带更严格约束的子 Agent
 ```
 
 ### Round 4：主 Agent 自动验证
 
 ```bash
-# 主 Agent 自己跑
-cd sms-web
-npx vue-tsc --noEmit          # 类型检查
+cd <app>
+npx vue-tsc --noEmit           # 类型检查
 npx eslint src/ --ext .ts,.vue # Lint 检查
-npx vite build                 # 构建检查
+npx vite build                 # 构建检查（或 vue-cli-service build）
 ```
 
-**如果全部通过 → 报告完成。**
+全部通过 → 报告完成；失败 → 进入自愈循环（下一节）。
 
-**如果失败 → 进入自愈循环：**
-
-```
-错误信息
-  ↓
-主 Agent 分析错误属于哪个模块
-  ↓
-派发修复 Agent（指定只改出错的文件）
-  ↓
-合并修复
-  ↓
-重新验证
-  ↓
-重复直到通过（最多 3 轮，否则上报人工）
-```
+详细的 sms-web 三路并行执行记录见 [../history/archived-parallel-plans/sms-web.md](../history/archived-parallel-plans/sms-web.md)。
 
 ---
 
@@ -227,35 +162,9 @@ git diff --name-only main...agent-a-branch | grep -v "^sms-web/src/views/monitor
 
 ---
 
-## 完整一键执行脚本（你只说一句话）
+## 完整一键执行（概要）
 
-你对我说：
-
-```
-迁移 sms-web，全自动并行
-```
-
-我会：
-
-```
-1. 读取 sms-web 目录结构
-2. 创建 Vue3 工程骨架
-3. 迁移 store/router/services/common（串行）
-4. Codemod 预处理所有 .vue
-5. 派发 3 个子 Agent 并行迁移 .vue（worktree 隔离）
-6. 等待子 Agent 返回
-7. 自动合并三个分支
-8. 跑 vue-tsc + eslint + vite build
-9. 如有错误 → 自动修复循环（最多 3 轮）
-10. 全部通过 → 启动 dev server，报告：
-    "sms-web 代码迁移完成。125 个 .vue 已迁移为 Vue3 + TS + Element Plus。
-     vue-tsc / eslint / vite build 全部通过。
-     dev server 已启动在 localhost:xxxx。
-     请在浏览器中逐页验证所有功能是否正常运行。
-     发现问题直接告诉我，我来修。"
-```
-
-**你的参与：最后在浏览器中逐页验证所有功能是否正常运行。这一步不可省略——编译通过 ≠ 功能正确。**
+你说："迁移 {app}，全自动并行"，主 Agent 按 Round 1-4 流程自动执行：串行基础层 → 并行派发 → 合并 → 自愈验证 → 启动 dev server 交你做**浏览器验收**（不可省略，编译通过 ≠ 功能正确）。
 
 ---
 

@@ -14,6 +14,7 @@
 | [knowledge-base/](knowledge-base/) | 分类知识库（echarts / vue3-migration / third-party-libs 等） | 遇到具体库 / 领域问题时分类查 |
 | [archived-plans/](archived-plans/) | 已执行完毕的 superpowers plan artifact（原 `docs/superpowers/plans/`） | 回顾某次执行的 task 粒度 / 新 plan 复用格式 |
 | [archived-specs/](archived-specs/) | 已执行完毕的 superpowers spec artifact（原 `docs/superpowers/specs/`） | 回顾设计决策 / 原始需求 |
+| [archived-parallel-plans/](archived-parallel-plans/) | 已完成子应用的 Agent 并行迁移方案（原 `docs/parallel/<app>.md`） | 参考同规模子应用的拆分 / 工作量估算 |
 
 ---
 
