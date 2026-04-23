@@ -13,6 +13,7 @@
 | [build-tool.md](build-tool.md) | 保持 Vue CLI（@vue/cli-service v5），禁止切 Vite | 迁移前 |
 | [layered-dependencies.md](layered-dependencies.md) | types → constants → utils → api → stores → components → views → router → main，禁反向依赖 | 写任何 import 前 |
 | [commit-gates.md](commit-gates.md) | lint 0 errors + /simplify + 构建通过 + 浏览器验收 的提交门禁 | 提交前 |
+| [doc-size-limit.md](doc-size-limit.md) | 每份 .md ≤ 200 行，超则拆分 / 归档 | 写 / 改任何文档前 |
 | [architecture-lint.md](architecture-lint.md) | ESLint no-restricted-paths 自动拦截违规 import 的配置 | 项目初始化 / 调整 lint 规则 |
 
 ---

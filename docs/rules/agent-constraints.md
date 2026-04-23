@@ -30,6 +30,7 @@
 6. 禁止修改基座 main-web 代码
 7. 禁止把 Vue CLI 构建换成 Vite
 8. 禁止带 lint 错误提交代码
+9. 禁止提交超 200 行的 .md 文档（见 doc-size-limit.md）
 ```
 
 ---
@@ -38,5 +39,6 @@
 
 - [build-tool.md](build-tool.md) — 构建工具约束详解
 - [commit-gates.md](commit-gates.md) — 提交门禁
+- [doc-size-limit.md](doc-size-limit.md) — 每份 .md ≤ 200 行
 - [layered-dependencies.md](layered-dependencies.md) — 分层依赖规则
 - [../migration/typescript-rules.md](../migration/typescript-rules.md) — TS 约束（包含 any 禁止）

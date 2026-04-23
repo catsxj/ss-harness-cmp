@@ -52,10 +52,11 @@ main（基线快照）→ develop（迁移主分支）→ feature/migrate-{app}-
 1. **本文件**（身份 + 状态 + 导航）
 2. [docs/rules/agent-constraints.md](docs/rules/agent-constraints.md) — 必须 / 禁止两张清单
 3. [.claude/memory/project_cmp_harness.md](.claude/memory/project_cmp_harness.md) — 项目概况 memory
-4. [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) — 41 条踩坑细节 memory
-5. [.claude/memory/project_cmp_workspace_flow.md](.claude/memory/project_cmp_workspace_flow.md) — 2026-04-22/23 workspace 抽取流程 + 未验证组件清单（Phase 4 启动前必读）
-6. [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) — 文档 / packages / original 位置索引
-7. [docs/migration/lifecycle.md](docs/migration/lifecycle.md) — Phase A-D 迁移生命周期
+4. [.claude/memory/project_cmp_pitfalls.md](.claude/memory/project_cmp_pitfalls.md) — Vue 2→3 迁移期 38 条踩坑 memory
+5. [.claude/memory/project_cmp_workspace_pitfalls.md](.claude/memory/project_cmp_workspace_pitfalls.md) — workspace 抽取期 3 条踩坑 memory
+6. [.claude/memory/project_cmp_workspace_flow.md](.claude/memory/project_cmp_workspace_flow.md) — 2026-04-22/23 workspace 抽取流程 + 未验证组件清单（Phase 4 启动前必读）
+7. [.claude/memory/project_cmp_files.md](.claude/memory/project_cmp_files.md) — 文档 / packages / original 位置索引
+8. [docs/migration/lifecycle.md](docs/migration/lifecycle.md) — Phase A-D 迁移生命周期
 
 ---
 
