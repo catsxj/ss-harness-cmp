@@ -74,3 +74,12 @@ function scrollToField(prop: string): void {
 
 defineExpose({ validate, validateField, resetFields, clearValidate, scrollToField, formRef })
 </script>
+
+<style lang="scss" scoped>
+@import '@ss-cmp/design-tokens/src/tokens.scss';
+
+// cmp-basic 基准：表单项间距 15px（Element Plus 默认 22px）
+.bf :deep(.el-form-item) {
+  margin-bottom: $cmp-form-item-spacing;
+}
+</style>

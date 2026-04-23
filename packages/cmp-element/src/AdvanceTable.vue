@@ -770,44 +770,50 @@ defineExpose({
 }
 
 .atbl__table :deep(.el-table) {
-  --el-table-border-color: #{$border-hairline};
-  --el-table-header-bg-color: #{$bg-surface};
-  --el-table-header-text-color: #{$text-muted};
-  --el-table-row-hover-bg-color: #{$bg-subtle};
-  --el-table-text-color: #{$text-primary};
-  background: $bg-surface;
+  // cmp-basic 基准色板
+  --el-table-border-color: #{$cmp-table-border};
+  --el-table-header-bg-color: #{$cmp-table-header-bg};
+  --el-table-header-text-color: #{$cmp-text-body};
+  --el-table-row-hover-bg-color: #{$cmp-table-row-hover-bg};
+  --el-table-text-color: #{$cmp-text-body};
+  background: #fff;
   font-family: $font-body;
   font-size: 13px;
-  color: $text-primary;
+  color: $cmp-text-body;
 }
 
 .atbl__table :deep(.el-table th.el-table__cell) {
-  background: $bg-subtle;
-  border-bottom: 1px solid $border-solid;
+  background: $cmp-table-header-bg;
+  border-bottom: 1px solid $cmp-table-border;
   padding: 14px 0;
 
   & > .cell {
     font-family: $font-body;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: $text-secondary;
+    color: $cmp-text-body;
     line-height: 1.4;
+    white-space: nowrap;
   }
 }
 
 .atbl__table :deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid $border-hairline;
+  border-bottom: 1px solid $cmp-table-border;
   padding: 16px 0;
   font-variant-numeric: tabular-nums;
   transition: background $dur-fast $ease-out;
 }
 
+.atbl__table :deep(.el-table .cell) {
+  white-space: nowrap;
+}
+
 .atbl__table :deep(.el-table__row):hover > td.el-table__cell {
-  background: $bg-subtle !important;
+  background: $cmp-table-row-hover-bg !important;
 }
 
 .atbl__table :deep(.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell) {
-  background: $bg-subtle;
+  background: $cmp-table-row-hover-bg;
 }
 
 .atbl__empty {

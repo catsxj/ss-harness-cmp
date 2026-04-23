@@ -1,5 +1,8 @@
 <template>
-  <div class="tbls">
+  <div class="tbls" :class="{ 'tbls--framed': framed }">
+    <div v-if="framed && (title || $slots.title)" class="tbls__legend">
+      <slot name="title">{{ title }}</slot>
+    </div>
     <div v-if="isOperateTop && $slots.operate" class="tbls__operate tbls__operate--top">
       <slot name="operate" />
     </div>
@@ -107,12 +110,18 @@ const props = withDefaults(
     onSearch?: (params: string | undefined) => void
     isInitSearch?: boolean
     isOperateTop?: boolean
+    /** 启用 cmp-basic 风格的 bordered 容器 + legend */
+    framed?: boolean
+    /** legend 文字（仅 framed=true 时生效，可被 title slot 覆盖） */
+    title?: string
   }>(),
   {
     configs: () => [],
     onSearch: undefined,
     isInitSearch: true,
-    isOperateTop: false
+    isOperateTop: false,
+    framed: false,
+    title: ''
   }
 )
 
@@ -237,6 +246,29 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+// cmp-basic 基准：bordered 容器 + legend 绝对定位
+.tbls--framed {
+  position: relative;
+  padding: $cmp-search-padding;
+  border: 1px solid $cmp-border-light;
+  margin-bottom: $cmp-form-item-spacing;
+  background: #fff;
+}
+
+.tbls__legend {
+  position: absolute;
+  top: $cmp-search-legend-top;
+  left: $cmp-search-legend-left;
+  width: $cmp-search-legend-width;
+  padding: 0 4px;
+  background: #fff;
+  color: $cmp-text-body;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  z-index: 1;
 }
 
 .tbls__bar {

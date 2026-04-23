@@ -14,3 +14,4 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
 - **分支策略**：main（基线）→ develop → feature/* → 合并回 develop
 - **试点选择**：scr-web（68 .vue，最小），之后可用全自动方案
 - **方法论**：Harness Engineering — 每次 Agent 失败都更新 CLAUDE.md 约束
+- **表格 / 表单样式基准**（2026-04-23 定）：`@ss-cmp/cmp-element` 的 BasicTable / AdvanceTable / TableSearch / BasicForm / BasicFormItem / CommonDetail / TreeTable / SmartTable 的**视觉样式**以 `original/cmp5.0/cmp-basic/src/` 为参考源（不是 `original/cmp-element/`，那份不完整）。详细样式清单见 `project_cmp_cmp_basic_style_ref.md`。现有 Vue 3 重新实现是从零写的 Element Plus 默认样式，需要按这份基准做一轮样式对齐。

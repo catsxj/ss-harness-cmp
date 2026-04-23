@@ -61,3 +61,55 @@ $dur-base: 200ms;
 $tracking-tight: -0.02em;
 $tracking-wide: 0.08em;
 $tracking-ultra: 0.2em;
+
+// ────────────────────────────────────────────
+// CMP-basic 视觉基准令牌（参考 original/cmp5.0/cmp-basic）
+// 用于 @ss-cmp/cmp-element 的 BasicTable / AdvanceTable / TableSearch /
+// BasicForm / BasicFormItem / CommonDetail / TreeTable / SmartTable。
+// 仅供 cmp-element 组件 :deep() 覆盖，勿污染全局。
+// ────────────────────────────────────────────
+
+// 色卡
+$cmp-primary: #1890ff;
+$cmp-accent: #409eff;
+
+$cmp-table-header-bg: #f5f7fa;
+$cmp-table-row-hover-bg: #eaf3fd;
+$cmp-table-border: #dcdfe6;
+
+$cmp-border-muted: #e6e6e6;
+$cmp-border-light: #ddd;
+$cmp-border-card: #dee5e7;
+
+$cmp-text-body: #333;
+$cmp-text-secondary: #666;
+$cmp-text-faded: #98a6ad;
+
+// 按钮 ghost
+$cmp-ghost-text: #666;
+$cmp-ghost-border: #d9d9d9;
+$cmp-ghost-hover: #2b85e4;
+
+// 链接 / 返回 / 辅助
+$cmp-link-back: #46abf1;
+
+// 对话框
+$cmp-dialog-header-bg: #21242e;
+$cmp-dialog-footer-bg: #f0f3fa;
+
+// 消息色
+$cmp-status-success: #27c24c;
+$cmp-status-danger: #f05050;
+$cmp-status-info: #00aeef;
+$cmp-status-warning: #fad733;
+
+// 尺寸 / 间距
+$cmp-form-item-spacing: 15px;
+$cmp-form-label-width: 100px;
+$cmp-pagination-font-size: 12px;
+$cmp-search-padding: 15px;
+$cmp-search-legend-width: 78px;
+$cmp-search-legend-top: -10px;
+$cmp-search-legend-left: 15px;
+$cmp-tree-indent: 18px;
+$cmp-detail-header-height: 44px;

@@ -5,6 +5,7 @@
       :data="data"
       v-bind="$attrs"
       v-loading="loading"
+      header-cell-class-name="custom-header"
       @select="(sel: any[], row: any) => emit('select', sel, row)"
       @select-all="(sel: any[]) => emit('select-all', sel)"
       @selection-change="(sel: any[]) => emit('selection-change', sel)"
@@ -92,9 +93,52 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@ss-cmp/design-tokens/src/tokens.scss';
+
+.basic-table-compat {
+  // cmp-basic 基准：仅顶部边框
+  border-top: 1px solid $cmp-table-border;
+  background: #fff;
+}
+
+// 表头：custom-header class（对齐 cmp-basic 写法）
+.basic-table-compat :deep(.el-table th.el-table__cell.custom-header),
+.basic-table-compat :deep(.el-table th.el-table__cell) {
+  background: $cmp-table-header-bg;
+  color: $cmp-text-body;
+  border-bottom: 1px solid $cmp-table-border;
+
+  & > .cell {
+    color: $cmp-text-body;
+    font-weight: 600;
+    font-size: 13px;
+  }
+}
+
+// 行 hover：cmp-basic 特征色 #EAF3FD
+.basic-table-compat :deep(.el-table__body tr:hover > td.el-table__cell),
+.basic-table-compat :deep(.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell) {
+  background-color: $cmp-table-row-hover-bg !important;
+}
+
+// 单元格禁换行
+.basic-table-compat :deep(.el-table .cell) {
+  white-space: nowrap;
+}
+
+// 分页：字号 12px + 右对齐
 .basic-table-pagination {
-  margin-top: 12px;
+  margin-top: 10px;
   text-align: right;
+}
+
+.basic-table-pagination :deep(.el-pagination),
+.basic-table-pagination :deep(.el-pagination .el-pagination__total),
+.basic-table-pagination :deep(.el-pagination .el-pagination__sizes),
+.basic-table-pagination :deep(.el-pagination .el-pagination__jump),
+.basic-table-pagination :deep(.el-pagination button),
+.basic-table-pagination :deep(.el-pagination .el-pager li) {
+  font-size: $cmp-pagination-font-size;
 }
 </style>

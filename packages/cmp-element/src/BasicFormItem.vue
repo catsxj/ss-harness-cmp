@@ -84,13 +84,21 @@ const mergedRules = computed<FormItemRule[] | undefined>(() => {
 <style lang="scss" scoped>
 @import '@ss-cmp/design-tokens/src/tokens.scss';
 
-// 克制 label 样式
+// cmp-basic 基准：FormItem 间距 15px
+.bfi.el-form-item {
+  margin-bottom: $cmp-form-item-spacing;
+}
+
+// label 样式 + 溢出省略（cmp-basic 基准 overflow/ellipsis/nowrap）
 .bfi :deep(.el-form-item__label) {
   font-family: $font-body;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: $text-secondary;
+  color: $cmp-text-body;
   letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   // 必填 * 保持 Element Plus 默认红色
 }
 </style>
