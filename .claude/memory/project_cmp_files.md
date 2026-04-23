@@ -15,9 +15,11 @@ originSessionId: 6e5c9226-b555-4494-a1c0-f8f45eaff248
   - `docs/developer/` — 开发者（onboarding / pre-commit-hooks / tech-debt-tracking）
   - `docs/history/` — 历史沉淀（failure-cases / migration-notes/ / knowledge-base/）
   - `docs/parallel/` — 并行方案（overall-plan / per-app / sms-web / auto-mode，原根目录 agent-parallel-*.md 已迁入）
-- `docs/superpowers/` — executing-plans skill 的产物
-  - `plans/2026-04-22-sms-web-workspace-extraction.md` — Phase 0-3 13-task 计划（已执行完毕，commit `a0927ef` merge）
-  - `specs/2026-04-22-common-compat-workspace-design.md` — workspace 设计规格
+- `docs/history/archived-plans/` — 已执行完毕归档的 plan
+  - `2026-04-22-sms-web-workspace-extraction.md` — Phase 0-3 13-task workspace 抽取计划（执行完毕，commit `a0927ef` merge）
+- `docs/history/archived-specs/` — 已执行完毕归档的 spec
+  - `2026-04-22-common-compat-workspace-design.md` — workspace 设计规格
+- `docs/superpowers/` — executing-plans skill 的工作区（当前空）；新 plan/spec 执行完后 `git mv` 到 archived-*/
 
 ## 公共组件包（packages/，2026-04-22 workspace 抽取）
 

@@ -12,6 +12,8 @@
 | [failure-cases.md](failure-cases.md) | 失败案例记录表（日期 \| 问题 \| 原因 \| 修复） | 遇到熟悉报错先搜；每次 Agent 犯错追加 |
 | [migration-notes/](migration-notes/) | 各子应用迁移总结（按应用名命名） | 新子应用迁移前，读已完成子应用的总结 |
 | [knowledge-base/](knowledge-base/) | 分类知识库（echarts / vue3-migration / third-party-libs 等） | 遇到具体库 / 领域问题时分类查 |
+| [archived-plans/](archived-plans/) | 已执行完毕的 superpowers plan artifact（原 `docs/superpowers/plans/`） | 回顾某次执行的 task 粒度 / 新 plan 复用格式 |
+| [archived-specs/](archived-specs/) | 已执行完毕的 superpowers spec artifact（原 `docs/superpowers/specs/`） | 回顾设计决策 / 原始需求 |
 
 ---
 

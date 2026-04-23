@@ -143,4 +143,4 @@ sms-web Phase D 完成后，所有自研包兼容实现从 `sms-web/src/common/{
 
 `sms-web/src/common/utils/{auth,crypto,day,request,resolvePath,uploadFile}.ts` 各留了一行 re-export stub 指向 `@ss-cmp/utils`，保留原 `utils/*` 别名 import 不动，避免 60+ 业务文件批量改。cmp-web 迁移时建议直接 import `@ss-cmp/utils`，不要再走 stub。
 
-详细设计见 [../superpowers/specs/2026-04-22-common-compat-workspace-design.md](../superpowers/specs/2026-04-22-common-compat-workspace-design.md)。
+详细设计见 [../history/archived-specs/2026-04-22-common-compat-workspace-design.md](../history/archived-specs/2026-04-22-common-compat-workspace-design.md)（已归档 plan/spec，原路径 docs/superpowers/）。
