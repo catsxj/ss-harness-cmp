@@ -13,11 +13,11 @@ const httpType = 'https://'
 const proxyUrl = '192.168.4.111:60006' // EFC 3.0 代理地址设置
 // const proxyUrl = '10.20.51.92:7001' // 代理地址设置
 // const proxyUrl = '10.10.2.60:50006/' 苏州代理地址
-const publicPath = process.env.NODE_ENV === 'production' ? '/cms-web/' : '/'
+const publicPath = process.env.NODE_ENV === 'production' ? '/cmp-web/' : '/'
 module.exports = {
   publicPath,
   assetsDir: 'static',
-  outputDir: 'cms-web',
+  outputDir: 'cmp-web',
   // 构建时不进行eslint校验
   lintOnSave: process.env.NODE_ENV !== 'production',
   // 生产环境禁止source map

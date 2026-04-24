@@ -13,4 +13,4 @@ export const userKey = 'cmcUserData'
 export const tokenKey = 'CMC_TOKEN'
 // 最大缓存组件实例数
 export const cacheViewMax = 15
-export const baseUrl = '/cms-web'
+export const baseUrl = '/cmp-web'
