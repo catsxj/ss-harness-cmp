@@ -3,7 +3,7 @@
     <div class="lock-center">
       <img class="logo" :src="userData.portrait" />
       <p class="account">{{ userData.name }}</p>
-      <el-form :model="loginForm" ref="loginForm" @keyup.enter.prevent="handleLogin" @submit.prevent>
+      <el-form :model="loginForm" ref="loginFormRef" @keyup.enter.prevent="handleLogin" @submit.prevent>
         <basic-form-item prop="password" validate="required" required-message="请输入密码">
           <el-input v-model="loginForm.password" placeholder="请输入密码" type="password">
             <template #append>
@@ -21,98 +21,88 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import dayjs from 'utils/day'
-import crypto from 'utils/crypto.js'
+// @ts-ignore
+import crypto from 'utils/crypto'
 import { setLoginData } from './tools'
 import { login } from 'services/system'
+import { useAppStore, usePermissionStore } from '@/stores'
+import { resetRouter } from '@/router'
 
 interface ILockData {
   isLock: boolean
   path: string
 }
-@Component
-export default class Lock extends Vue {
-  private loginForm = {
-    password: ''
-  }
 
-  private loading: boolean = false
-  private timer: number = 0
-  private currentTime = {}
-  private lockData: ILockData = {
-    isLock: false,
-    path: ''
-  }
+const router = useRouter()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
 
-  get userData() {
-    return this.$store.getters.userData
-  }
+const loginForm = reactive({ password: '' })
+const loading = ref(false)
+let timer: ReturnType<typeof setInterval> | null = null
+const currentTime = ref<{ time?: string; date?: string }>({})
+const lockData = ref<ILockData>({ isLock: false, path: '' })
+const loginFormRef = ref<any>(null)
 
-  private created() {
-    const lockData = localStorage.getItem('lockData')
-    if (lockData) this.lockData = JSON.parse(lockData)
-    // 处理通过路由进入锁屏
-    localStorage.setItem(
-      'lockData',
-      JSON.stringify({
-        ...this.lockData,
-        isLock: true
-      })
-    )
-    this.setTimer()
-  }
+const userData = computed<any>(() => appStore.userData || {})
 
-  private destroyed() {
-    clearInterval(this.timer)
-  }
-
-  private handleLogin() {
-    ;(this.$refs.loginForm as any).validate((valid: boolean) => {
-      if (valid) {
-        this.loading = true
-        login({
-          account: this.userData.account,
-          password: crypto.encrypt(this.loginForm.password),
-          isManager: true
-        }).then((data: any) => {
-          this.loading = false
-          if (data.success) {
-            setLoginData(data.data)
-            this.$router.replace(this.lockData.path)
-            this.$store.commit('SET_OPERATETIME')
-            localStorage.setItem(
-              'lockData',
-              JSON.stringify({
-                ...this.lockData,
-                isLock: false
-              })
-            )
-          }
-        })
-      }
-    })
-  }
-
-  private setTimer() {
-    const getTime = () => {
-      const time = dayjs()
-      this.currentTime = {
-        time: time.format('HH:mm:ss'),
-        date: `${time.format('MM月DD日')}, ${time.format('dddd')}`
-      }
-    }
-    getTime()
-    this.timer = setInterval(() => {
-      getTime()
-    }, 1000)
-  }
-
-  private switchUser() {
-    this.$store.dispatch('permission/ResetRoutes')
+function getTime() {
+  const t = dayjs()
+  currentTime.value = {
+    time: t.format('HH:mm:ss'),
+    date: `${t.format('MM月DD日')}, ${t.format('dddd')}`
   }
 }
+
+function setTimer() {
+  getTime()
+  timer = setInterval(getTime, 1000)
+}
+
+function handleLogin() {
+  loginFormRef.value?.validate?.((valid: boolean) => {
+    if (!valid) return
+    loading.value = true
+    login({
+      account: userData.value.account,
+      password: crypto.encrypt(loginForm.password),
+      isManager: true
+    }).then((data: any) => {
+      loading.value = false
+      if (data.success) {
+        setLoginData(data.data)
+        router.replace(lockData.value.path)
+        appStore.setOperateTime()
+        localStorage.setItem(
+          'lockData',
+          JSON.stringify({ ...lockData.value, isLock: false })
+        )
+      }
+    })
+  })
+}
+
+function switchUser() {
+  permissionStore.resetRoutes(router, resetRouter)
+}
+
+onMounted(() => {
+  const stored = localStorage.getItem('lockData')
+  if (stored) lockData.value = JSON.parse(stored)
+  localStorage.setItem(
+    'lockData',
+    JSON.stringify({ ...lockData.value, isLock: true })
+  )
+  setTimer()
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 </script>
 
 <style lang="scss">

@@ -6,8 +6,8 @@
           <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
         </template>
         <template #status="status">
-          <status-icon :type="status | stautsIconFilter">
-            {{status | statusFilter)}}
+          <status-icon :type="status">
+            {{ status }}
           </status-icon>
         </template>
         <template #vip="val, record"> {{ record.vip }}/{{ record.vipMask }} </template>

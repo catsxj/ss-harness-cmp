@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import { trimStart, cloneDeep } from 'lodash-es'
 import Sidebar from './components/sidebar/sidebar.vue'
 import ThirdMenu from './components/ThirdMenu.vue'
@@ -29,6 +28,7 @@ import Header from './components/Header.vue'
 import TagsView from './components/TagsView/index.vue'
 import SystemTip from './components/SystemTip.vue'
 import App from './app.vue'
+import { useAppStore, usePermissionStore } from '@/stores'
 export default {
   components: {
     Header,
@@ -42,20 +42,20 @@ export default {
     return {
       thirdMenuData: {},
       matchPath: '',
-      desktop_layout: false
+      desktop_layout: false,
+      appStore: useAppStore(),
+      permissionStore: usePermissionStore()
     }
   },
   computed: {
-    ...mapState({
-      theme: (state) => state.app.theme,
-      isCollapsed: (state) => state.app.isCollapsed,
-      menuData: (state) => state.app.sideMenuData,
-      addRoutes: (state) => state.permission.addRoutes,
-      basePath: (state) => state.app.basePath,
-      layout: (state) => state.app.layout,
-      expire: (state) => state.app.expire,
-      isFontBig: (state) => state.app.pageConfig.contentFontSize === 'big'
-    }),
+    theme() { return this.appStore.theme },
+    isCollapsed() { return this.appStore.isCollapsed },
+    menuData() { return this.appStore.sideMenuData },
+    addRoutes() { return this.permissionStore.addRoutes },
+    basePath() { return this.appStore.basePath },
+    layout() { return this.appStore.layout },
+    expire() { return this.appStore.expire },
+    isFontBig() { return this.appStore.pageConfig?.contentFontSize === 'big' },
     isTop() {
       return this.layout === 'topmenu'
     }
@@ -67,8 +67,8 @@ export default {
   },
   created() {
     this.handlePath()
-    this.$store.commit('permission/SET_BUTTONS')
-    this.$store.dispatch('GetSystemConfigs')
+    this.permissionStore.setButtons()
+    this.appStore.getSystemConfigs()
     this.desktop_layout = window.parent.DESKTOP_LAYOUT
   },
   methods: {

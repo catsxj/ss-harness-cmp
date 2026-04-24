@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" v-model:visible="userDefindVisible" append-to-body>
+  <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" :model-value="userDefindVisible" @update:model-value="(v) => $emit('update:userDefindVisible', v)" append-to-body>
     <basic-form>
       <basic-form-item label="选择时间：">
         <el-date-picker v-model="time" type="datetimerange" size="mini" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="timestamp" :picker-options="pickerOptions"></el-date-picker>

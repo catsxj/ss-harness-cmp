@@ -62,8 +62,8 @@ export default defineComponent({
     async function getCountData(vendorId: number) {
       const res = await getPortal({ vendorId, code: 'resUsed' })
       if (res.success) {
-        const vendorType = unref(vendorList).find(({ id }) => id === vendorId).type
-        countData.value = res.data.filter((item) => {
+        const vendorType = (unref(vendorList) as any[]).find(({ id }: any) => id === vendorId)?.type
+        countData.value = res.data.filter((item: any) => {
           if (['INSPURRAIL', 'FUSIONSPHERE', 'SANGFOR'].includes(vendorType)) {
             if (item.name === '磁盘') return false
           }

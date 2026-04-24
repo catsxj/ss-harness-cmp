@@ -26,7 +26,7 @@
 
 <script>
 /* global $ */
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { patchHosts } from 'services/monitor'
 export default {
   props: {

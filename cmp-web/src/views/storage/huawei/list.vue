@@ -76,7 +76,7 @@
 <script>
 import { platformStatusFilter } from '@/filters/index'
 import webSocket from '@/common/mixins/getGlobalSocket'
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { openMonitor, closeMonitor, getAuthentications, authenticationsOk } from 'services/monitor'
 import { getCloudVendor } from 'services/platform/index'
 const STORAGE = {

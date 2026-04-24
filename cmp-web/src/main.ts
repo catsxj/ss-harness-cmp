@@ -42,14 +42,15 @@ function render(props: Record<string, any> = {}): void {
   instance.use(pinia)
   instance.use(router)
   instance.use(i18n)
-  instance.use(ElementPlus, { size: 'small' })
+  instance.use(ElementPlus as any, { size: 'small' })
   Object.entries(ElIcons).forEach(([name, comp]) => {
     instance!.component(`ElIcon${name}`, comp as any)
   })
   registerDirectives(instance)
   registerGlobalComponents(instance)
-  registerCmpElement(instance)
-  registerCmpEcharts(instance)
+  // @ss-cmp/* peerDep 把 runtime-core 类型装成独立副本，webpack alias 运行时合一，TS 视角需 cast
+  registerCmpElement(instance as any)
+  registerCmpEcharts(instance as any)
   registerErrorHandlers(instance)
   setupPermissionGuard(router)
 

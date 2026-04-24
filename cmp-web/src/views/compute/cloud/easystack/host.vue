@@ -92,7 +92,7 @@
 
 <script>
 import { statusOnColorFilter } from '@/filters/index'
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { getPolicyHosts, installTaskExporter, getHosts, patchHosts, getRuleGroupBind } from 'services/monitor'
 import { getCluters } from 'services/platform/index'
 import addPolicy from 'views/components/linkPolicy.vue'

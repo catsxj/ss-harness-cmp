@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { login } from 'services/system'
 import { setLoginData } from './tools'
 import { reactive, toRefs, ref, computed } from 'vue'

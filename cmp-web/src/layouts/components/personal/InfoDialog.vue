@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="个人信息" ref="dialog" :close-on-click-modal="false" v-model:visible="visible">
+  <el-dialog title="个人信息" ref="dialog" :close-on-click-modal="false" v-model="visible">
     <basic-form :model="userData" ref="formRef">
       <el-row :gutter="5">
         <el-col :span="10">
@@ -51,17 +51,21 @@
       </el-row>
     </basic-form>
     <image-cropper field="files" @crop-success="imageCropSuccess" v-if="imageCropperShow" v-model="imageCropperShow" :width="size" :height="size" img-format="png"></image-cropper>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="editSubmit">更新信息</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="editSubmit">更新信息</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 <script>
-import { ElMessage as Message } from "element-plus"
+import { ElMessage as Message } from 'element-plus'
 import { cloneDeep } from 'lodash-es'
 import ImageCropper from 'components/image-cropper/index.vue'
 import { modifyUser } from 'services/system/manager'
-import { reactive, toRefs, ref } from 'vue'
+import { reactive, toRefs, ref, defineExpose } from 'vue'
+import { useAppStore } from '@/stores'
+
 export default {
   props: {
     data: {
@@ -71,7 +75,8 @@ export default {
   components: {
     ImageCropper
   },
-  setup(props, context) {
+  setup(props) {
+    const appStore = useAppStore()
     const state = reactive({
       imageCropperShow: false,
       size: 65,
@@ -91,12 +96,9 @@ export default {
         if (valid) {
           modifyUser(state.userData).then((data) => {
             if (data.success) {
-              Message({
-                message: data.message,
-                type: 'success'
-              })
+              Message({ message: data.message, type: 'success' })
               state.visible = false
-              context.root.$store.dispatch('GetUserInfo')
+              appStore.getUserInfo()
             }
           })
         }
@@ -109,8 +111,7 @@ export default {
       editSubmit,
       imageCropSuccess
     }
-  },
-  methods: {}
+  }
 }
 </script>
 <style lang="scss" scoped>

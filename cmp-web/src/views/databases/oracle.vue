@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import crypto from 'utils/crypto.js'
+import crypto from 'utils/crypto'
 import { getOracles, createOracles, modifyOracles, batchRemoveResource, removeOracles, openOracles } from 'services/monitor/database'
 import { getRuleGroupBind } from 'services/monitor'
 import { handleStart } from 'views/data'
