@@ -36,6 +36,12 @@ const main: RouteRecordRaw[] = [
     component: () => import('views/configs/setting_dashboard/index.vue')
   },
   {
+    path: '/dev/compat-smoke-test',
+    name: 'CompatSmokeTest',
+    meta: { title: 'compat smoke test', noTag: true },
+    component: () => import('@/views/dev/CompatSmokeTest.vue')
+  },
+  {
     path: '/404',
     name: '404',
     meta: { title: '404', noTag: true },

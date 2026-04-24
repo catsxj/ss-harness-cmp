@@ -20,6 +20,9 @@ importers:
       '@ss-cmp/cmp-element':
         specifier: workspace:*
         version: link:../packages/cmp-element
+      '@ss-cmp/cmp-graph':
+        specifier: workspace:*
+        version: link:../packages/cmp-graph
       '@ss-cmp/design-tokens':
         specifier: workspace:*
         version: link:../packages/design-tokens

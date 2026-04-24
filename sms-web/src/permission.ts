@@ -9,7 +9,7 @@ const { token } = getQuery(location.hash)
 if (token) setToken(token)
 
 export default function setupPermissionGuard(router: Router): void {
-  const whiteList = ['/login', '/404', '/401', '/license', '/sso']
+  const whiteList = ['/login', '/404', '/401', '/license', '/sso', '/dev/compat-smoke-test']
   router.beforeEach(async (to, _from, next) => {
     const permissionStore = usePermissionStore()
     const appStore = useAppStore()

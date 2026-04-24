@@ -13,6 +13,7 @@
     "@element-plus/icons-vue": "^2.3.0",
     "@ss-cmp/cmp-echarts": "workspace:*",
     "@ss-cmp/cmp-element": "workspace:*",
+    "@ss-cmp/cmp-graph": "workspace:*",
     "@ss-cmp/design-tokens": "workspace:*",
     "@ss-cmp/utils": "workspace:*",
     "@wangeditor/editor": "^5.1.23",

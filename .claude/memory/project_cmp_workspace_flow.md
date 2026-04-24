@@ -42,10 +42,27 @@ type: project
 | 类别 | 验证级别 | 备注 |
 |------|---------|------|
 | Phase 2 sms-web qiankun 挂载 + smoke test | ✅ 浏览器验收通过 | 用户 2026-04-22 确认"显示无误" |
-| Follow-up cmp-element 3 个 A 档 port | ⚠️ **仅编译通过，runtime 未跑** | sms-web 业务不用 |
-| Follow-up cmp-graph 5 个 A 档 port | ⚠️ **仅编译通过，runtime 未跑，风险较高** | sms-web 业务不用 |
+| Follow-up cmp-element 3 个 A 档 port | ✅ **runtime 验证通过**（2026-04-24） | sms-web `/dev/compat-smoke-test` 逐个"启用"渲染 OK |
+| Follow-up cmp-graph 5 个 A 档 port | ✅ **runtime 验证通过**（2026-04-24） | @antv/g6-editor@1.2.0 × Vue 3 实测兼容，canvas 正常起 |
 
-### Phase 4 cmp-web 启动前必须先跑 smoke test 的组件
+### 2026-04-24 smoke test 结论
+
+- **CodeMirror / JsonView / FullScreen** 都能正常实例化和响应。
+- **Editor (cmp-graph)**：g6-editor 在 Vue 3 下 `new G6Editor()` / `new G6Editor.Flow({ container: 'page' })` 正常工作，canvas 渲染到 `#page` 容器。没接 `addPanel()` 和数据，所以没节点；不是 bug。
+- **ContextMenu**：`<style>` 不是 scoped，`#Contextmenu { display: none }` 是原版设计（g6-editor 右键时 DOM 切换显示），smoke test 里 "点启用按钮看不到" 是正常。
+- **Toolbar / MiniMap / ToolbarSimple**：都能渲染。
+- **iconfont 路径**：Editor.vue scoped style `@import './fonts/iconfont.css'` 在 webpack 下解析正常，**未复现 404 / 字体缺失**（之前的风险预警 overcautious）。
+
+### smoke test 组件与路由
+
+- `sms-web/src/views/dev/CompatSmokeTest.vue` — 8 组件逐个启用
+- 路由：`/dev/compat-smoke-test`（constant.ts 常量路由 + permission.ts whitelist）
+- sms-web package.json 新增 `@ss-cmp/cmp-graph: workspace:*`（只为 smoke test；cmp-web 启动时 cmp-web 自身加依赖即可）
+- **保留这个 dev 路由**作为未来所有 workspace 组件改动后的回归测试入口
+
+### 不再需要做的工作
+
+原先"Phase 4 cmp-web 启动前必须先跑 smoke test 的组件"这一节已完成，下面保留作为历史记录。
 
 **cmp-element（风险中）**：
 - `CodeMirror.vue` — codemirror@5 + Vue 3 watch/reactivity 交互；`onBeforeUnmount` 里 `editor.toTextArea()` 释放

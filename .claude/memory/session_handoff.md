@@ -57,7 +57,9 @@ a0927ef merge: sms-web workspace extraction (Phase 0-3)
 
 ## 下次最优先做什么（3 选 1）
 
-### (A) 验证 8 个 A 档 port 的 runtime 正确性 ⭐ 推荐
+### ~~(A) 8 个 A 档 port runtime 验证~~ ✅ 已完成（2026-04-24） — 通过 sms-web /dev/compat-smoke-test 逐块启用验收。@antv/g6-editor@1.2.0 与 Vue 3 实测兼容，canvas 正常起。cos-web 迁移时 cmp-graph 保持 A 档。
+
+### (A-历史说明) 验证 8 个 A 档 port 的 runtime 正确性（保留作为历史记录）
 
 **为什么**：这 8 个组件被 commit 但完全没跑过。Phase 4 cmp-web 启动后才发现挂了，**迭代成本高**。现在在 sms-web 里临时塞一页 smoke test，30-60 分钟能暴露所有问题。
 
@@ -69,7 +71,7 @@ a0927ef merge: sms-web workspace extraction (Phase 0-3)
    - iconfont 路径大概率需要调整
    - `@antv/g6-editor@^1.2.0` 与 Vue 3 reactivity 兼容性未知
 
-### (B) 启动 cmp-web 迁移（Phase 3 的 cmp-web）
+### (B) 启动 cmp-web 迁移（Phase 4 的 cmp-web） ⭐ 现在的推荐项
 
 **前置（绝对不能跳）**：
 1. 读 `.claude/memory/project_cmp_workspace_flow.md`（未验证清单章节）
