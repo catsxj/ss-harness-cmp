@@ -2,7 +2,7 @@
   <div ref="editor" class="rich-editor"></div>
 </template>
 <script>
-import { onMounted, onBeforeUnmount, ref, watch } from '@vue/composition-api'
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import WangEditor from 'wangeditor'
 export default {
   props: {

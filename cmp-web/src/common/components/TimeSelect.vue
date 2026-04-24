@@ -5,11 +5,11 @@
     </el-radio-group>
     <el-button class="m-l-sm" :type="params.startTime ? 'primary' : 'ghost'" @click="selectTime()">自定义</el-button>
     <span class="tip m-l" v-if="params.startTime">时间范围：{{ params.startTime }} - {{ params.endTime }}</span>
-    <el-dialog title="时间选择" :visible.sync="dialogVisible" width="500px" v-if="dialogVisible">
+    <el-dialog title="时间选择" v-model:visible="dialogVisible" width="500px" v-if="dialogVisible">
       <el-date-picker v-model="time" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" align="right"> </el-date-picker>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="submit">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submit">确定</el-button>
       </div>
     </el-dialog>
   </div>

@@ -8,8 +8,8 @@
               {{ item.name }}
             </div>
             <div class="pull-right">
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click.native="handleOperate(1, item.id)"></svg-icon>
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click.native="handleOperate(2, item.id)"></svg-icon>
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click="handleOperate(1, item.id)"></svg-icon>
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click="handleOperate(2, item.id)"></svg-icon>
             </div>
             <div style="clear: both"></div>
           </div>

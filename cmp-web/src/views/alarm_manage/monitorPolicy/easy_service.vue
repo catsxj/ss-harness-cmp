@@ -24,7 +24,7 @@
       <el-table-column v-if="status != 'detail'" type="selection" width="60"> </el-table-column>
       <el-table-column label="名称" prop="name" show-overflow-tooltip> </el-table-column>
       <el-table-column label="标签" prop="status" show-overflow-tooltip>
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag>
             {{ 'status=' + scope.row.tag.status }}
           </el-tag>
@@ -34,14 +34,14 @@
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="status" show-overflow-tooltip>
-        <template slot-scope="scope">
+        <template #default="scope">
           <status-icon :type="scope.row.status == 'UP' ? 'success' : 'danger'">
             {{ scope.row.status }}
           </status-icon>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination layout="total,prev, pager, next" :page-size="rows" :current-page.sync="page" @current-change="handleData" :total="list.length"> </el-pagination>
+    <el-pagination layout="total,prev, pager, next" :page-size="rows" v-model:current-page="page" @current-change="handleData" :total="list.length"> </el-pagination>
   </div>
 </template>
 

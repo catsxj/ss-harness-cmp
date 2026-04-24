@@ -67,7 +67,7 @@
             <el-table-column prop="name" label="用户姓名"> </el-table-column>
             <el-table-column prop="email" label="邮箱"> </el-table-column>
             <el-table-column label="状态">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ statusFilter(scope.row.status) }}
               </template>
             </el-table-column>
@@ -86,11 +86,11 @@
       </el-tabs>
     </common-detail>
     <!--新增-->
-    <el-dialog :title="title" :visible.sync="addFlag" v-if="addFlag" width="70%">
+    <el-dialog :title="title" v-model:visible="addFlag" v-if="addFlag" width="70%">
       <add :id="id" ref="add" @refresh="refresh"></add>
       <span slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="cancle">取 消</el-button>
-        <el-button type="primary" @click.native="addSubmit">确 定</el-button>
+        <el-button type="ghost" @click="cancle">取 消</el-button>
+        <el-button type="primary" @click="addSubmit">确 定</el-button>
       </span>
     </el-dialog>
   </div>

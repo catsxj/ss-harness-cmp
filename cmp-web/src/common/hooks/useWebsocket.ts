@@ -1,4 +1,4 @@
-import { onUnmounted, ref } from '@vue/composition-api'
+import { onUnmounted, ref } from 'vue'
 import WebSocket from 'cmp-socket'
 import { getToken } from 'utils/auth'
 export default function (onmessage: { (): void }) {

@@ -3,7 +3,7 @@
     <smart-table :rows="10" title="节点列表" :data="list" :columns="columns">
       <el-table-column label="名称" prop="name" show-overflow-tooltip> </el-table-column>
       <el-table-column label="标签" prop="status" show-overflow-tooltip>
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag>
             {{ 'status=' + scope.row.tag.status }}
           </el-tag>
@@ -13,7 +13,7 @@
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="status" show-overflow-tooltip>
-        <template slot-scope="scope">
+        <template #default="scope">
           <status-icon :type="scope.row.status == 'UP' ? 'success' : 'danger'">
             {{ scope.row.status }}
           </status-icon>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="绑定IPMI" :visible.sync="addData.dialog" width="40%" v-if="addData.dialog">
+    <el-dialog title="绑定IPMI" v-model:visible="addData.dialog" width="40%" v-if="addData.dialog">
       <el-row>
         <el-form ref="data" :model="addData.data" :status-icon="true" label-width="90px">
           <el-col :span="24">

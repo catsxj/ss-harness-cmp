@@ -5,8 +5,8 @@
         <i class="el-icon-monitor cur-point"></i>
       </span>
       <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item @click.native="goApply">流程工单</el-dropdown-item>
-        <el-dropdown-item @click.native="goServiceWorkOrder"> 问题工单</el-dropdown-item>
+        <el-dropdown-item @click="goApply">流程工单</el-dropdown-item>
+        <el-dropdown-item @click="goServiceWorkOrder"> 问题工单</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
   </div>

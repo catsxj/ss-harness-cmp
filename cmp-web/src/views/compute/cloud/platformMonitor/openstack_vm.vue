@@ -29,24 +29,24 @@
         <el-tab-pane label="规则列表" name="second">
           <basic-table :data="ruleDetailData" :params="paramd" :get-list="getDetailHost" :total="ruleDetailTotal">
             <el-table-column prop="name" label="IP协议" show-overflow-tooltip>
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ secruityProtocolFilter(scope.row.protocol) }}
               </template>
             </el-table-column>
             <el-table-column prop="remark" label="方向" show-overflow-tooltip>
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ securityGroupFilter(scope.row.direction) }}
               </template>
             </el-table-column>
             <el-table-column prop="tenantName" label="以太网类型" show-overflow-tooltip>
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ etherTypeFilter(scope.row.etherType) }}
               </template>
             </el-table-column>
             <el-table-column prop="portMin" label="起始端口" show-overflow-tooltip></el-table-column>
             <el-table-column prop="portMax" label="结束端口" show-overflow-tooltip></el-table-column>
             <el-table-column prop="tenantName" label="远端IP前缀" show-overflow-tooltip>
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.remoteIpPrefix || (scope.row.etherType == 'IPv6' ? '::/0' : '0.0.0.0/0') }}
               </template>
             </el-table-column>

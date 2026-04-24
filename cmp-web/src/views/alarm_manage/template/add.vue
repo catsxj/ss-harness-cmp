@@ -40,8 +40,8 @@
     </basic-form>
     <div class="addFoot">
       <div>
-        <el-button type="ghost" @click.native="cancle">取 消</el-button>
-        <el-button type="primary" @click.native="addSubmit">确 定</el-button>
+        <el-button type="ghost" @click="cancle">取 消</el-button>
+        <el-button type="primary" @click="addSubmit">确 定</el-button>
       </div>
     </div>
   </div>

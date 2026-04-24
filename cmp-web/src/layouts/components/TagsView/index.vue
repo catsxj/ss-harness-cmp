@@ -1,7 +1,7 @@
 <template>
   <div id="tags-view-container" class="tags-view" v-show="isShow()">
     <ScrollPanel ref="scrollRef">
-      <router-link v-for="(tag, index) in visitedViews" :key="tag.path" :to="tag" class="tags-item" :class="isActive(tag) && 'active'" @contextmenu.prevent.stop.native="openMenu(tag, index, $event)">
+      <router-link v-for="(tag, index) in visitedViews" :key="tag.path" :to="tag" class="tags-item" :class="isActive(tag) && 'active'" @contextmenu.prevent.stop="openMenu(tag, index, $event)">
         <span class="line"></span>
         <span class="">{{ tag.title }}</span>
         <i class="el-icon-close" v-if="!tag.meta.fix" @click.prevent.stop="closeSelectedTag(tag, index)"></i>
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { onMounted, reactive, toRefs, watch, ref, computed, onUnmounted } from '@vue/composition-api'
+import { onMounted, reactive, toRefs, watch, ref, computed, onUnmounted } from 'vue'
 import ScrollPanel from './ScrollPanel.vue'
 import SelectRound from './SelectRound.vue'
 import { resolvePath } from 'utils/resolvePath'

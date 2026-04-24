@@ -28,7 +28,7 @@
             </el-table-column> -->
             <el-table-column show-overflow-tooltip label="用户姓名" prop="name"> </el-table-column>
             <el-table-column show-overflow-tooltip label="用户邮箱" prop="email"> </el-table-column>
-            <el-pagination class="pull-right m-t-sm" slot="pagination" background :page-size="params.rows" :pager-count="5" layout="prev, pager, next" @current-change="getList" :current-page.sync="params.page" :total="total"> </el-pagination>
+            <el-pagination class="pull-right m-t-sm" slot="pagination" background :page-size="params.rows" :pager-count="5" layout="prev, pager, next" @current-change="getList" v-model:current-page="params.page" :total="total"> </el-pagination>
           </basic-table>
         </el-card>
       </el-col>

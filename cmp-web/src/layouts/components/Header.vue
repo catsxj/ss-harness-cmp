@@ -16,7 +16,7 @@
 <script>
 import RightContent from './rightContent.vue'
 import HeaderMenu from './headerMenu.vue'
-import { computed } from '@vue/composition-api'
+import { computed } from 'vue'
 
 export default {
   components: {

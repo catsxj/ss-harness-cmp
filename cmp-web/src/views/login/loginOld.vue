@@ -8,14 +8,14 @@
         <span class="desc-title">{{ configs.promotionalTitle }}</span>
         <span class="desc-remark">{{ configs.promotionalContent }}</span>
       </div>
-      <el-form :model="loginForm" ref="loginFormRef" label-position="left" label-width="0px" class="card-box login-form" @keyup.enter.native="handleLogin" status-icon>
+      <el-form :model="loginForm" ref="loginFormRef" label-position="left" label-width="0px" class="card-box login-form" @keyup.enter="handleLogin" status-icon>
         <div class="login-title">账号登录</div>
         <basic-form-item class="login-form-item" prop="account" validate="required" required-message="请输入用户名">
           <el-input v-model="loginForm.account" autoComplete="on" placeholder="登录账户" prefix-icon="el-icon-user"> </el-input>
         </basic-form-item>
         <el-tooltip v-model="capsTooltip" content="大写锁定已打开" placement="right" manual>
           <basic-form-item class="login-form-item" prop="password" validate="required" required-message="请输入密码">
-            <el-input name="password" prefix-icon="el-icon-lock" v-model="loginForm.password" placeholder="密码" show-password @blur="capsTooltip = false" @keyup.native="checkCapslock"> </el-input>
+            <el-input name="password" prefix-icon="el-icon-lock" v-model="loginForm.password" placeholder="密码" show-password @blur="capsTooltip = false" @keyup="checkCapslock"> </el-input>
           </basic-form-item>
         </el-tooltip>
         <basic-form-item class="login-form-item">
@@ -38,7 +38,7 @@
 import crypto from 'utils/crypto.js'
 import { login } from 'services/system'
 import { setLoginData } from './tools'
-import { reactive, toRefs, ref, computed } from '@vue/composition-api'
+import { reactive, toRefs, ref, computed } from 'vue'
 export default {
   setup(props, context) {
     const state = reactive({

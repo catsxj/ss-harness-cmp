@@ -8,9 +8,9 @@
               {{ item.name }}
             </div>
             <div class="pull-right">
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click.native="handleOperate(1, item.id)"></svg-icon>
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click.native="handleOperate(2, item.id)"></svg-icon>
-              <!--<Icon type="icon-chajian" class="m-l-sm" style="font-size: 16px;" title="运维认证" @click.native="handlePlugIn(item.id)"></Icon>-->
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click="handleOperate(1, item.id)"></svg-icon>
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click="handleOperate(2, item.id)"></svg-icon>
+              <!--<Icon type="icon-chajian" class="m-l-sm" style="font-size: 16px;" title="运维认证" @click="handlePlugIn(item.id)"></Icon>-->
             </div>
             <div style="clear: both"></div>
           </div>
@@ -45,7 +45,7 @@
       </el-col>
       <empty v-if="!storageData.length"></empty>
     </el-row>
-    <el-dialog title="运维认证信息" :close-on-click-modal="false" v-if="plugInVisible" :visible.sync="plugInVisible">
+    <el-dialog title="运维认证信息" :close-on-click-modal="false" v-if="plugInVisible" v-model:visible="plugInVisible">
       <basic-form :model="plugInData" label-width="130px" ref="plugInData">
         <el-row :gutter="10">
           <el-col :span="24">
@@ -66,8 +66,8 @@
         </el-row>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="plugInVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="plugInSubmit">确定</el-button>
+        <el-button type="ghost" @click="plugInVisible = false">取消</el-button>
+        <el-button type="primary" @click="plugInSubmit">确定</el-button>
       </div>
     </el-dialog>
   </div>

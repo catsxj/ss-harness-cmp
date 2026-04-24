@@ -3,7 +3,7 @@
     <template v-if="menuItem.children">
       <MenuItem v-if="hasOneChild(menuItem.children, menuItem)" :path="singleChild.path" :meta="singleChild.meta" :default-icon="defaultIcon"> </MenuItem>
       <el-submenu v-else :index="currPath">
-        <template slot="title">
+        <template #title>
           <svg-icon :icon-name="menuItem.meta.icon || defaultIcon"></svg-icon>
           <span slot="title">{{ menuItem.meta.title }}</span>
         </template>

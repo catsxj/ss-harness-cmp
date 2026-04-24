@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="个人信息" ref="dialog" :close-on-click-modal="false" :visible.sync="visible">
+  <el-dialog title="个人信息" ref="dialog" :close-on-click-modal="false" v-model:visible="visible">
     <basic-form :model="userData" ref="formRef">
       <el-row :gutter="5">
         <el-col :span="10">
@@ -57,11 +57,11 @@
   </el-dialog>
 </template>
 <script>
-import { Message } from 'element-ui'
+import { ElMessage as Message } from "element-plus"
 import { cloneDeep } from 'lodash-es'
 import ImageCropper from 'components/image-cropper/index.vue'
 import { modifyUser } from 'services/system/manager'
-import { reactive, toRefs, ref } from '@vue/composition-api'
+import { reactive, toRefs, ref } from 'vue'
 export default {
   props: {
     data: {

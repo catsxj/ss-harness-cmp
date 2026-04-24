@@ -29,19 +29,19 @@
         <el-dropdown trigger="click">
           <span class="el-dropdown-link"> 更多<i class="el-icon-arrow-down el-icon--right"></i> </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="bindIpmi(record)"> 绑定IPMI </el-dropdown-item>
-            <el-dropdown-item @click.native="unbindIpmi(record)"> 解绑IPMI </el-dropdown-item>
-            <el-dropdown-item @click.native="handleLink(record.id)"> 关联规则 </el-dropdown-item>
-            <el-dropdown-item @click.native="handlePolicy(record)">
+            <el-dropdown-item @click="bindIpmi(record)"> 绑定IPMI </el-dropdown-item>
+            <el-dropdown-item @click="unbindIpmi(record)"> 解绑IPMI </el-dropdown-item>
+            <el-dropdown-item @click="handleLink(record.id)"> 关联规则 </el-dropdown-item>
+            <el-dropdown-item @click="handlePolicy(record)">
               {{ `${record.alarmEnable ? '屏蔽' : '开启'}告警` }}
             </el-dropdown-item>
-            <el-dropdown-item @click.native="handleInstall(record)"> 安装Agent </el-dropdown-item>
+            <el-dropdown-item @click="handleInstall(record)"> 安装Agent </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
     </AdvanceTable>
     <add-policy v-if="addFlag" :resourceType="resourceType" @cancle="cancle" :add-link-flag="addFlag" :resourceId="resourceId" :ruleGroupIds="ruleGroupIds"></add-policy>
-    <el-dialog title="安装Agent" :close-on-click-modal="false" v-if="installVisible" :visible.sync="installVisible">
+    <el-dialog title="安装Agent" :close-on-click-modal="false" v-if="installVisible" v-model:visible="installVisible">
       <basic-form :model="installData" ref="installData">
         <basic-form-item label="端口：" prop="port" validate="required">
           <el-input v-model="installData.port" auto-complete="off"></el-input>
@@ -54,8 +54,8 @@
         </basic-form-item>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="installVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="installSubmit">确定</el-button>
+        <el-button type="ghost" @click="installVisible = false">取消</el-button>
+        <el-button type="primary" @click="installSubmit">确定</el-button>
       </div>
     </el-dialog>
     <common-detail v-if="detailFlag" :title="detailData.name" @goBack="goBack">

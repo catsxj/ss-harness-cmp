@@ -12,22 +12,22 @@
             <i class="el-icon-setting" style="font-size: 16px"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="enlarge">放大</el-dropdown-item>
-            <el-dropdown-item @click.native="download">下载</el-dropdown-item>
+            <el-dropdown-item @click="enlarge">放大</el-dropdown-item>
+            <el-dropdown-item @click="download">下载</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <el-dialog title="时间选择" :visible.sync="dialogVisible" width="500px" v-if="dialogVisible" append-to-body="">
+        <el-dialog title="时间选择" v-model:visible="dialogVisible" width="500px" v-if="dialogVisible" append-to-body="">
           <el-date-picker v-model="time" value-format="timestamp" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" align="right"> </el-date-picker>
           <div slot="footer" class="dialog-footer">
-            <el-button @click.native="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click.native="submit">确定</el-button>
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="submit">确定</el-button>
           </div>
         </el-dialog>
       </div>
     </div>
     <slot></slot>
     <component ref="charts" :is="defaultChart" :setting="chartSetting" :data="data" :unit="transformUnit ? '' : data.unit" :theme="title" :id="chartId" :height="height" width="100%" v-if="data"></component>
-    <el-dialog :title="title" :visible.sync="enlargeDialogVisible" v-if="enlargeDialogVisible" fullscreen class="chart-dialog" append-to-body>
+    <el-dialog :title="title" v-model:visible="enlargeDialogVisible" v-if="enlargeDialogVisible" fullscreen class="chart-dialog" append-to-body>
       <component ref="charts" :is="defaultChart" :setting="chartSetting" :data="data" :unit="transformUnit ? '' : data.unit" :theme="title" :id="`${chartId}dialog`" height="100%" width="100%" v-if="data"></component>
     </el-dialog>
   </el-card>

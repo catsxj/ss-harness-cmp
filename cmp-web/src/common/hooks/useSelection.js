@@ -1,4 +1,4 @@
-import { ref } from '@vue/composition-api'
+import { ref } from 'vue'
 export default function () {
   const selectionIds = ref([])
   function handleSelectionChange(selections) {

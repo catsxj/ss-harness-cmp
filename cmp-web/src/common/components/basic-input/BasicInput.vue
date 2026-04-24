@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { computed } from '@vue/composition-api'
+import { computed } from 'vue'
 const colorMap = {
   normal: {
     bg: '#2E8CF0',

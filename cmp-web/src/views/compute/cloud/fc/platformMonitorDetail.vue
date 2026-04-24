@@ -46,7 +46,7 @@
           </el-card>
         </el-col>
       </el-row>
-      <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" :visible.sync="userDefindVisible">
+      <el-dialog title="自定义时间" :close-on-click-modal="false" v-if="userDefindVisible" v-model:visible="userDefindVisible">
         <basic-form>
           <basic-form-item label="选择时间：">
             <el-date-picker
@@ -61,8 +61,8 @@
           </basic-form-item>
         </basic-form>
         <div slot="footer" class="dialog-footer">
-          <el-button type="ghost" @click.native="close">取消</el-button>
-          <el-button type="primary" @click.native="userDefindSubmit">确定</el-button>
+          <el-button type="ghost" @click="close">取消</el-button>
+          <el-button type="primary" @click="userDefindSubmit">确定</el-button>
         </div>
       </el-dialog>
     </div>

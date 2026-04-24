@@ -3,10 +3,10 @@
     <div class="lock-center">
       <img class="logo" :src="userData.portrait" />
       <p class="account">{{ userData.name }}</p>
-      <el-form :model="loginForm" ref="loginForm" @keyup.enter.native.prevent="handleLogin" @submit.native.prevent>
+      <el-form :model="loginForm" ref="loginForm" @keyup.enter.prevent="handleLogin" @submit.prevent>
         <basic-form-item prop="password" validate="required" required-message="请输入密码">
           <el-input v-model="loginForm.password" placeholder="请输入密码" type="password">
-            <template slot="append">
+            <template #append>
               <el-button type="primary" @click="handleLogin()" :loading="loading" icon="el-icon-right"> </el-button>
             </template>
           </el-input>

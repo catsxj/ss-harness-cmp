@@ -28,7 +28,7 @@
   </el-row>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, ref, unref } from '@vue/composition-api'
+import { defineComponent, PropType, ref, unref } from 'vue'
 import { conditionCloudVendor } from 'services/platform/index'
 import { getPortal } from 'services/system'
 

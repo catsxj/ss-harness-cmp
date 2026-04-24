@@ -2,7 +2,7 @@
   <div id="tags-view-container" class="tags-view-container">
     <el-tabs type="border-card" v-model="activeName">
       <el-tab-pane :key="tag.path" v-for="tag in visitedViews" :name="tag.path">
-        <router-link slot="label" :to="{ path: tag.path, query: tag.query, fullPath: tag.fullPath }" @contextmenu.prevent.stop.native="openMenu(tag, $event)">
+        <router-link slot="label" :to="{ path: tag.path, query: tag.query, fullPath: tag.fullPath }" @contextmenu.prevent.stop="openMenu(tag, $event)">
           <span>{{ tag.title }}</span>
           <span><i class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)"></i></span>
         </router-link>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, toRefs, watch } from '@vue/composition-api'
+import { computed, onMounted, reactive, toRefs, watch } from 'vue'
 export default {
   setup(props, context) {
     const state = reactive({

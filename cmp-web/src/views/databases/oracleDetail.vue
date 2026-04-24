@@ -18,13 +18,13 @@
               <el-table-column show-overflow-tooltip label="表空间" prop="tablespace"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="数据文件状态">
-                <template slot-scope="scope">{{ scope.row.status }}</template>
+                <template #default="scope">{{ scope.row.status }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="数据文件大小(MB)" prop="total"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="是否自动扩展">
-                <template slot-scope="scope">{{ booleanFilter(scope.row.autoExtensible) }}</template>
+                <template #default="scope">{{ booleanFilter(scope.row.autoExtensible) }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="数据文件已使用空间(MB)" prop="used"></el-table-column>
@@ -41,13 +41,13 @@
               <el-table-column show-overflow-tooltip label="日志文件大小(MB)" prop="bytes"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="是否归档">
-                <template slot-scope="scope">{{ booleanFilter(scope.row.archived) }}</template>
+                <template #default="scope">{{ booleanFilter(scope.row.archived) }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="日志状态" prop="status"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="第一次改变系统检查点号">
-                <template slot-scope="scope">{{ scope.row.firstChange }}</template>
+                <template #default="scope">{{ scope.row.firstChange }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="第一次改变时间" prop="firstTime"></el-table-column>
@@ -63,17 +63,17 @@
               <el-table-column show-overflow-tooltip label="表空间状态" prop="status"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间大小(MB)">
-                <template slot-scope="scope">{{ scope.row.total }}</template>
+                <template #default="scope">{{ scope.row.total }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间已使用空间(MB)" prop="used"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间利用率(%)">
-                <template slot-scope="scope">{{ scope.row.usedRatio }}</template>
+                <template #default="scope">{{ scope.row.usedRatio }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="自动扩展" prop="autoExpand">
-                <template slot-scope="scope">{{ autoType(scope.row.autoExpand) }}</template>
+                <template #default="scope">{{ autoType(scope.row.autoExpand) }}</template>
               </el-table-column>
 
               <div slot="pagination"></div>
@@ -86,17 +86,17 @@
               <el-table-column show-overflow-tooltip label="表空间状态" prop="status"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间大小(MB)">
-                <template slot-scope="scope">{{ scope.row.total }}</template>
+                <template #default="scope">{{ scope.row.total }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间已使用空间(MB)" prop="used"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间利用率(%)">
-                <template slot-scope="scope">{{ scope.row.usedRatio }}</template>
+                <template #default="scope">{{ scope.row.usedRatio }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="自动扩展" prop="autoExpand">
-                <template slot-scope="scope">{{ autoType(scope.row.autoExpand) }}</template>
+                <template #default="scope">{{ autoType(scope.row.autoExpand) }}</template>
               </el-table-column>
 
               <div slot="pagination"></div>
@@ -109,17 +109,17 @@
               <el-table-column show-overflow-tooltip label="表空间状态" prop="status"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间大小(MB)">
-                <template slot-scope="scope">{{ scope.row.total }}</template>
+                <template #default="scope">{{ scope.row.total }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间已使用空间(MB)" prop="used"></el-table-column>
 
               <el-table-column show-overflow-tooltip label="表空间利用率(%)">
-                <template slot-scope="scope">{{ scope.row.usedRatio }}</template>
+                <template #default="scope">{{ scope.row.usedRatio }}</template>
               </el-table-column>
 
               <el-table-column show-overflow-tooltip label="自动扩展" prop="autoExpand">
-                <template slot-scope="scope">{{ autoType(scope.row.autoExpand) }}</template>
+                <template #default="scope">{{ autoType(scope.row.autoExpand) }}</template>
               </el-table-column>
 
               <div slot="pagination"></div>

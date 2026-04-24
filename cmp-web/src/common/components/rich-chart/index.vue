@@ -19,7 +19,7 @@
     </div>
     <slot></slot>
     <component ref="charts" :is="chartMap[chartType]" :setting="chartSetting" :data="getResData()" v-if="data" :theme="title" :id="chartId" :height="height" width="100%"></component>
-    <el-dialog :title="title" :visible.sync="dialogVisible" v-if="dialogVisible" fullscreen class="chart-dialog">
+    <el-dialog :title="title" v-model:visible="dialogVisible" v-if="dialogVisible" fullscreen class="chart-dialog">
       <component :is="chartMap[chartType]" :setting="chartSetting" :data="getResData()" :theme="title" :id="`${chartId}dialog`" height="100%" width="100%"></component>
     </el-dialog>
   </el-card>

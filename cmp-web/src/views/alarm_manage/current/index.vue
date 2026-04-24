@@ -26,7 +26,7 @@
         </template>
       </AdvanceTable>
     </div>
-    <el-dialog title="告警解决" :close-on-click-modal="false" v-if="solveFormVisible" :visible.sync="solveFormVisible">
+    <el-dialog title="告警解决" :close-on-click-modal="false" v-if="solveFormVisible" v-model:visible="solveFormVisible">
       <el-form :model="solveData" label-width="100px" ref="solveData">
         <el-row :gutter="20">
           <el-col :span="24">
@@ -37,8 +37,8 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="solveFormVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="solveSubmit">确定</el-button>
+        <el-button @click="solveFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="solveSubmit">确定</el-button>
       </div>
     </el-dialog>
     <common-detail-right v-if="detailFlag" :setting="{ type: 'host' }" :title="detailData.name" @goBack="goBack">
@@ -61,7 +61,7 @@
       </template>
     </common-detail-right>
     <!-- 通知设置 -->
-    <el-dialog title="通知设置" :close-on-click-modal="false" v-if="noticeDialog" :visible.sync="noticeDialog">
+    <el-dialog title="通知设置" :close-on-click-modal="false" v-if="noticeDialog" v-model:visible="noticeDialog">
       <el-form :model="noticeData" label-width="100px" ref="solveData">
         <el-row :gutter="20">
           <el-col :span="24">
@@ -78,8 +78,8 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="noticeDialog = false">取消</el-button>
-        <el-button type="primary" @click.native="noticeSubmit">确定</el-button>
+        <el-button @click="noticeDialog = false">取消</el-button>
+        <el-button type="primary" @click="noticeSubmit">确定</el-button>
       </div>
     </el-dialog>
   </div>

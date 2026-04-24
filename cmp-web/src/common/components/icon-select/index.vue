@@ -9,7 +9,7 @@
 <script lang="ts">
 import elementIcons from './elementIcons'
 import svgIcons from './svgIcons'
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   model: {

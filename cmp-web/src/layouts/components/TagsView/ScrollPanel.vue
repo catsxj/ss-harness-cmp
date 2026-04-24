@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { computed, onMounted, onUpdated, reactive, toRefs, ref } from '@vue/composition-api'
+import { computed, onMounted, onUpdated, reactive, toRefs, ref } from 'vue'
 export default {
   setup(props, context) {
     const state = reactive({

@@ -30,7 +30,7 @@
         <el-button type="text" @click="handleClear(record.id)" :disabled="record.solved"> <i class="el-icon-delete"></i> 清除 </el-button>
       </template>
     </AdvanceTable>
-    <el-dialog title="告警解决" :close-on-click-modal="false" v-if="solveFormVisible" :visible.sync="solveFormVisible">
+    <el-dialog title="告警解决" :close-on-click-modal="false" v-if="solveFormVisible" v-model:visible="solveFormVisible">
       <el-form :model="solveData" label-width="100px" ref="solveData">
         <el-row :gutter="20">
           <el-col :span="24">
@@ -41,8 +41,8 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="solveFormVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="solveSubmit">确定</el-button>
+        <el-button @click="solveFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="solveSubmit">确定</el-button>
       </div>
     </el-dialog>
     <common-detail-right v-if="detailFlag" :title="detailData.name" @goBack="goBack">

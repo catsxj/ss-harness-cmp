@@ -3,14 +3,14 @@
     <el-scrollbar class="scrollbar-wrapper">
       <BaseMenu v-bind="menuProps" :collapse="isCollapsed" class="sidebar-menu" @select="selectItem" :page-configs="pageConfigs" :is-collapsed="isCollapsed"></BaseMenu>
     </el-scrollbar>
-    <OperateBtn class="operate" @click.native="toggleCollapsed">
+    <OperateBtn class="operate" @click="toggleCollapsed">
       <i class="el-icon-arrow-down"></i>
     </OperateBtn>
   </el-aside>
 </template>
 
 <script>
-import { computed, provide, ref } from '@vue/composition-api'
+import { computed, provide, ref } from 'vue'
 import BaseMenu from './baseMenu.vue'
 import OperateBtn from './OperateBtn.vue'
 

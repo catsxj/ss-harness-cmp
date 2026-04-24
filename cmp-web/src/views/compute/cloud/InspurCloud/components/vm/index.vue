@@ -30,8 +30,8 @@
         <el-dropdown trigger="click">
           <span class="el-dropdown-link"> 更多<i class="el-icon-arrow-down el-icon--right"></i> </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="handleLink(record.id)"> 关联规则 </el-dropdown-item>
-            <el-dropdown-item @click.native="handlePolicy(record)">
+            <el-dropdown-item @click="handleLink(record.id)"> 关联规则 </el-dropdown-item>
+            <el-dropdown-item @click="handlePolicy(record)">
               {{ `${record.alarmEnable ? '屏蔽' : '开启'}告警` }}
             </el-dropdown-item>
           </el-dropdown-menu>

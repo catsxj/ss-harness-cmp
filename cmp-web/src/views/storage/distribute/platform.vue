@@ -8,9 +8,9 @@
               {{ item.name }}
             </div>
             <div class="pull-right">
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click.native="handleOperate(1, item.id)"></svg-icon>
-              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click.native="handleOperate(2, item.id)"></svg-icon>
-              <svg-icon icon-name="svg-resource-ops" class="m-l-sm" style="font-size: 16px" title="配置数据源" @click.native="handleOp(item)"></svg-icon>
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="开启监控" v-if="!item.isAlarm" @click="handleOperate(1, item.id)"></svg-icon>
+              <svg-icon icon-name="svg-service-ops" class="m-l-sm" title="关闭监控" v-else @click="handleOperate(2, item.id)"></svg-icon>
+              <svg-icon icon-name="svg-resource-ops" class="m-l-sm" style="font-size: 16px" title="配置数据源" @click="handleOp(item)"></svg-icon>
             </div>
             <div style="clear: both"></div>
           </div>
@@ -45,7 +45,7 @@
       </el-col>
       <empty v-if="!vendorData.length"></empty>
     </el-row>
-    <el-dialog title="配置超分比" :close-on-click-modal="false" v-if="configRatioVisible" :visible.sync="configRatioVisible">
+    <el-dialog title="配置超分比" :close-on-click-modal="false" v-if="configRatioVisible" v-model:visible="configRatioVisible">
       <basic-form :model="configRatioData" label-width="130px" ref="configRatioData">
         <el-row :gutter="10">
           <el-col :span="24">
@@ -60,11 +60,11 @@
         </el-row>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="configRatioVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="configRatioSubmit">确定</el-button>
+        <el-button type="ghost" @click="configRatioVisible = false">取消</el-button>
+        <el-button type="primary" @click="configRatioSubmit">确定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="数据源" :close-on-click-modal="false" v-if="opVisible" :visible.sync="opVisible" width="600px">
+    <el-dialog title="数据源" :close-on-click-modal="false" v-if="opVisible" v-model:visible="opVisible" width="600px">
       <basic-form :model="opData" label-width="150px" ref="opData">
         <el-row :gutter="10">
           <el-col :span="24">
@@ -75,8 +75,8 @@
         </el-row>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="opVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="opSubmit">确定</el-button>
+        <el-button type="ghost" @click="opVisible = false">取消</el-button>
+        <el-button type="primary" @click="opSubmit">确定</el-button>
       </div>
     </el-dialog>
   </div>

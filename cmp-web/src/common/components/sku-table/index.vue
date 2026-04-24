@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from '@vue/composition-api'
+import { computed, defineComponent } from 'vue'
 import { getPrice, modeUnitFilter } from './utils'
 interface IColumnProps {
   label: string

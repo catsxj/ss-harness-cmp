@@ -130,8 +130,8 @@
           <el-dropdown trigger="click">
             <span class="el-dropdown-link"> 更多<i class="el-icon-arrow-down el-icon--right"></i> </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="handleLink(record)"> 关联规则 </el-dropdown-item>
-              <el-dropdown-item @click.native="handlePolicy(record)">
+              <el-dropdown-item @click="handleLink(record)"> 关联规则 </el-dropdown-item>
+              <el-dropdown-item @click="handlePolicy(record)">
                 {{ `${record.alarmEnable ? '屏蔽' : '开启'}告警` }}
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -139,7 +139,7 @@
         </template>
       </AdvanceTable>
       <add-policy v-if="addFlag" :resourceType="resourceType" @cancle="cancle" :add-link-flag="addFlag" :resourceId="resourceId" :ruleGroupIds="ruleGroupIds"></add-policy>
-      <el-dialog title="设置监控IP" :visible.sync="setIPFlag" v-if="setIPFlag">
+      <el-dialog title="设置监控IP" v-model:visible="setIPFlag" v-if="setIPFlag">
         <el-row>
           <basic-form ref="setData" :model="setData" :status-icon="true">
             <el-col :span="24">
@@ -152,8 +152,8 @@
           </basic-form>
         </el-row>
         <span slot="footer" class="dialog-footer">
-          <el-button type="ghost" @click.native="setIPFlag = false">取 消</el-button>
-          <el-button type="primary" @click.native="setSubmit">确 定</el-button>
+          <el-button type="ghost" @click="setIPFlag = false">取 消</el-button>
+          <el-button type="primary" @click="setSubmit">确 定</el-button>
         </span>
       </el-dialog>
     </div>

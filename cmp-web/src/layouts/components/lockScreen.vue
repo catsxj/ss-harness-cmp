@@ -7,7 +7,7 @@
 <script>
 import { replaceToken } from 'services/system'
 import { setToken, getToken } from 'utils/auth'
-import { computed, onMounted, onUnmounted, reactive, toRefs } from '@vue/composition-api'
+import { computed, onMounted, onUnmounted, reactive, toRefs } from 'vue'
 
 export default {
   setup(props, context) {

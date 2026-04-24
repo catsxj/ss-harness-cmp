@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { onMounted, ref } from '@vue/composition-api'
+import { onMounted, ref } from 'vue'
 
 export default {
   setup(props, context) {

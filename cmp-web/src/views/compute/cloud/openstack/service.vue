@@ -18,7 +18,7 @@
       <smart-table ref="table" :data="list" class="target-table" :rows="10">
         <el-table-column label="名称" prop="name" show-overflow-tooltip> </el-table-column>
         <el-table-column label="标签" prop="status" show-overflow-tooltip>
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-tag>
               {{ 'status=' + scope.row.tag.status }}
             </el-tag>
@@ -28,14 +28,14 @@
           </template>
         </el-table-column>
         <el-table-column label="状态" prop="status" show-overflow-tooltip>
-          <template slot-scope="scope">
+          <template #default="scope">
             <status-icon :type="scope.row.status == 'UP' ? 'success' : 'danger'">
               {{ scope.row.status }}
             </status-icon>
           </template>
         </el-table-column>
         <el-table-column label="操作" prop="status" show-overflow-tooltip>
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-button type="text" @click="handleMonitorDetail(scope.row)"> 告警详情</el-button>
           </template>
         </el-table-column>

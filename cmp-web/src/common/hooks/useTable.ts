@@ -1,5 +1,5 @@
-import { ref, toRefs, reactive } from '@vue/composition-api'
-import { MessageBox, Message } from 'element-ui'
+import { ref, toRefs, reactive } from 'vue'
+import { ElMessageBox as MessageBox, ElMessage as Message } from "element-plus"
 import { handleSearchParam } from 'cmp-element/utils'
 
 interface IRemoveService {

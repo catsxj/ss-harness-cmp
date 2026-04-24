@@ -1,7 +1,7 @@
 <template>
   <span>
     <Link :to="path">
-      <el-menu-item :index="path" ref="menuItemRef" :style="style" @mouseenter.native="onMouseEnter" @mouseleave.native="onMouseLeave" @blur.native="onMouseLeave">
+      <el-menu-item :index="path" ref="menuItemRef" :style="style" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @blur="onMouseLeave">
         <svg-icon :icon-name="meta.icon || defaultIcon"></svg-icon>
         <span slot="title">{{ meta.title }}</span>
       </el-menu-item>
@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { inject, ref, computed } from '@vue/composition-api'
+import { inject, ref, computed } from 'vue'
 import Link from './Link.vue'
 export default {
   components: {

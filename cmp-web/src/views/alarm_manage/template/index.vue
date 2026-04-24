@@ -31,7 +31,7 @@
         </template>
       </AdvanceTable>
     </div>
-    <el-dialog :title="titleMap[status]" v-if="addFlag" :visible.sync="addFlag" :close-on-click-modal="false">
+    <el-dialog :title="titleMap[status]" v-if="addFlag" v-model:visible="addFlag" :close-on-click-modal="false">
       <div :style="`height: calc(55vh);overflow-y:auto`">
         <basic-form ref="addData" :model="addData" label-width="130px">
           <basic-form-item label="资源类型：" prop="resourceType" validate="required">
@@ -66,8 +66,8 @@
         </basic-form>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="addFlag = false">取 消</el-button>
-        <el-button type="primary" @click.native="addSubmit">确 定</el-button>
+        <el-button type="ghost" @click="addFlag = false">取 消</el-button>
+        <el-button type="primary" @click="addSubmit">确 定</el-button>
       </span>
     </el-dialog>
     <common-detail v-if="detailFlag" :title="detailData.name" @goBack="goBack">

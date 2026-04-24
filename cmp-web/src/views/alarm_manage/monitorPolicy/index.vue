@@ -106,7 +106,7 @@
                   <el-table-column prop="name" label="用户姓名"> </el-table-column>
                   <el-table-column prop="email" label="邮箱"> </el-table-column>
                   <el-table-column label="状态">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ statusFilter(scope.row.status) }}
                     </template>
                   </el-table-column>

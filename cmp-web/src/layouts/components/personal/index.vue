@@ -12,12 +12,12 @@
         </el-tooltip>
       </div>
       <el-dropdown-menu slot="dropdown" class="user-dropdown">
-        <el-dropdown-item @click.native="openInfoDialog"><i class="el-icon-user"></i> 个人信息</el-dropdown-item>
-        <el-dropdown-item @click.native="openPwdDialog"><i class="el-icon-lock"></i> 修改密码</el-dropdown-item>
-        <el-dropdown-item @click.native="logout()"><i class="el-icon-back"></i> 退出系统</el-dropdown-item>
+        <el-dropdown-item @click="openInfoDialog"><i class="el-icon-user"></i> 个人信息</el-dropdown-item>
+        <el-dropdown-item @click="openPwdDialog"><i class="el-icon-lock"></i> 修改密码</el-dropdown-item>
+        <el-dropdown-item @click="logout()"><i class="el-icon-back"></i> 退出系统</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
-    <el-dialog title="修改密码" :close-on-click-modal="false" width="30%" v-if="pwdDialogVisible" :visible.sync="pwdDialogVisible" append-to-body>
+    <el-dialog title="修改密码" :close-on-click-modal="false" width="30%" v-if="pwdDialogVisible" v-model:visible="pwdDialogVisible" append-to-body>
       <basic-form :model="pwdData" ref="pwdData">
         <basic-form-item label="原密码：" prop="oldPassword" validate="required">
           <el-input v-model="pwdData.oldPassword" type="password" auto-complete="off"></el-input>
@@ -30,8 +30,8 @@
         </basic-form-item>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="pwdDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="modifySubmit">确定</el-button>
+        <el-button @click="pwdDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="modifySubmit">确定</el-button>
       </div>
     </el-dialog>
     <InfoDialog ref="infoDialog" :data="userData"></InfoDialog>

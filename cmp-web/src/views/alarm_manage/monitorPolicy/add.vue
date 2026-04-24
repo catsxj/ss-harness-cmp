@@ -153,59 +153,59 @@
                 </el-form>
                 <basic-table :data="policyList" :params="policyParams" :get-list="getPolicy" :total="policyTotal">
                   <el-table-column prop="name" label="名称" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       <el-radio :label="scope.row.id" v-model="addData.policyId" @change="changePolicyId">{{ scope.row.name }} </el-radio>
                     </template>
                   </el-table-column>
                   <el-table-column prop="ip" label="延迟时间" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ waiteTimeFilter(scope.row.waitTime) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="remind" label="接收提示告警" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.remind) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="secondary" label="接收次要告警" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.secondary) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="primary" label="接收重要告警" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.primary) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="urgent" label="接收紧急告警" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.urgent) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="email" label="邮件" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.email) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="message" label="站内信" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.message) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="dingding" label="钉钉" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.dingding) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="weixin" label="微信" show-overflow-tooltip>
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       {{ booleanFilter(scope.row.weixin) }}
                     </template>
                   </el-table-column>
                 </basic-table>
               </basic-form-item>
             </basic-form>
-            <el-drawer :visible.sync="addPolicyFlag" direction="rtl" size="875px" id="drawer">
+            <el-drawer v-model:visible="addPolicyFlag" direction="rtl" size="875px" id="drawer">
               <div slot="title">新增分发策略</div>
               <el-card>
                 <add style="margin-bottom: 60px" ref="policy" @refresh="refresh"></add>

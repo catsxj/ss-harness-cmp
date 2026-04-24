@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="关联规则" :visible.sync="addFlag" v-if="addFlag" width="70%" @close="$emit('cancle')">
+    <el-dialog title="关联规则" v-model:visible="addFlag" v-if="addFlag" width="70%" @close="$emit('cancle')">
       <AdvanceTable title="" :search-configs="searchConfigs" :data="list" :params="params" :columns="columns" :get-list="getList" :total="total" :loading="loading" @select="handleSelectItem" @select-all="handleSelectAll" ref="thresholdTable">
         <template #name="val, record">
           <span class="detail-href" @click="getDetail(record)">{{ val }}</span>
@@ -16,8 +16,8 @@
         </template>
       </AdvanceTable>
       <span slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="$emit('cancle')">取 消</el-button>
-        <el-button type="primary" :loading="loading" @click.native="addSubmit">确 定</el-button>
+        <el-button type="ghost" @click="$emit('cancle')">取 消</el-button>
+        <el-button type="primary" :loading="loading" @click="addSubmit">确 定</el-button>
       </span>
       <common-detail v-if="detailFlag" :title="detailData.name" @goBack="goBack">
         <div style="background: #fff; padding: 0 0 0 10px" slot="custom_content">
@@ -94,7 +94,7 @@
                     <el-table-column prop="name" label="用户姓名"> </el-table-column>
                     <el-table-column prop="email" label="邮箱"> </el-table-column>
                     <el-table-column label="状态">
-                      <template slot-scope="scope">
+                      <template #default="scope">
                         {{ statusFilter(scope.row.status) }}
                       </template>
                     </el-table-column>

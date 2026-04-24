@@ -15,7 +15,7 @@
   </el-row>
 </template>
 <script lang="ts">
-import { ref, defineComponent, PropType } from '@vue/composition-api'
+import { ref, defineComponent, PropType } from 'vue'
 import { getAlarmChart } from 'services/monitor/index'
 
 const chartSetting = {

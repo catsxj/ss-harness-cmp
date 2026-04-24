@@ -2,7 +2,7 @@
   <div class="tip-container" v-show="tipText">{{ tipText }}，为了避免影响您的正常使用，请尽快激活</div>
 </template>
 <script>
-import { onUnmounted, ref } from '@vue/composition-api'
+import { onUnmounted, ref } from 'vue'
 import { getLicense } from 'services/system/license'
 import dayjs from 'utils/day'
 import relativeTime from 'dayjs/plugin/relativeTime'

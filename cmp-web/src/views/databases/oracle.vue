@@ -27,18 +27,18 @@
         <el-dropdown trigger="click">
           <span class="el-dropdown-link"> 更多<i class="el-icon-arrow-down el-icon--right"></i> </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-if="!record.monitoring" @click.native="handleOpen(record.id)"> 开启监控 </el-dropdown-item>
-            <el-dropdown-item v-else @click.native="handleClose(record.id)"> 关闭监控 </el-dropdown-item>
-            <el-dropdown-item @click.native="alarmDetail(record)"> 告警详情 </el-dropdown-item>
-            <el-dropdown-item @click.native="handleLink(record.id)"> 关联规则 </el-dropdown-item>
-            <!-- <el-dropdown-item @click.native="handlePolicy(record)">
+            <el-dropdown-item v-if="!record.monitoring" @click="handleOpen(record.id)"> 开启监控 </el-dropdown-item>
+            <el-dropdown-item v-else @click="handleClose(record.id)"> 关闭监控 </el-dropdown-item>
+            <el-dropdown-item @click="alarmDetail(record)"> 告警详情 </el-dropdown-item>
+            <el-dropdown-item @click="handleLink(record.id)"> 关联规则 </el-dropdown-item>
+            <!-- <el-dropdown-item @click="handlePolicy(record)">
               {{`${record.alarmEnable ? '屏蔽':'开启'}告警`}}
             </el-dropdown-item> -->
           </el-dropdown-menu>
         </el-dropdown>
       </template>
     </AdvanceTable>
-    <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" v-if="addFlag" :visible.sync="addFlag" width="60%">
+    <el-dialog :title="textMap[dialogStatus]" :close-on-click-modal="false" v-if="addFlag" v-model:visible="addFlag" width="60%">
       <basic-form :model="addData" ref="addData" label-width="110px">
         <el-row>
           <el-col :span="24">
@@ -74,8 +74,8 @@
         </el-row>
       </basic-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="ghost" @click.native="addFlag = false">取消</el-button>
-        <el-button type="primary" @click.native="addSubmit">确定</el-button>
+        <el-button type="ghost" @click="addFlag = false">取消</el-button>
+        <el-button type="primary" @click="addSubmit">确定</el-button>
       </div>
     </el-dialog>
     <add-policy v-if="addFlag" :resourceType="resourceType" @cancle="cancle" :add-link-flag="addLinkFlag" :resourceId="resourceId" :ruleGroupIds="ruleGroupIds"></add-policy>
