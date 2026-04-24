@@ -1,51 +1,50 @@
-/**
- * Created by HaijunZhang on 2018/11/12.
- */
-const monitor = {
+// 原 router/module/monitor.js 改 .ts，路径与映射不变。
+// 后续视图拆分如需分片加载请在此处调整。
+
+const monitor: Record<string, () => Promise<unknown>> = {
   MonitorDashboard: () => import('views/dashboard/index.vue'), // 概览
   MonitorComputeServer: () => import('views/compute/server/index.vue'),
   MonitorComputeCloud: () => import('views/compute/cloud/platform.vue'), // 云平台
   MonitorVm: () => import('views/compute/vm.vue'), // 云主机
-  MonitorCloudVcenter: () => import('views/compute/cloud/vcenter/index.vue'), // vcenter
-  MonitorCloudCNware: () => import('views/compute/cloud/cnware/index.vue'), // vcenter
+  MonitorCloudVcenter: () => import('views/compute/cloud/vcenter/index.vue'),
+  MonitorCloudCNware: () => import('views/compute/cloud/cnware/index.vue'),
   MonitorCloudHuaweiFC: () => import('views/compute/cloud/fc/index.vue'), // fusionsphere
-  MonitorCloudInspurRail: () => import('views/compute/cloud/inspurRail/index.vue'), // 浪潮云
+  MonitorCloudInspurRail: () => import('views/compute/cloud/inspurRail/index.vue'),
   MonitorCloudInspurCloud: () => import('views/compute/cloud/InspurCloud/index.vue'),
   MonitorCloudUsphere: () => import('views/compute/cloud/usphere/index.vue'), // 紫光云
-  MonitorCloudSangforHCI: () => import('views/compute/cloud/sangforHCI/index.vue'), // 深信服 HCI 6.3
-  MonitorCloudSangforSCP: () => import('views/compute/cloud/sangforSCP/index.vue'), // 深信服 SCP 6.8
-  MonitorCloudOpenStack: () => import('views/compute/cloud/openstack/index.vue'), // openstack
-  MonitorCloudEasyStack: () => import('views/compute/cloud/easystack/index.vue'), // easystack
-  MonitorCloudFusion: () => import('views/compute/cloud/FusionCloud/index.vue'), // fusioncloud
+  MonitorCloudSangforHCI: () => import('views/compute/cloud/sangforHCI/index.vue'),
+  MonitorCloudSangforSCP: () => import('views/compute/cloud/sangforSCP/index.vue'),
+  MonitorCloudOpenStack: () => import('views/compute/cloud/openstack/index.vue'),
+  MonitorCloudEasyStack: () => import('views/compute/cloud/easystack/index.vue'),
+  MonitorCloudFusion: () => import('views/compute/cloud/FusionCloud/index.vue'),
   MonitorCloudManageOne: () => import('views/compute/cloud/FusionCloud/index.vue'),
-  MonitorCloudHmc: () => import('views/compute/cloud/hmc/index.vue'), // hmc
-  // MonitorContainerCloud: () => import('views/compute/container/cloudList.vue'), // 容器云
-  MonitorCloudK8s: () => import('views/compute/container/kubernetes/index.vue'), // k8s
-  MonitorCloudTianyi: () => import('views/compute/cloud/tianyi/index.vue'), // 天翼云
-  MonitorCloudAliyun: () => import('views/compute/cloud/aliyun/index.vue'), // 阿里云
-  MonitorCloudLenovo: () => import('views/compute/cloud/lenovo/index.vue'), // 联想云
+  MonitorCloudHmc: () => import('views/compute/cloud/hmc/index.vue'),
+  MonitorCloudK8s: () => import('views/compute/container/kubernetes/index.vue'),
+  MonitorCloudTianyi: () => import('views/compute/cloud/tianyi/index.vue'),
+  MonitorCloudAliyun: () => import('views/compute/cloud/aliyun/index.vue'),
+  MonitorCloudLenovo: () => import('views/compute/cloud/lenovo/index.vue'),
   MonitorApsarastack: () => import('views/compute/cloud/apsarastack/index.vue'),
-  MonitorCloudQcloud: () => import('views/compute/cloud/qcloud/index.vue'), // 青云
-  MonitorYYJCloudQcloud: () => import('views/compute/cloud/yyjqcloud/index.vue'), // 云易捷青云
-  MonitorCloudAzure: () => import('views/compute/cloud/azure/index.vue'), // Azure
-  MonitorCloudCecStack: () => import('views/compute/cloud/cecStack/index.vue'), // 阿里云
-  MonitorCloudHuawei: () => import('views/compute/cloud/huawei/index.vue'), // 华为云
-  MonitorCloudH3C: () => import('views/compute/cloud/h3c/index.vue'), // 华三云
-  MonitorCloudZstack: () => import('views/compute/cloud/zstack/index.vue'), // zstack
-  MonitorCloudSmart: () => import('views/compute/cloud/smart/index.vue'), // smartx
-  MonitorCloudCloudTower: () => import('views/compute/cloud/cloudTower/index.vue'), // cloudtower
-  MonitorContainerDetail: () => import('views/compute/cloud/vcenter/platformMonitorDetail.vue'), // 告警详情
-  MonitorDetailList: () => import('views/compute/cloud/vcenter/platformMonitorDetail.vue'), // 告警详情
-  MonitorFocusList: () => import('views/storage/huawei/list.vue'), // 集中式存储列表
+  MonitorCloudQcloud: () => import('views/compute/cloud/qcloud/index.vue'),
+  MonitorYYJCloudQcloud: () => import('views/compute/cloud/yyjqcloud/index.vue'),
+  MonitorCloudAzure: () => import('views/compute/cloud/azure/index.vue'),
+  MonitorCloudCecStack: () => import('views/compute/cloud/cecStack/index.vue'),
+  MonitorCloudHuawei: () => import('views/compute/cloud/huawei/index.vue'),
+  MonitorCloudH3C: () => import('views/compute/cloud/h3c/index.vue'),
+  MonitorCloudZstack: () => import('views/compute/cloud/zstack/index.vue'),
+  MonitorCloudSmart: () => import('views/compute/cloud/smart/index.vue'),
+  MonitorCloudCloudTower: () => import('views/compute/cloud/cloudTower/index.vue'),
+  MonitorContainerDetail: () => import('views/compute/cloud/vcenter/platformMonitorDetail.vue'),
+  MonitorDetailList: () => import('views/compute/cloud/vcenter/platformMonitorDetail.vue'),
+  MonitorFocusList: () => import('views/storage/huawei/list.vue'),
   MonitorHuawei: () => import('views/storage/huawei/index.vue'),
   MonitorHuaweiDetail: () => import('views/storage/huawei/monitorDetail.vue'),
   MonitorDell: () => import('views/storage/huawei/index.vue'),
   MonitorDellDetail: () => import('views/storage/huawei/monitorDetail.vue'),
   MonitorSDNList: () => import('views/network/sdn/index.vue'),
   thresholdValue: () => import('views/alarm_manage/monitorPolicy/index.vue'),
-  CreateMonitorPolicy: () => import('views/alarm_manage/monitorPolicy/add.vue'), // 新增告警策略
-  ModifyMonitorPolicy: () => import('views/alarm_manage/monitorPolicy/add.vue'), // 编辑告警策略
-  MonitorTemplate: () => import('views/alarm_manage/template/index.vue'), // 告警模板
+  CreateMonitorPolicy: () => import('views/alarm_manage/monitorPolicy/add.vue'),
+  ModifyMonitorPolicy: () => import('views/alarm_manage/monitorPolicy/add.vue'),
+  MonitorTemplate: () => import('views/alarm_manage/template/index.vue'),
   CreateMonitorTemplate: () => import('views/alarm_manage/template/add.vue'),
   ModifyMonitorTemplate: () => import('views/alarm_manage/template/add.vue'),
   CurrentMonitor: () => import('views/alarm_manage/current/index.vue'),
@@ -68,7 +67,7 @@ const monitor = {
   yyjQcloudVmMonitor: () => import('views/compute/cloud/platformMonitor/yyjQcloudVm.vue'),
   yyjQcloudHostMonitor: () => import('views/compute/cloud/platformMonitor/yyjQcloudHost.vue'),
 
-  // 新添加的数据库监控组件
+  // 数据库监控
   DatabaseMysql: () => import('views/databases/mysql.vue'),
   DatabaseMssql: () => import('views/databases/sqlserver.vue'),
   DatabasePostGreSQL: () => import('views/databases/postgresql.vue'),
@@ -87,12 +86,15 @@ const monitor = {
   MonitorRabbitMQ: () => import('views/middleware/rabbitmq.vue'),
   MonitorZookeeper: () => import('views/middleware/zookeeper.vue'),
   MonitorEtcd: () => import('views/middleware/etcd.vue'),
+
   // 分布式存储
   MonitorStorageDistribute: () => import('views/storage/distribute/platform.vue'),
   MonitorStorageXsky: () => import('views/storage/distribute/xsky/index.vue'),
+
   // 交换机
   MonitorSmisFabric: () => import('views/storage/switch/list.vue'),
   MonitorCisco: () => import('views/storage/switch/cisco.vue'),
   MonitorCiscoDetail: () => import('views/compute/cloud/vcenter/platformMonitorDetail.vue')
 }
+
 export default monitor
